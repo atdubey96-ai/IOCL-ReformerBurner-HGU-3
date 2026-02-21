@@ -122,7 +122,7 @@ body.light-theme .theme-slider{background:#334155;}
 body.light-theme .theme-toggle input:checked + .theme-slider{background:#94b4d8;}
 
 /* ====================================================
-   LOGIN — IOCL CORPORATE
+   LOGIN — IOCL CORPORATE  (High-Contrast Vibrant)
 ==================================================== */
 #loginScreen{
   position:fixed;top:0;left:0;width:100%;height:100%;
@@ -132,13 +132,20 @@ body.light-theme .theme-toggle input:checked + .theme-slider{background:#94b4d8;
 
 /* Top ribbon */
 .ls-topbar{
-  background:#010e35;
+  background:#010c2e;
   display:flex;justify-content:space-between;align-items:center;
-  padding:5px 32px;font-size:11.5px;
-  color:#7a99c4;letter-spacing:0.4px;
-  border-bottom:1px solid rgba(255,255,255,0.06);
+  padding:6px 32px;font-size:11.5px;
+  color:#a8c8f0;letter-spacing:0.4px;
+  border-bottom:1px solid rgba(243,112,34,0.25);
 }
-#ls-clock{font-family:monospace;color:#a0b8d8;}
+#ls-clock{
+  font-family:monospace;
+  color:#F37022;
+  font-weight:700;
+  background:rgba(243,112,34,0.1);
+  padding:2px 10px;border-radius:4px;
+  border:1px solid rgba(243,112,34,0.25);
+}
 
 /* Header bar with logo */
 .ls-header{
@@ -149,17 +156,34 @@ body.light-theme .theme-toggle input:checked + .theme-slider{background:#94b4d8;
   box-shadow:0 2px 20px rgba(0,0,0,0.5);
 }
 .ls-logo-group{display:flex;align-items:center;gap:18px;}
-.ls-iocl-svg{flex-shrink:0;filter:drop-shadow(0 2px 8px rgba(243,112,34,0.4));}
+.ls-iocl-svg{flex-shrink:0;filter:drop-shadow(0 2px 8px rgba(243,112,34,0.5));}
 .ls-brand-name{
   font-family:'Rajdhani',sans-serif;
   font-size:30px;font-weight:700;
   color:#F37022;letter-spacing:1px;line-height:1;
 }
-.ls-brand-full{font-size:11px;color:#7a99c4;letter-spacing:0.6px;margin-top:3px;}
-.ls-brand-govt{font-size:10px;color:#4a6a94;letter-spacing:0.4px;margin-top:2px;}
+.ls-brand-full{
+  font-size:11.5px;
+  color:#c8dff8;  /* was #7a99c4 — now bright cool white-blue */
+  letter-spacing:0.6px;margin-top:3px;font-weight:600;
+}
+.ls-brand-govt{
+  font-size:10.5px;
+  color:#90b8e0;  /* was #4a6a94 — now clearly legible light blue */
+  letter-spacing:0.4px;margin-top:2px;
+}
 .ls-portal-right{text-align:right;}
-.ls-portal-title{font-size:18px;font-weight:700;color:#e2ecff;letter-spacing:0.4px;}
-.ls-portal-sub{font-size:11px;color:#4a6a94;margin-top:4px;}
+.ls-portal-title{
+  font-size:18px;font-weight:700;
+  color:#ffffff;  /* pure white for max contrast */
+  letter-spacing:0.4px;
+  text-shadow:0 1px 8px rgba(0,0,0,0.4);
+}
+.ls-portal-sub{
+  font-size:11.5px;
+  color:#a8c8f0;  /* was #4a6a94 — now clearly visible */
+  margin-top:4px;font-weight:500;
+}
 
 /* Body */
 .ls-body{flex:1;display:flex;min-height:0;overflow:hidden;}
@@ -175,14 +199,14 @@ body.light-theme .theme-toggle input:checked + .theme-slider{background:#94b4d8;
 .ls-hero-flame{
   position:absolute;right:-40px;top:-20px;
   width:360px;height:560px;
-  opacity:0.14;pointer-events:none;
+  opacity:0.22;pointer-events:none;  /* slightly more visible */
 }
 .ls-hero::before{
   content:'';position:absolute;
   top:-80px;right:80px;
   width:220px;height:700px;
   background:linear-gradient(170deg,#F37022,transparent 60%);
-  opacity:0.1;transform:rotate(18deg);border-radius:40px;
+  opacity:0.15;transform:rotate(18deg);border-radius:40px;
 }
 .ls-hero::after{
   content:'';position:absolute;
@@ -193,8 +217,8 @@ body.light-theme .theme-toggle input:checked + .theme-slider{background:#94b4d8;
 .ls-hero-grid{
   position:absolute;inset:0;
   background-image:
-    linear-gradient(rgba(255,255,255,0.025) 1px,transparent 1px),
-    linear-gradient(90deg,rgba(255,255,255,0.025) 1px,transparent 1px);
+    linear-gradient(rgba(255,255,255,0.04) 1px,transparent 1px),
+    linear-gradient(90deg,rgba(255,255,255,0.04) 1px,transparent 1px);
   background-size:50px 50px;pointer-events:none;
 }
 .ls-hero-content{position:relative;z-index:2;max-width:450px;}
@@ -211,66 +235,96 @@ body.light-theme .theme-toggle input:checked + .theme-slider{background:#94b4d8;
   text-shadow:0 2px 24px rgba(0,0,0,0.6);
 }
 .ls-system-title span{color:#F37022;}
-.ls-desc{font-size:14px;color:#7a99c4;line-height:1.75;margin-bottom:30px;}
+.ls-desc{
+  font-size:14px;
+  color:#c8dff8;  /* was #7a99c4 — now clearly readable */
+  line-height:1.75;margin-bottom:30px;
+}
 .ls-badges{display:flex;flex-wrap:wrap;gap:10px;}
 .ls-badge{
-  background:rgba(255,255,255,0.05);
-  border:1px solid rgba(243,112,34,0.3);
-  color:#b4c9e8;font-size:12px;
+  background:rgba(243,112,34,0.12);
+  border:1px solid rgba(243,112,34,0.45);
+  color:#f0c898;   /* warm amber — vibrant and visible */
+  font-size:12px;font-weight:600;
   padding:5px 14px;border-radius:20px;letter-spacing:0.3px;
 }
 .ls-info-strip{
   position:absolute;bottom:0;left:0;right:0;
-  background:linear-gradient(90deg,rgba(243,112,34,0.08),transparent);
-  border-top:1px solid rgba(243,112,34,0.15);
+  background:linear-gradient(90deg,rgba(0,0,0,0.5),rgba(0,0,0,0.3));
+  border-top:1px solid rgba(243,112,34,0.3);
   padding:9px 54px;display:flex;gap:36px;
-  font-size:11px;color:#3a5a7a;
+  font-size:11px;
+  color:#90b8e0;  /* was #3a5a7a — now readable */
 }
-.ls-info-strip b{color:#6a8aaa;font-weight:600;}
+.ls-info-strip b{
+  color:#F37022;  /* was #6a8aaa — now orange accent, clearly visible */
+  font-weight:700;
+}
 
 /* Login card */
 .ls-card-wrap{
-  width:430px;min-width:370px;
-  background:linear-gradient(175deg,#031d60 0%,#010e35 100%);
-  border-left:1px solid rgba(243,112,34,0.2);
-  box-shadow:-10px 0 50px rgba(0,0,0,0.5);
+  width:440px;min-width:370px;
+  background:linear-gradient(175deg,#071e54 0%,#030f3a 100%);
+  border-left:2px solid rgba(243,112,34,0.35);
+  box-shadow:-10px 0 60px rgba(0,0,0,0.6);
   display:flex;flex-direction:column;justify-content:center;
   padding:44px;
 }
-.ls-card-title{font-size:24px;font-weight:700;color:#e8f0ff;margin-bottom:5px;}
-.ls-card-sub{font-size:13px;color:#4a6a94;margin-bottom:20px;}
+.ls-card-title{
+  font-size:24px;font-weight:700;
+  color:#ffffff;  /* was #e8f0ff — pure white */
+  margin-bottom:5px;
+}
+.ls-card-sub{
+  font-size:13px;
+  color:#a8c8f0;  /* was #4a6a94 — now clearly legible */
+  margin-bottom:20px;font-weight:500;
+}
 .ls-accent-bar{width:36px;height:3px;background:#F37022;border-radius:2px;margin-bottom:28px;}
 .ls-field{margin-bottom:18px;}
 .ls-label{
-  display:block;font-size:11px;color:#4a6a94;
+  display:block;font-size:11px;
+  color:#7ec8f0;  /* was #4a6a94 — now bright cyan-blue, vibrant & readable */
   letter-spacing:1.2px;text-transform:uppercase;
   font-weight:700;margin-bottom:7px;
 }
 .ls-input-box{
   display:flex;align-items:center;
-  background:rgba(255,255,255,0.04);
-  border:1px solid rgba(255,255,255,0.1);
+  background:rgba(255,255,255,0.07);
+  border:1px solid rgba(255,255,255,0.18);
   border-radius:6px;
   transition:border-color .2s,box-shadow .2s;
 }
 .ls-input-box:focus-within{
   border-color:#F37022;
-  box-shadow:0 0 0 3px rgba(243,112,34,0.15);
+  box-shadow:0 0 0 3px rgba(243,112,34,0.2);
+  background:rgba(255,255,255,0.09);
 }
-.ls-input-icon{padding:0 13px;font-size:15px;opacity:0.55;user-select:none;}
+.ls-input-icon{
+  padding:0 13px;font-size:15px;
+  opacity:0.9;  /* was 0.55 — now clearly visible icons */
+  user-select:none;
+}
 .ls-input{
   flex:1;background:transparent;border:none;outline:none;
-  color:#ddeaff;font-size:15px;
+  color:#ffffff;  /* was #ddeaff — pure white for max clarity */
+  font-size:15px;
   font-family:'Rajdhani',sans-serif;
   padding:12px 12px 12px 0;letter-spacing:0.3px;
 }
-.ls-input::placeholder{color:#2a4068;}
-.ls-input[readonly]{color:#7a99c4;cursor:default;}
+.ls-input::placeholder{
+  color:#5a80b0;  /* was #2a4068 — slightly brighter for readability */
+}
+.ls-input[readonly]{
+  color:#a8c8f0;  /* was #7a99c4 — brighter */
+  cursor:default;
+}
 .ls-error{
   display:none;margin-top:8px;
-  font-size:12px;color:#fca5a5;
-  background:rgba(220,38,38,0.1);
-  border:1px solid rgba(220,38,38,0.25);
+  font-size:12px;font-weight:600;
+  color:#ffb3b3;  /* brighter red */
+  background:rgba(220,38,38,0.18);
+  border:1px solid rgba(220,38,38,0.45);
   border-radius:5px;padding:8px 12px;
 }
 .ls-btn{
@@ -280,49 +334,71 @@ body.light-theme .theme-toggle input:checked + .theme-slider{background:#94b4d8;
   font-size:16px;font-weight:700;
   font-family:'Rajdhani',sans-serif;letter-spacing:0.8px;
   cursor:pointer;display:flex;justify-content:space-between;align-items:center;
-  box-shadow:0 4px 24px rgba(243,112,34,0.38);
+  box-shadow:0 4px 28px rgba(243,112,34,0.5);
   transition:transform .15s,box-shadow .15s;
 }
-.ls-btn:hover{transform:translateY(-2px);box-shadow:0 7px 32px rgba(243,112,34,0.55);}
+.ls-btn:hover{transform:translateY(-2px);box-shadow:0 7px 36px rgba(243,112,34,0.65);}
 .ls-btn:active{transform:translateY(0);}
 .ls-btn-arrow{font-size:22px;transition:transform .2s;}
 .ls-btn:hover .ls-btn-arrow{transform:translateX(5px);}
-.ls-helper{text-align:center;margin-top:14px;font-size:12px;color:#2a4068;}
+.ls-helper{
+  text-align:center;margin-top:14px;font-size:12px;
+  color:#7090b8;  /* was #2a4068 — now clearly visible */
+}
 .ls-forgot-link{
-  color:#4a8fc8;text-decoration:none;font-weight:600;
+  color:#60b0f0;   /* was #4a8fc8 — brighter sky blue */
+  text-decoration:none;font-weight:600;
   padding:6px 14px;border-radius:5px;
-  border:1px solid rgba(74,143,200,0.3);
-  background:rgba(74,143,200,0.06);
+  border:1px solid rgba(96,176,240,0.4);
+  background:rgba(96,176,240,0.08);
   display:inline-block;
   transition:background .2s,color .2s;
 }
 .ls-forgot-link:hover{
-  background:rgba(74,143,200,0.15);color:#7db8e8;border-color:rgba(74,143,200,0.5);
+  background:rgba(96,176,240,0.2);
+  color:#90d0ff;
+  border-color:rgba(96,176,240,0.6);
 }
 .ls-security{
   display:flex;align-items:flex-start;gap:10px;
   margin-top:26px;padding-top:20px;
-  border-top:1px solid rgba(255,255,255,0.06);
+  border-top:1px solid rgba(255,255,255,0.1);
 }
-.ls-security-icon{font-size:20px;opacity:0.45;margin-top:2px;}
-.ls-security-text{font-size:11px;color:#2a4068;line-height:1.7;}
-.ls-security-text b{color:#3a5a7a;}
+.ls-security-icon{
+  font-size:20px;
+  opacity:0.85;  /* was 0.45 — now visible */
+  margin-top:2px;
+}
+.ls-security-text{
+  font-size:11px;
+  color:#90b8e0;  /* was #2a4068 — now readable */
+  line-height:1.7;
+}
+.ls-security-text b{
+  color:#c8dff8;  /* was #3a5a7a — now clearly legible */
+  font-weight:700;
+}
 .ls-helpdesk{
   margin-top:16px;
-  background:rgba(255,255,255,0.025);
-  border:1px solid rgba(255,255,255,0.07);
+  background:rgba(255,255,255,0.05);
+  border:1px solid rgba(243,112,34,0.2);
   border-radius:6px;padding:10px 14px;
-  font-size:11.5px;color:#3a5a7a;
+  font-size:11.5px;
+  color:#90b8e0;  /* was #3a5a7a — now readable */
   display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:6px;
 }
-.ls-helpdesk b{color:#5a7aaa;}
+.ls-helpdesk b{
+  color:#F37022;  /* was #5a7aaa — now orange accent, vibrant */
+  font-weight:700;
+}
 
 /* Footer */
 .ls-footer{
-  background:#010e35;border-top:2px solid #F37022;
+  background:#010c2e;border-top:2px solid #F37022;
   padding:7px 32px;
   display:flex;justify-content:space-between;align-items:center;
-  flex-wrap:wrap;gap:6px;font-size:10px;color:#2a4068;
+  flex-wrap:wrap;gap:6px;font-size:10px;
+  color:#6090c0;  /* was #2a4068 — now legible */
 }
 
 /* ====================================================
@@ -1232,7 +1308,7 @@ td.burner-pending.C{ box-shadow:0 0 8px 2px rgba(253,224,71,0.4) !important; }
         <div class="ls-desc">
           Real-time monitoring and management of reformer<br>
           burner operations across refinery walls.<br>
-          <strong style="color:#5a7aaa">Authorized Personnel Only.</strong>
+          <strong style="color:#F37022;font-weight:700;">Authorized Personnel Only.</strong>
           Unauthorized access is<br>prohibited and subject to disciplinary action.
         </div>
         <div class="ls-badges">

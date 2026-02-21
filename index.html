@@ -1441,7 +1441,7 @@ td.burner-pending.C{ box-shadow:0 0 8px 2px rgba(253,224,71,0.4) !important; }
       <input type="file" id="excelFile" accept=".xlsx,.xls" onchange="importFromExcel(event)">
       <input type="file" id="autoImportInput" accept=".xlsx,.xls" style="display:none" onchange="handleAutoImport(event)">
       <button class="hd-btn hd-btn-secondary" id="folderBtn" onclick="pickFolder()" title="Set auto import/export folder">📁 Set Folder</button>
-      <label for="excelFile" class="hd-btn hd-btn-secondary">🔄 Refresh Data</label>
+      <button class="hd-btn hd-btn-secondary" onclick="smartRefresh()">🔄 Refresh Data</button>
       <button class="hd-btn hd-btn-primary" onclick="exportToExcel()">💾 Save New Data</button>
       <button class="hd-btn hd-btn-danger" onclick="logout()">⏏ Logout</button>
     </div>
@@ -2053,6 +2053,40 @@ function importFromExcel(event){
   const file=event.target.files[0];if(!file)return;
   lastImportedFileName = file.name;
   _doImport(file, ()=>{ event.target.value=""; });
+}
+
+/* ── Smart Refresh: uses folder if set, else falls back to file picker ── */
+async function smartRefresh(){
+  if(scadaFolderHandle){
+    /* Same logic as Save New Data — use the stored folder automatically */
+    try{
+      var perm = await scadaFolderHandle.queryPermission({mode:"readwrite"});
+      if(perm !== "granted"){
+        perm = await scadaFolderHandle.requestPermission({mode:"readwrite"});
+      }
+      if(perm !== "granted"){
+        showToast("⚠ Folder permission denied — please click 📁 Set Folder again.");
+        return;
+      }
+      var found = await findLatestXlsx(scadaFolderHandle);
+      if(!found){
+        showToast("📁 No .xlsx file found in folder \"" + scadaFolderHandle.name + "\"");
+        return;
+      }
+      lastImportedFileName = found.file.name;
+      _doImport(found.file, function(){
+        buildCleaningTable();
+        showToast("🔄 Refreshed: " + found.file.name + " from folder \"" + scadaFolderHandle.name + "\"");
+      });
+    } catch(err){
+      console.warn("smartRefresh folder error:", err);
+      showToast("⚠ Could not read from folder. Falling back to file picker.");
+      document.getElementById("excelFile").click();
+    }
+  } else {
+    /* No folder set — open file picker as before */
+    document.getElementById("excelFile").click();
+  }
 }
 
 function _doImport(file, onDone){
@@ -2883,6 +2917,20 @@ function clearFolderHandle(){
 
 /* ── Global folder handle ── */
 var scadaFolderHandle = null;
+
+/* ── Restore folder handle from IndexedDB on page load ── */
+(async function restoreFolderOnLoad(){
+  try{
+    var handle = await loadFolderHandle();
+    if(handle){
+      scadaFolderHandle = handle;
+      updateFolderUI();
+      console.log("Folder handle restored from storage:", handle.name);
+    }
+  } catch(e){
+    console.warn("Could not restore folder handle:", e);
+  }
+})();
 
 /* ── UI helpers ── */
 function updateFolderUI(){

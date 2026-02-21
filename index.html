@@ -1440,6 +1440,7 @@ td.burner-pending.C{ box-shadow:0 0 8px 2px rgba(253,224,71,0.4) !important; }
       </div>
       <input type="file" id="excelFile" accept=".xlsx,.xls" onchange="importFromExcel(event)">
       <input type="file" id="autoImportInput" accept=".xlsx,.xls" style="display:none" onchange="handleAutoImport(event)">
+      <button class="hd-btn hd-btn-secondary" id="folderBtn" onclick="pickFolder()" title="Set auto import/export folder">📁 Set Folder</button>
       <label for="excelFile" class="hd-btn hd-btn-secondary">🔄 Refresh Data</label>
       <button class="hd-btn hd-btn-primary" onclick="exportToExcel()">💾 Save New Data</button>
       <button class="hd-btn hd-btn-danger" onclick="logout()">⏏ Logout</button>
@@ -1458,6 +1459,15 @@ td.burner-pending.C{ box-shadow:0 0 8px 2px rgba(253,224,71,0.4) !important; }
     </div>
     <span id="clock"></span>
   </div>
+</div>
+
+<!-- Folder status strip -->
+<div id="folderStatusBar" style="display:none;background:#0f2d1a;border-bottom:1px solid rgba(74,222,128,0.25);padding:5px 28px;font-size:11px;color:#4ade80;display:flex;align-items:center;gap:10px;">
+  <span>📁</span>
+  <span id="folderStatusText">No auto-folder set</span>
+  <span style="color:#334155;">|</span>
+  <span style="color:#64748b;">Network path: <b style="color:#a0bcd8;">\\10.138.128.112\pn_dept\SOUTH BLOCK DOCUMENTS\SOUTH BLOCK DOCUMENTATION FOLDER\HGU III\SCADA</b></span>
+  <button onclick="clearFolder()" style="margin-left:auto;background:rgba(220,38,38,0.15);color:#fca5a5;border:1px solid rgba(220,38,38,0.35);border-radius:4px;padding:2px 10px;font-size:10px;cursor:pointer;">✕ Clear</button>
 </div>
 
 <div id="masterAlarm" class="alarm-banner">
@@ -2819,6 +2829,273 @@ function rebuildFreqAlarms(){
     pushAlarm("freq", "warning", "Wall "+a.wall, title, desc, action);
   });
 }
+
+/* ==================================================
+   PREDEFINED FOLDER AUTO-IMPORT / AUTO-EXPORT
+   Network path: \\10.138.128.112\pn_dept\SOUTH BLOCK DOCUMENTS\
+                 SOUTH BLOCK DOCUMENTATION FOLDER\HGU III\SCADA
+================================================== */
+
+/* ── IndexedDB helpers to persist the directory handle ── */
+const DB_NAME    = "ScadaFolderDB";
+const DB_STORE   = "handles";
+const DB_KEY     = "scadaFolderHandle";
+
+function openFolderDB(){ 
+  return new Promise(function(res,rej){
+    var req = indexedDB.open(DB_NAME, 1);
+    req.onupgradeneeded = function(e){ e.target.result.createObjectStore(DB_STORE); };
+    req.onsuccess = function(e){ res(e.target.result); };
+    req.onerror   = function(){ rej("IDB open failed"); };
+  });
+}
+
+function saveFolderHandle(handle){
+  return openFolderDB().then(function(db){
+    return new Promise(function(res,rej){
+      var tx  = db.transaction(DB_STORE,"readwrite");
+      var req = tx.objectStore(DB_STORE).put(handle, DB_KEY);
+      req.onsuccess = res; req.onerror = rej;
+    });
+  });
+}
+
+function loadFolderHandle(){
+  return openFolderDB().then(function(db){
+    return new Promise(function(res,rej){
+      var tx  = db.transaction(DB_STORE,"readonly");
+      var req = tx.objectStore(DB_STORE).get(DB_KEY);
+      req.onsuccess = function(e){ res(e.target.result||null); };
+      req.onerror   = function(){ res(null); };
+    });
+  });
+}
+
+function clearFolderHandle(){
+  return openFolderDB().then(function(db){
+    return new Promise(function(res,rej){
+      var tx  = db.transaction(DB_STORE,"readwrite");
+      var req = tx.objectStore(DB_STORE).delete(DB_KEY);
+      req.onsuccess = res; req.onerror = rej;
+    });
+  });
+}
+
+/* ── Global folder handle ── */
+var scadaFolderHandle = null;
+
+/* ── UI helpers ── */
+function updateFolderUI(){
+  var bar  = document.getElementById("folderStatusBar");
+  var txt  = document.getElementById("folderStatusText");
+  var btn  = document.getElementById("folderBtn");
+  if(scadaFolderHandle){
+    if(bar){ bar.style.display="flex"; }
+    if(txt){ txt.textContent = "Auto folder active: \"" + scadaFolderHandle.name + "\"  —  Import & Export will use this folder automatically"; }
+    if(btn){ btn.textContent="📁 Change Folder"; btn.style.color="#4ade80"; }
+  } else {
+    if(bar){ bar.style.display="none"; }
+    if(txt){ txt.textContent="No auto-folder set"; }
+    if(btn){ btn.textContent="📁 Set Folder"; btn.style.color=""; }
+  }
+}
+
+/* ── Pick folder ── */
+async function pickFolder(){
+  if(!window.showDirectoryPicker){
+    alert("Your browser does not support the File System Access API.\n\n"
+        + "Please use Chrome or Edge (v86+) for automatic folder sync.\n\n"
+        + "Tip: Map the network path as a network drive first:\n"
+        + "  \\\\10.138.128.112\\pn_dept\\SOUTH BLOCK DOCUMENTS\\SOUTH BLOCK DOCUMENTATION FOLDER\\HGU III\\SCADA\n"
+        + "Then browse to it via the folder picker.");
+    return;
+  }
+  try{
+    var handle = await window.showDirectoryPicker({mode:"readwrite", startIn:"documents"});
+    await saveFolderHandle(handle);
+    scadaFolderHandle = handle;
+    updateFolderUI();
+    showToast("✅ Folder set: " + handle.name + " — future saves will auto-write here");
+    /* Try to auto-import the most recent xlsx from the folder immediately */
+    await autoImportFromFolder(true);
+  } catch(err){
+    if(err.name !== "AbortError") console.error("Folder pick error:", err);
+  }
+}
+
+/* ── Clear folder ── */
+async function clearFolder(){
+  await clearFolderHandle();
+  scadaFolderHandle = null;
+  updateFolderUI();
+  showToast("📁 Auto-folder cleared. Manual import/export still works.");
+}
+
+/* ── Find the most recently modified .xlsx in the folder ── */
+async function findLatestXlsx(dirHandle){
+  var best = null, bestMod = 0;
+  for await(var entry of dirHandle.values()){
+    if(entry.kind === "file" && /\.(xlsx|xls)$/i.test(entry.name)){
+      try{
+        var f = await entry.getFile();
+        if(f.lastModified > bestMod){ bestMod = f.lastModified; best = {entry, file:f}; }
+      } catch(e){}
+    }
+  }
+  return best;
+}
+
+/* ── Auto-import from folder (called on login if folder set) ── */
+async function autoImportFromFolder(showMsg){
+  if(!scadaFolderHandle) return false;
+  try{
+    /* Re-request permission if needed */
+    var perm = await scadaFolderHandle.queryPermission({mode:"readwrite"});
+    if(perm !== "granted"){
+      perm = await scadaFolderHandle.requestPermission({mode:"readwrite"});
+    }
+    if(perm !== "granted"){ showToast("⚠ Folder permission denied — please click Set Folder again."); return false; }
+
+    var found = await findLatestXlsx(scadaFolderHandle);
+    if(!found){
+      if(showMsg) showToast("📁 Folder set but no .xlsx file found yet — waiting for data.");
+      return false;
+    }
+    lastImportedFileName = found.file.name;
+    return new Promise(function(res){
+      _doImport(found.file, function(){
+        buildCleaningTable();
+        if(showMsg) showToast("✅ Auto-loaded: " + found.file.name + " from folder \"" + scadaFolderHandle.name + "\"");
+        res(true);
+      });
+    });
+  } catch(err){
+    console.warn("autoImportFromFolder error:", err);
+    return false;
+  }
+}
+
+/* ── Auto-export to folder ── */
+async function autoExportToFolder(wb, filename){
+  if(!scadaFolderHandle) return false;
+  try{
+    var perm = await scadaFolderHandle.queryPermission({mode:"readwrite"});
+    if(perm !== "granted") perm = await scadaFolderHandle.requestPermission({mode:"readwrite"});
+    if(perm !== "granted") return false;
+
+    var fileHandle = await scadaFolderHandle.getFileHandle(filename, {create:true});
+    var writable   = await fileHandle.createWritable();
+    var wbOut      = XLSX.write(wb, {bookType:"xlsx", type:"array"});
+    await writable.write(new Blob([wbOut], {type:"application/octet-stream"}));
+    await writable.close();
+    return true;
+  } catch(err){
+    console.warn("autoExportToFolder error:", err);
+    return false;
+  }
+}
+
+/* ── Override login to also trigger folder auto-import ── */
+var _origLogin = login;
+async function loginWithFolder(){
+  /* Call original login logic */
+  var pw  = document.getElementById("passwordInput").value;
+  var err = document.getElementById("ls-error");
+  if(pw === SCADA_PASSWORD){
+    sessionStorage.setItem("scadaLoggedIn","true");
+    document.getElementById("loginScreen").style.display="none";
+    err.style.display="none";
+    /* If a folder handle is already stored, use it */
+    if(scadaFolderHandle){
+      var ok = await autoImportFromFolder(true);
+      if(!ok){
+        /* Fall back to manual file picker */
+        document.getElementById("autoImportInput").click();
+      } else {
+        init();
+      }
+    } else {
+      /* No folder set — use the manual file picker as before */
+      document.getElementById("autoImportInput").click();
+    }
+  } else {
+    err.style.display="block";
+    document.getElementById("passwordInput").value="";
+    document.getElementById("passwordInput").focus();
+  }
+}
+/* Replace the login function */
+login = loginWithFolder;
+
+/* ── Override exportToExcel to also write to folder ── */
+var _origExport = exportToExcel;
+exportToExcel = async function(){
+  /* Commit pending changes */
+  var hadBurnerPending = Object.keys(burnerPending).length > 0;
+  commitBurnerPending();
+  if(hadBurnerPending){ render(); }
+
+  var hadCleaningPending = Object.keys(cleaningPending).length > 0;
+  commitCleaningPending();
+  if(hadCleaningPending){ buildCleaningTable(); }
+
+  /* Build workbook */
+  var wb = XLSX.utils.book_new();
+
+  /* Sheet 1: Burner Data */
+  var rows = [["Wall","Row","Burner","Value"]];
+  Object.entries(data).forEach(function(entry){
+    var w=entry[0]; var wr=entry[1];
+    wr.forEach(function(r,ri){ r.forEach(function(c,ci){ rows.push([w,"R"+(ri+1),"B"+(ci+1),c]); }); });
+  });
+  var ws1 = XLSX.utils.aoa_to_sheet(rows);
+  ws1["!cols"] = [{wch:12},{wch:8},{wch:10},{wch:10}];
+  XLSX.utils.book_append_sheet(wb, ws1, "Burner Data");
+
+  /* Sheet 2+: Cleaning Log per wall */
+  var log = loadCleaningLog();
+  WALL_NAMES.forEach(function(w){
+    var clRows = [["Row \\ Burner"].concat(Array.from({length:BURNERS},function(_,i){ return "B"+(i+1); }))];
+    for(var r=1;r<=ROWS;r++){
+      var row = ["R"+r];
+      for(var b=1;b<=BURNERS;b++){
+        var key="R"+r+"B"+b;
+        row.push((log[w]&&log[w][key])?log[w][key]:"—");
+      }
+      clRows.push(row);
+    }
+    var ws2 = XLSX.utils.aoa_to_sheet(clRows);
+    ws2["!cols"] = clRows[0].map(function(_,i){ return {wch:i===0?12:14}; });
+    XLSX.utils.book_append_sheet(wb, ws2, "Cleaning Wall "+w);
+  });
+
+  var fname = lastImportedFileName || "Burner_SCADA_Report.xlsx";
+
+  /* Try folder auto-export first */
+  if(scadaFolderHandle){
+    var ok = await autoExportToFolder(wb, fname);
+    if(ok){
+      showToast("✅ Saved to folder \"" + scadaFolderHandle.name + "\": " + fname);
+      return;
+    }
+  }
+
+  /* Fallback: showSaveFilePicker or XLSX.writeFile */
+  var wbOut = XLSX.write(wb, {bookType:"xlsx", type:"array"});
+  var blob  = new Blob([wbOut], {type:"application/octet-stream"});
+  if(window.showSaveFilePicker){
+    window.showSaveFilePicker({
+      suggestedName: fname,
+      types:[{description:"Excel Workbook", accept:{"application/vnd.openxmlformats-officedocument.spreadsheetml.sheet":[".xlsx"]}}]
+    }).then(function(fh){ return fh.createWritable(); })
+      .then(function(w){ return w.write(blob).then(function(){ return w.close(); }); })
+      .then(function(){ showToast("✅ Saved: " + fname); })
+      .catch(function(err){ if(err.name!=="AbortError") XLSX.writeFile(wb, fname); });
+  } else {
+    XLSX.writeFile(wb, fname);
+    showToast("✅ Exported: " + fname);
+  }
+};
 
 </script>
 </body>

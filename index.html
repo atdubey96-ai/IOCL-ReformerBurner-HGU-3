@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html>
 <head>
@@ -1346,6 +1347,53 @@ td.burner-pending.C{ box-shadow:0 0 8px 2px rgba(253,224,71,0.4) !important; }
 }
 #td-saved-table .td-del-btn:hover{background:rgba(239,68,68,0.25);}
 
+
+/* ── Reformer Heat Map — Burner Flame Animation ── */
+@keyframes hmFlicker{
+  0%,100%{opacity:1;transform:scaleY(1) scaleX(1);}
+  20%{opacity:0.88;transform:scaleY(0.95) scaleX(1.05);}
+  50%{opacity:0.92;transform:scaleY(1.06) scaleX(0.97);}
+  75%{opacity:0.85;transform:scaleY(0.93) scaleX(1.04);}
+}
+@keyframes hmFlickerGlow{
+  0%,100%{filter:drop-shadow(0 0 4px var(--fc,#fb923c));}
+  35%{filter:drop-shadow(0 0 8px var(--fc,#fb923c)) brightness(1.2);}
+  65%{filter:drop-shadow(0 0 3px var(--fc,#fb923c)) brightness(0.95);}
+}
+.hm-burner-active{animation:hmFlickerGlow 1.4s ease-in-out infinite;}
+.hm-burner-active path{animation:hmFlicker 1.2s ease-in-out infinite;transform-origin:50% 90%;}
+.hm-burner-active ellipse{animation:hmFlicker 0.9s ease-in-out infinite 0.1s;transform-origin:50% 50%;}
+
+/* ====================================================
+   REFORMER HEAT MAP STYLES
+==================================================== */
+.hm-wall-card{background:#0a1628;border:1px solid #1e3a5e;border-radius:12px;overflow:hidden;margin-bottom:18px;}
+.hm-wall-header{background:linear-gradient(90deg,#0f2744,#1e3a6a);padding:8px 16px;display:flex;align-items:center;gap:10px;border-bottom:2px solid #F37022;}
+.hm-wall-title{font-size:15px;font-weight:700;color:#F37022;letter-spacing:2px;}
+.hm-wall-meta{font-size:10px;color:#7ec8f0;margin-left:auto;font-weight:600;}
+.hm-body{padding:10px 14px;display:flex;flex-direction:column;gap:1px;}
+.hm-row-wrap{display:flex;align-items:center;gap:6px;padding:1px 0;}
+.hm-row-label{font-size:9px;color:#94a3b8;font-weight:700;min-width:38px;text-align:right;letter-spacing:0.5px;}
+.hm-burners-line{flex:1;display:flex;gap:2px;justify-content:center;align-items:flex-end;}
+.hm-burner{width:22px;height:32px;display:flex;align-items:flex-end;justify-content:center;cursor:default;position:relative;flex-shrink:0;transition:transform 0.15s;}
+.hm-burner:hover{transform:scale(1.3);}
+.hm-peep-wrap{display:flex;align-items:center;gap:8px;padding:5px 0;margin:3px 0;}
+.hm-peep-label{font-size:8px;color:#94a3b8;font-weight:700;min-width:38px;text-align:right;line-height:1.3;}
+.hm-peep-cells{flex:1;display:flex;gap:2px;align-items:center;}
+.hm-peep-cell{width:22px;flex:1;height:14px;border-radius:3px;border:1px solid rgba(255,255,255,0.12);cursor:default;transition:opacity 0.15s;min-width:0;}
+.hm-peep-cell:hover{opacity:0.75;}
+.hm-peep-range{font-size:8px;color:#94a3b8;white-space:nowrap;min-width:60px;font-weight:600;}
+.hm-side-label{font-size:11px;color:#F37022;font-weight:700;letter-spacing:2px;margin-bottom:12px;padding:6px 12px;background:rgba(243,112,34,0.08);border-left:3px solid #F37022;border-radius:0 6px 6px 0;display:inline-block;}
+body.light-theme .hm-wall-card{background:#e8f0fa;border-color:#b8cde8;}
+body.light-theme .hm-row-label{color:#1e3a5a !important;}
+body.light-theme .hm-peep-label{color:#1e3a5a !important;}
+body.light-theme .hm-peep-range{color:#2a4a6a !important;}
+body.light-theme .hm-wall-meta{color:#2a4a6a !important;}
+body.light-theme .hm-wall-header{background:linear-gradient(90deg,#dce6f4,#c8d8ee);}
+body.light-theme .hm-row-label{color:#4a6a8a;}
+body.light-theme .hm-peep-label{color:#4a6a8a;}
+body.light-theme .hm-peep-range{color:#4a6a8a;}
+
 </style>
 <script>
 function showForgotModal(){
@@ -1375,7 +1423,258 @@ async function login(){
     }
   }
 }
-</script>
+/* ==================================================
+   REFORMER HEAT MAP
+================================================== */
+function getLatestTempEntry(){
+  try{
+    var saved = localStorage.getItem("tempDataEntries");
+    if(saved){
+      var arr = JSON.parse(saved);
+      if(arr && arr.length) return arr[0];
+    }
+  }catch(e){}
+  return null;
+}
+
+function getTempEntryByShift(shift){
+  /* Returns latest entry matching the selected shift, or latest if "All" */
+  try{
+    var saved = localStorage.getItem("tempDataEntries");
+    if(saved){
+      var arr = JSON.parse(saved);
+      if(arr && arr.length){
+        if(!shift || shift === "All") return arr[0];
+        for(var i=0;i<arr.length;i++){
+          if(arr[i].shift === shift) return arr[i];
+        }
+        return arr[0]; // fallback to latest if shift not found
+      }
+    }
+  }catch(e){}
+  return null;
+}
+
+function getAllTempEntries(){
+  try{
+    var saved = localStorage.getItem("tempDataEntries");
+    if(saved) return JSON.parse(saved) || [];
+  }catch(e){}
+  return [];
+}
+
+function tempToColor(val, minT, maxT){
+  /* Blue (cold) -> Green -> Yellow -> Red (hot) */
+  if(val === null || isNaN(val)) return "#334155";
+  var ratio = maxT === minT ? 0.5 : Math.max(0, Math.min(1, (val - minT) / (maxT - minT)));
+  var r, g, b;
+  if(ratio < 0.33){
+    var t = ratio / 0.33;
+    r = Math.round(30 + t*(-30+34)); g = Math.round(64 + t*(197-64)); b = Math.round(175 + t*(83-175));
+  } else if(ratio < 0.66){
+    var t = (ratio - 0.33) / 0.33;
+    r = Math.round(34 + t*(234-34)); g = Math.round(197 + t*(179-197)); b = Math.round(83 + t*(8-83));
+  } else {
+    var t = (ratio - 0.66) / 0.34;
+    r = Math.round(234 + t*(239-234)); g = Math.round(179 + t*(68-179)); b = Math.round(8 + t*(68-8));
+  }
+  return "rgb("+r+","+g+","+b+")";
+}
+
+function burnerStateColor(state){
+  switch((state||"C").toUpperCase()){
+    case "O": return {bg:"#fb923c", glow:"rgba(251,146,60,0.85)"};
+    case "N": return {bg:"#fde047", glow:"rgba(253,224,71,0.85)"};
+    case "B": return {bg:"#14b8a6", glow:"rgba(20,184,166,0.85)"};
+    default:  return {bg:"#1e293b", glow:"rgba(100,116,139,0.3)"};
+  }
+}
+
+function burnerFlameSVG(state){ return ""; }
+
+/* Burner Icon SVG — proper industrial burner icon with flame */
+function burnerIconHTML(state, tip){
+  var s = (state||"C").toUpperCase();
+  if(s === "C"){
+    return '<div style="display:flex;flex-direction:column;align-items:center;gap:0;cursor:default;width:22px;" title="'+tip+'">'
+      + '<svg width="20" height="30" viewBox="0 0 20 30" xmlns="http://www.w3.org/2000/svg">'
+      + '<rect x="7" y="16" width="6" height="10" rx="2" fill="#2d3f55"/>'
+      + '<rect x="5" y="25" width="10" height="3" rx="1.5" fill="#1e293b"/>'
+      + '<rect x="3" y="13" width="14" height="4" rx="2" fill="#3a5068"/>'
+      + '<rect x="6" y="12" width="8" height="2" rx="1" fill="#2d3f55"/>'
+      + '</svg>'
+      + '</div>';
+  }
+  var colors = {
+    "O": {flame:"#fb923c", flame2:"#fde68a", stem:"#fb923c"},
+    "N": {flame:"#fde047", flame2:"#fef9c3", stem:"#fde047"},
+    "B": {flame:"#14b8a6", flame2:"#a7f3d0", stem:"#14b8a6"}
+  };
+  var c = colors[s] || colors["N"];
+  /* Unique gradient ID per burner to avoid SVG gradient conflicts */
+  var uid = (Math.random()*1e6|0).toString(36);
+  var delays = ["0s","0.15s","0.3s","0.05s","0.2s"];
+  var dly = delays[(Math.random()*5)|0];
+  return '<div class="hm-burner-svg-wrap" style="display:flex;flex-direction:column;align-items:center;gap:0;cursor:default;width:22px;animation:hmFlickerGlow 1.4s ease-in-out infinite '+dly+';filter:drop-shadow(0 0 5px '+c.flame+'aa);" title="'+tip+'">'
+    + '<svg width="20" height="30" viewBox="0 0 20 30" xmlns="http://www.w3.org/2000/svg">'
+    + '<defs>'
+    + '<radialGradient id="hfg'+uid+'" cx="50%" cy="85%" r="65%">'
+    + '<stop offset="0%" stop-color="'+c.flame2+'"/>'
+    + '<stop offset="60%" stop-color="'+c.flame+'" stop-opacity="0.95"/>'
+    + '<stop offset="100%" stop-color="'+c.flame+'" stop-opacity="0.5"/>'
+    + '</radialGradient>'
+    + '</defs>'
+    + '<path d="M10 1 C7 5 4 9 4.5 14 C5 17.5 10 19 10 19 C10 19 15 17.5 15.5 14 C16 9 13 5 10 1Z" fill="url(#hfg'+uid+')" style="animation:hmFlicker '+( 1.1 + Math.random()*0.4).toFixed(1)+'s ease-in-out infinite '+dly+';transform-origin:10px 19px;"/>'
+    + '<ellipse cx="10" cy="13" rx="3.5" ry="4.5" fill="'+c.flame2+'" opacity="0.85" style="animation:hmFlicker 0.8s ease-in-out infinite 0.08s;transform-origin:10px 13px;"/>'
+    + '<rect x="8.5" y="18" width="3" height="7" rx="1.5" fill="'+c.stem+'" opacity="0.65"/>'
+    + '<rect x="4" y="24" width="12" height="3" rx="1.5" fill="#1a2a3a"/>'
+    + '<rect x="6" y="23" width="8" height="1.5" rx="0.75" fill="'+c.stem+'" opacity="0.4"/>'
+    + '</svg>'
+    + '</div>';
+}
+
+function buildWallHTML(wallName, peepBotVals, peepTopVals){
+  var rows = (data && data[wallName]) ? data[wallName] : null;
+
+  function calcRange(vals){
+    var nums = vals.filter(function(v){ return v !== "" && v !== null && !isNaN(Number(v)); }).map(Number);
+    if(!nums.length) return {min:null, max:null, hasData:false};
+    return {min:Math.min.apply(null,nums), max:Math.max.apply(null,nums), hasData:true};
+  }
+  var botRange = calcRange(peepBotVals);
+  var topRange = calcRange(peepTopVals);
+
+  var html = '<div class="hm-wall-card">';
+  html += '<div class="hm-wall-header"><span class="hm-wall-title">WALL ' + wallName + '</span><span class="hm-wall-meta">6 rows × 15 burners</span></div>';
+  html += '<div class="hm-body">';
+
+  for(var ri = 5; ri >= 0; ri--){
+    var displayRowNum = ri + 1;
+    var rowData = rows ? rows[ri] : null;
+
+    html += '<div class="hm-row-wrap"><div class="hm-row-label">ROW ' + displayRowNum + '</div><div class="hm-burners-line">';
+    for(var ci = 0; ci < 15; ci++){
+      var state = rowData ? (rowData[ci] || "C") : "C";
+      var tip = "Wall " + wallName + " R" + displayRowNum + " B" + (ci+1) + " [" + state + "]";
+      html += burnerIconHTML(state, tip);
+    }
+    html += '</div></div>';
+
+    if(ri === 1) html += buildPeepLine(peepBotVals, botRange, "PH Bot<br>R1–R2");
+    if(ri === 3) html += buildPeepLine(peepTopVals, topRange, "PH Top<br>R3–R4");
+  }
+  html += '</div></div>';
+  return html;
+}
+
+function buildPeepLine(vals, range, label){
+  var html = '<div class="hm-peep-wrap"><div class="hm-peep-label">' + label + '</div><div class="hm-peep-cells">';
+  for(var ph = 0; ph < 15; ph++){
+    var val = vals[ph];
+    var numVal = (val !== "" && val !== null && val !== undefined && !isNaN(Number(val))) ? Number(val) : null;
+    var col = (numVal !== null && range.hasData) ? tempToColor(numVal, range.min, range.max) : "#1e293b";
+    var tipTxt = numVal !== null ? (numVal + "°C") : "No data";
+    var glow = (numVal !== null) ? 'box-shadow:0 0 5px 1px ' + col + '88;' : '';
+    html += '<div class="hm-peep-cell" title="PH' + (ph+1) + ': ' + tipTxt + '" style="background:' + col + ';' + glow + '"></div>';
+  }
+  html += '</div>';
+  if(range.hasData){
+    html += '<div class="hm-peep-range">' + range.min + '–' + range.max + '°C</div>';
+  } else {
+    html += '<div class="hm-peep-range" style="color:#64748b;">No data</div>';
+  }
+  html += '</div>';
+  return html;
+}
+
+function renderHeatMap(){
+  /* Always reload burner data from storage to pick up latest changes */
+  loadData();
+  if(!data || !Object.keys(data).length){ data = buildDefaultData(); }
+
+  var shiftSel = document.getElementById("hm-shift-select");
+  var selectedShift = shiftSel ? shiftSel.value : "All";
+  var entry = getTempEntryByShift(selectedShift);
+
+  function getPH(e, key){
+    if(!e || !e.peepHoles || !e.peepHoles[key]) return Array(15).fill("");
+    return e.peepHoles[key];
+  }
+  var abBot = getPH(entry, "ab-bot");
+  var abTop = getPH(entry, "ab-top");
+  var cdBot = getPH(entry, "cd-bot");
+  var cdTop = getPH(entry, "cd-top");
+
+  /* ── Prominent shift/data status banner ── */
+  var tsBadgeEl = document.getElementById("hm-ts-badge");
+  var shiftBannerEl = document.getElementById("hm-shift-banner");
+
+  var shiftColors  = {Morning:"#34d399", Evening:"#fb923c", Night:"#818cf8"};
+  var shiftIcons   = {Morning:"🌅", Evening:"🌆", Night:"🌙"};
+  var shiftBg      = {Morning:"rgba(52,211,153,0.12)", Evening:"rgba(251,146,60,0.12)", Night:"rgba(129,140,248,0.12)"};
+  var shiftBorder  = {Morning:"rgba(52,211,153,0.35)", Evening:"rgba(251,146,60,0.35)", Night:"rgba(129,140,248,0.35)"};
+
+  if(entry){
+    var sc   = shiftColors[entry.shift]  || "#7ec8f0";
+    var icon = shiftIcons[entry.shift]   || "📋";
+    var bg   = shiftBg[entry.shift]      || "rgba(126,200,240,0.1)";
+    var bdr  = shiftBorder[entry.shift]  || "rgba(126,200,240,0.3)";
+
+    /* small badge in header */
+    if(tsBadgeEl){
+      tsBadgeEl.innerHTML = '<span style="color:#94a3b8;">Data:</span> <b style="color:#e2e8f0;">'+entry.dt+'</b>';
+      tsBadgeEl.style.borderColor = bdr;
+    }
+
+    /* large prominent banner */
+    if(shiftBannerEl){
+      shiftBannerEl.style.display = "flex";
+      shiftBannerEl.style.background = bg;
+      shiftBannerEl.style.borderColor = bdr;
+      shiftBannerEl.innerHTML =
+        '<span style="font-size:18px;">'+icon+'</span>'
+        +'<div style="display:flex;flex-direction:column;gap:1px;">'
+        +'  <span style="font-size:11px;color:#94a3b8;letter-spacing:1px;text-transform:uppercase;">Currently Displaying</span>'
+        +'  <span style="font-size:16px;font-weight:800;color:'+sc+';letter-spacing:1.5px;">'+entry.shift.toUpperCase()+' SHIFT</span>'
+        +'</div>'
+        +'<div style="width:1px;height:36px;background:'+bdr+';margin:0 6px;"></div>'
+        +'<div style="display:flex;flex-direction:column;gap:1px;">'
+        +'  <span style="font-size:10px;color:#64748b;letter-spacing:0.5px;">Recorded</span>'
+        +'  <span style="font-size:12px;font-weight:700;color:#e2e8f0;">'+entry.dt+'</span>'
+        +'</div>';
+    }
+  } else {
+    if(tsBadgeEl){
+      tsBadgeEl.innerHTML = '<span style="color:#f87171;">No temp data saved</span>';
+      tsBadgeEl.style.borderColor = "rgba(248,113,113,0.35)";
+    }
+    if(shiftBannerEl){
+      shiftBannerEl.style.display = "flex";
+      shiftBannerEl.style.background = "rgba(248,113,113,0.08)";
+      shiftBannerEl.style.borderColor = "rgba(248,113,113,0.25)";
+      shiftBannerEl.innerHTML =
+        '<span style="font-size:18px;">⚠️</span>'
+        +'<div style="display:flex;flex-direction:column;gap:2px;">'
+        +'  <span style="font-size:13px;font-weight:700;color:#f87171;">'
+        +    (selectedShift === "All" ? "No temp data saved yet" : 'No '+selectedShift+' shift data found')
+        +'  </span>'
+        +'  <span style="font-size:11px;color:#64748b;">Go to Temp. Data tab and save an entry first</span>'
+        +'</div>';
+    }
+  }
+
+  /* ── Render wall cards ── */
+  var abSideDiv = document.getElementById("hm-side-ab");
+  if(abSideDiv){
+    abSideDiv.innerHTML = buildWallHTML("A", abBot, abTop)
+      + buildWallHTML("B", abBot, abTop);
+  }
+  var cdSideDiv = document.getElementById("hm-side-cd");
+  if(cdSideDiv){
+    cdSideDiv.innerHTML = buildWallHTML("C", cdBot, cdTop)
+      + buildWallHTML("D", cdBot, cdTop);
+  }
+}</script>
 </head>
 <body>
 
@@ -1528,7 +1827,7 @@ async function login(){
 
       <div class="ls-helpdesk">
         <span>🛟 IT Helpdesk</span>
-        <span><b>8476056756</b>&nbsp;|&nbsp;<b><a href="mailto:dubeya1@indianoil.in" style="color:#fff;font-weight:700;text-decoration:none;">dubeya1@indianoil.in</a></b></span>
+        <span><b>8476056756</b>&nbsp;|&nbsp;<b><a href="/cdn-cgi/l/email-protection#52362730372b3363123b3c363b333c3d3b3e7c3b3c" style="color:#fff;font-weight:700;text-decoration:none;"><span class="__cf_email__" data-cfemail="e7839285829e86d6a78e89838e8689888e8bc98e89">[email&#160;protected]</span></a></b></span>
       </div>
     </div>
 
@@ -1556,7 +1855,7 @@ async function login(){
     </div>
     <div class="fm-card">
       <div class="fm-label">✉️ Helpdesk Email</div>
-      <div class="fm-value"><a href="mailto:dubeya1@indianoil.in" style="color:#F37022;text-decoration:none;">dubeya1@indianoil.in</a></div>
+      <div class="fm-value"><a href="/cdn-cgi/l/email-protection#03677661667a6232436a6d676a626d6c6a6f2d6a6d" style="color:#F37022;text-decoration:none;"><span class="__cf_email__" data-cfemail="cbafbea9aeb2aafa8ba2a5afa2aaa5a4a2a7e5a2a5">[email&#160;protected]</span></a></div>
     </div>
     <div class="fm-note">Support available during office hours (Mon–Sat, 8 AM – 6 PM).<br>Please quote your Employee ID: <b style="color:#F37022;">00514267</b></div>
     <button class="fm-btn" onclick="hideForgotModal()">Close</button>
@@ -1655,8 +1954,104 @@ async function login(){
 ==================================================== -->
 <div class="tab-panels">
 
+
+  <!-- TAB: Reformer Heat Map -->
+  <div id="tab-heatmap" class="tab-panel tab-active">
+    <div style="padding:14px 18px;background:#0b1525;min-height:100%;">
+
+      <!-- Header bar -->
+      <div style="display:flex;align-items:center;gap:12px;margin-bottom:14px;flex-wrap:wrap;">
+        <div style="display:flex;align-items:center;gap:10px;">
+          <svg width="28" height="28" viewBox="0 0 28 28"><rect width="28" height="28" rx="5" fill="#1e3a5e"/><text x="14" y="20" text-anchor="middle" font-size="16">🌡️</text></svg>
+          <div>
+            <div style="font-size:16px;font-weight:700;color:#e2e8f0;letter-spacing:1.5px;line-height:1;">REFORMER HEAT MAP</div>
+            <div style="font-size:10px;color:#7ec8f0;margin-top:2px;font-weight:600;">Live burner state &amp; peep-hole temperature · 4 walls · 6 rows × 15 burners</div>
+          </div>
+        </div>
+        <div style="display:flex;align-items:center;gap:10px;margin-left:auto;flex-wrap:wrap;">
+          <div style="display:flex;align-items:center;gap:8px;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.15);border-radius:7px;padding:6px 12px;">
+            <span style="font-size:11px;font-weight:700;color:#7ec8f0;letter-spacing:0.8px;text-transform:uppercase;">Shift:</span>
+            <select id="hm-shift-select" onchange="renderHeatMap()" style="background:#0f1f38;border:1px solid #334155;border-radius:5px;color:#e2e8f0;font-family:'Rajdhani',sans-serif;font-size:13px;font-weight:700;outline:none;cursor:pointer;padding:3px 8px;">
+              <option value="All" style="background:#0f1f38;">🔁 All Shifts</option>
+              <option value="Morning" style="background:#0f1f38;color:#34d399;">🌅 Morning</option>
+              <option value="Evening" style="background:#0f1f38;color:#fb923c;">🌆 Evening</option>
+              <option value="Night" style="background:#0f1f38;color:#818cf8;">🌙 Night</option>
+            </select>
+          </div>
+          <span id="hm-ts-badge" style="font-size:10px;color:#94a3b8;background:#0f1f38;border:1px solid #1e3a5e;padding:4px 12px;border-radius:4px;"></span>
+          <button onclick="renderHeatMap()" style="background:#F37022;color:#fff;border:none;padding:7px 18px;border-radius:6px;font-size:12px;font-weight:700;cursor:pointer;font-family:'Rajdhani',sans-serif;letter-spacing:0.5px;box-shadow:0 0 12px rgba(243,112,34,0.35);">🔄 Refresh</button>
+        </div>
+      </div>
+
+      <!-- Legend strip -->
+      <div style="display:flex;gap:20px;flex-wrap:wrap;margin-bottom:14px;align-items:center;background:#0f1f38;border:1px solid #1e3a5e;border-radius:8px;padding:8px 14px;">
+        <span style="font-size:10px;color:#f0c060;font-weight:700;letter-spacing:1px;">BURNER STATE</span>
+        <div style="display:flex;align-items:center;gap:5px;">
+          <svg width="18" height="28" viewBox="0 0 20 30" xmlns="http://www.w3.org/2000/svg" style="filter:drop-shadow(0 0 3px #fb923c88);">
+            <defs><radialGradient id="lgO" cx="50%" cy="80%" r="60%"><stop offset="0%" stop-color="#fde68a"/><stop offset="100%" stop-color="#fb923c" stop-opacity="0.7"/></radialGradient></defs>
+            <path d="M10 2 C6 6 4 10 5 14 C6 17 10 18 10 18 C10 18 14 17 15 14 C16 10 14 6 10 2Z" fill="url(#lgO)"/>
+            <ellipse cx="10" cy="13" rx="3" ry="4" fill="#fde68a" opacity="0.9"/>
+            <rect x="8" y="17" width="4" height="8" rx="1.5" fill="#fb923c" opacity="0.7"/>
+            <rect x="4" y="24" width="12" height="3" rx="1.5" fill="#1e293b"/>
+          </svg>
+          <span style="font-size:10px;color:#fb923c;font-weight:700;">OFF GAS (O)</span>
+        </div>
+        <div style="display:flex;align-items:center;gap:5px;">
+          <svg width="18" height="28" viewBox="0 0 20 30" xmlns="http://www.w3.org/2000/svg" style="filter:drop-shadow(0 0 3px #fde04788);">
+            <defs><radialGradient id="lgN" cx="50%" cy="80%" r="60%"><stop offset="0%" stop-color="#fef9c3"/><stop offset="100%" stop-color="#fde047" stop-opacity="0.7"/></radialGradient></defs>
+            <path d="M10 2 C6 6 4 10 5 14 C6 17 10 18 10 18 C10 18 14 17 15 14 C16 10 14 6 10 2Z" fill="url(#lgN)"/>
+            <ellipse cx="10" cy="13" rx="3" ry="4" fill="#fef9c3" opacity="0.9"/>
+            <rect x="8" y="17" width="4" height="8" rx="1.5" fill="#fde047" opacity="0.7"/>
+            <rect x="4" y="24" width="12" height="3" rx="1.5" fill="#1e293b"/>
+          </svg>
+          <span style="font-size:10px;color:#fde047;font-weight:700;">NG ONLY (N)</span>
+        </div>
+        <div style="display:flex;align-items:center;gap:5px;">
+          <svg width="18" height="28" viewBox="0 0 20 30" xmlns="http://www.w3.org/2000/svg" style="filter:drop-shadow(0 0 3px #14b8a688);">
+            <defs><radialGradient id="lgB" cx="50%" cy="80%" r="60%"><stop offset="0%" stop-color="#a7f3d0"/><stop offset="100%" stop-color="#14b8a6" stop-opacity="0.7"/></radialGradient></defs>
+            <path d="M10 2 C6 6 4 10 5 14 C6 17 10 18 10 18 C10 18 14 17 15 14 C16 10 14 6 10 2Z" fill="url(#lgB)"/>
+            <ellipse cx="10" cy="13" rx="3" ry="4" fill="#a7f3d0" opacity="0.9"/>
+            <rect x="8" y="17" width="4" height="8" rx="1.5" fill="#14b8a6" opacity="0.7"/>
+            <rect x="4" y="24" width="12" height="3" rx="1.5" fill="#1e293b"/>
+          </svg>
+          <span style="font-size:10px;color:#14b8a6;font-weight:700;">BOTH (B)</span>
+        </div>
+        <div style="display:flex;align-items:center;gap:5px;">
+          <svg width="18" height="28" viewBox="0 0 20 30" xmlns="http://www.w3.org/2000/svg">
+            <rect x="7" y="16" width="6" height="10" rx="2" fill="#2d3f55"/>
+            <rect x="5" y="25" width="10" height="3" rx="1.5" fill="#1e293b"/>
+            <rect x="3" y="13" width="14" height="4" rx="2" fill="#3a5068"/>
+            <rect x="6" y="12" width="8" height="2" rx="1" fill="#2d3f55"/>
+          </svg>
+          <span style="font-size:10px;color:#64748b;font-weight:700;">CAPPED (C)</span>
+        </div>
+        <span style="font-size:10px;color:#f0c060;font-weight:700;letter-spacing:1px;margin-left:12px;">PEEP HOLES</span>
+        <div style="display:flex;align-items:center;gap:5px;">
+          <div style="width:50px;height:10px;background:linear-gradient(to right,#1e40af,#3b82f6,#22c55e,#eab308,#ef4444);border-radius:3px;border:1px solid #334155;"></div>
+          <span style="font-size:10px;color:#94a3b8;">Cool → Hot gradient</span>
+        </div>
+      </div>
+
+      <!-- Shift / data status banner -->
+      <div id="hm-shift-banner" style="display:none;align-items:center;gap:14px;margin-bottom:14px;padding:12px 18px;border:1px solid transparent;border-radius:9px;flex-wrap:wrap;transition:background 0.3s,border-color 0.3s;"></div>
+
+      <!-- 4-wall grid: AB left, CD right -->
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
+        <div>
+          <div style="font-size:10px;color:#F37022;font-weight:700;letter-spacing:3px;margin-bottom:8px;text-align:center;border-bottom:1px solid #1e3a5e;padding-bottom:6px;">◀ AB SIDE</div>
+          <div style="display:flex;flex-direction:column;gap:10px;" id="hm-side-ab"></div>
+        </div>
+        <div>
+          <div style="font-size:10px;color:#F37022;font-weight:700;letter-spacing:3px;margin-bottom:8px;text-align:center;border-bottom:1px solid #1e3a5e;padding-bottom:6px;">CD SIDE ▶</div>
+          <div style="display:flex;flex-direction:column;gap:10px;" id="hm-side-cd"></div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
   <!-- TAB 1: Burner Data & Analysis -->
-  <div id="tab-burner" class="tab-panel tab-active">
+  <div id="tab-burner" class="tab-panel">
     <div class="legend">
       <span class="legend-item li-B">B — Both (NG + FO)</span>
       <span class="legend-item li-N">N — NG Only</span>
@@ -1741,6 +2136,54 @@ async function login(){
           <button class="cleaning-clear-btn" onclick="clearCleaningLog()">🗑 Clear All</button>
         </div>
       </div>
+
+      <!-- ══════════════════════════════════════════════════
+           BURNER TIP DAMAGE & REPLACEMENT TABLE
+      ══════════════════════════════════════════════════ -->
+      <div style="margin-top:24px;background:#0a1628;border:1px solid #1e3a5e;border-radius:12px;overflow:hidden;">
+
+        <!-- Header -->
+        <div style="background:linear-gradient(90deg,#0f2744,#1a3560);padding:12px 18px;display:flex;align-items:center;justify-content:space-between;border-bottom:2px solid #F37022;flex-wrap:wrap;gap:10px;">
+          <div>
+            <div style="font-size:15px;font-weight:700;color:#F37022;letter-spacing:1.5px;">🔧 Burner Tip — Damage &amp; Replacement Log</div>
+            <div style="font-size:11px;color:#7ec8f0;margin-top:3px;">Track tip damage status and replacement history for each burner</div>
+          </div>
+          <div style="display:flex;gap:10px;align-items:center;">
+            <span id="tipUnsavedBadge" style="display:none;font-size:11px;font-weight:700;color:#fbbf24;background:rgba(251,191,36,0.1);border:1px solid rgba(251,191,36,0.3);padding:4px 12px;border-radius:4px;">⚠ Unsaved Changes</span>
+            <button onclick="addTipRow()" style="background:rgba(74,222,128,0.12);border:1px solid rgba(74,222,128,0.35);color:#4ade80;padding:7px 16px;border-radius:6px;font-size:12px;font-weight:700;font-family:Rajdhani,sans-serif;cursor:pointer;letter-spacing:0.5px;">＋ Add Row</button>
+          </div>
+        </div>
+
+        <!-- Table -->
+        <div style="overflow-x:auto;padding:0 0 4px 0;">
+          <table id="tipDamageTable" style="width:100%;border-collapse:collapse;font-size:12px;min-width:900px;">
+            <thead>
+              <tr style="background:rgba(255,255,255,0.06);">
+                <th style="padding:9px 12px;text-align:center;color:#7ec8f0;font-weight:700;letter-spacing:0.5px;border-bottom:1px solid #1e3a5e;white-space:nowrap;">#</th>
+                <th style="padding:9px 12px;text-align:left;color:#7ec8f0;font-weight:700;letter-spacing:0.5px;border-bottom:1px solid #1e3a5e;white-space:nowrap;">Wall</th>
+                <th style="padding:9px 12px;text-align:left;color:#7ec8f0;font-weight:700;letter-spacing:0.5px;border-bottom:1px solid #1e3a5e;white-space:nowrap;">Row</th>
+                <th style="padding:9px 12px;text-align:left;color:#7ec8f0;font-weight:700;letter-spacing:0.5px;border-bottom:1px solid #1e3a5e;white-space:nowrap;">Burner No.</th>
+                <th style="padding:9px 12px;text-align:left;color:#7ec8f0;font-weight:700;letter-spacing:0.5px;border-bottom:1px solid #1e3a5e;white-space:nowrap;">Tip Damage Status</th>
+                <th style="padding:9px 12px;text-align:left;color:#7ec8f0;font-weight:700;letter-spacing:0.5px;border-bottom:1px solid #1e3a5e;white-space:nowrap;">Damage Date</th>
+                <th style="padding:9px 12px;text-align:left;color:#7ec8f0;font-weight:700;letter-spacing:0.5px;border-bottom:1px solid #1e3a5e;white-space:nowrap;">Replaced?</th>
+                <th style="padding:9px 12px;text-align:left;color:#7ec8f0;font-weight:700;letter-spacing:0.5px;border-bottom:1px solid #1e3a5e;white-space:nowrap;">Replacement Date</th>
+                <th style="padding:9px 12px;text-align:left;color:#7ec8f0;font-weight:700;letter-spacing:0.5px;border-bottom:1px solid #1e3a5e;white-space:nowrap;">Remarks</th>
+                <th style="padding:9px 12px;text-align:center;color:#7ec8f0;font-weight:700;letter-spacing:0.5px;border-bottom:1px solid #1e3a5e;white-space:nowrap;">Action</th>
+              </tr>
+            </thead>
+            <tbody id="tipDamageBody">
+              <!-- rows built by JS -->
+            </tbody>
+          </table>
+        </div>
+
+        <!-- Footer save strip -->
+        <div style="padding:12px 18px;background:rgba(255,255,255,0.02);border-top:1px solid #1e3a5e;display:flex;justify-content:flex-end;gap:10px;">
+          <button onclick="saveTipData()" style="background:linear-gradient(90deg,#d95008,#F37022);border:none;color:#fff;padding:8px 22px;border-radius:7px;font-size:13px;font-weight:700;font-family:Rajdhani,sans-serif;cursor:pointer;letter-spacing:0.5px;box-shadow:0 0 12px rgba(243,112,34,0.3);">💾 Save Tip Data</button>
+        </div>
+
+      </div><!-- /tip slab -->
+
     </div>
   </div>
 
@@ -1938,14 +2381,20 @@ async function login(){
 
       <!-- ── Saved Entries Table ── -->
       <div style="background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.08);border-radius:10px;padding:20px 24px;">
-        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;flex-wrap:wrap;gap:10px;">
           <div style="font-size:12px;font-weight:700;color:#7ec8f0;letter-spacing:1px;text-transform:uppercase;">
             📋 Saved Entries
           </div>
-          <button onclick="exportToExcel()"
-            style="background:rgba(74,222,128,0.1);border:1px solid rgba(74,222,128,0.3);color:#4ade80;padding:7px 16px;border-radius:6px;font-size:12px;font-weight:700;font-family:'Rajdhani',sans-serif;cursor:pointer;">
-            💾 Save to Burner Data File
-          </button>
+          <div style="display:flex;gap:10px;flex-wrap:wrap;">
+            <button onclick="openAllPHModal()"
+              style="background:rgba(129,140,248,0.15);border:1px solid rgba(129,140,248,0.4);color:#818cf8;padding:7px 16px;border-radius:6px;font-size:12px;font-weight:700;font-family:'Rajdhani',sans-serif;cursor:pointer;letter-spacing:0.5px;">
+              👁️ View All Peep Hole TST Data
+            </button>
+            <button onclick="exportToExcel()"
+              style="background:rgba(74,222,128,0.1);border:1px solid rgba(74,222,128,0.3);color:#4ade80;padding:7px 16px;border-radius:6px;font-size:12px;font-weight:700;font-family:'Rajdhani',sans-serif;cursor:pointer;">
+              💾 Save to Burner Data File
+            </button>
+          </div>
         </div>
         <div style="overflow-x:auto;">
           <table id="td-saved-table" style="width:100%;border-collapse:collapse;font-size:12px;min-width:900px;">
@@ -2012,7 +2461,11 @@ async function login(){
      BOTTOM TAB BAR
 ==================================================== -->
 <div class="bottom-tab-bar">
-  <button class="btab btab-active" id="btab-burner" onclick="switchTab('burner')">
+  <button class="btab btab-active" id="btab-heatmap" class="btab btab-active" onclick="switchTab('heatmap')">
+    <span class="btab-icon">🌡️</span>
+    <span class="btab-label">Reformer Heat Map</span>
+  </button>
+  <button class="btab" id="btab-burner" onclick="switchTab('burner')">
     <span class="btab-icon">🔥</span>
     <span class="btab-label">Burner Data &amp; Analysis</span>
   </button>
@@ -2031,7 +2484,7 @@ async function login(){
   </button>
 </div>
 
-<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
+<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
 var alarmLog = [];
 
 
@@ -2423,6 +2876,17 @@ async function exportToExcel(){
     XLSX.utils.book_append_sheet(wb, ws2, "Cleaning Wall "+w);
   });
 
+  /* Sheet: Tip Damage Log */
+  var tipDataSaved = loadTipData();
+  var tipHeaders = ["#","Wall","Row","Burner","Tip Damage","Damage Date","Replaced","Replacement Date","Remarks"];
+  var tipSheetRows = [tipHeaders];
+  tipDataSaved.forEach(function(r, i){
+    tipSheetRows.push([i+1, r.wall||"", "R"+(r.row||""), "B"+(r.burner||""), r.damaged||"No", r.damageDate||"", r.replaced||"No", r.replaceDate||"", r.remarks||""]);
+  });
+  var wsTip = XLSX.utils.aoa_to_sheet(tipSheetRows);
+  wsTip["!cols"] = [{wch:4},{wch:6},{wch:6},{wch:8},{wch:14},{wch:14},{wch:12},{wch:16},{wch:24}];
+  XLSX.utils.book_append_sheet(wb, wsTip, "Tip Damage Log");
+
   /* Sheet: Temp Data */
   var tdHeaders = [
     "Date/Time","Shift",
@@ -2637,6 +3101,163 @@ function _doImport(file, onDone, silent){
 ================================================== */
 const CLEANING_KEY    = "burnerCleaningLog";
 const CLEANING_HIST   = "burnerCleaningHistory";
+const TIP_DAMAGE_KEY  = "burnerTipDamageLog";
+
+/* ── Tip Damage helpers ── */
+function loadTipData(){
+  try{ var r=localStorage.getItem(TIP_DAMAGE_KEY); return r?JSON.parse(r):[]; }catch(e){ return []; }
+}
+function saveTipDataStore(rows){
+  localStorage.setItem(TIP_DAMAGE_KEY, JSON.stringify(rows));
+}
+
+var tipRows = [];  /* in-memory working copy */
+
+function initTipTable(){
+  tipRows = loadTipData();
+  if(!tipRows.length) tipRows = [newTipRow()];  /* start with one blank row */
+  renderTipTable();
+}
+
+function newTipRow(){
+  return {wall:"A", row:"1", burner:"1", damaged:"No", damageDate:"", replaced:"No", replaceDate:"", remarks:""};
+}
+
+function addTipRow(){
+  tipRows.push(newTipRow());
+  renderTipTable();
+  markTipUnsaved();
+  /* scroll to last row */
+  var tbody = document.getElementById("tipDamageBody");
+  if(tbody){ var last = tbody.lastElementChild; if(last) last.scrollIntoView({behavior:"smooth",block:"nearest"}); }
+}
+
+function deleteTipRow(idx){
+  if(tipRows.length <= 1){ tipRows = [newTipRow()]; }
+  else { tipRows.splice(idx, 1); }
+  renderTipTable();
+  markTipUnsaved();
+}
+
+function markTipUnsaved(){
+  var b = document.getElementById("tipUnsavedBadge");
+  if(b) b.style.display = "inline-block";
+}
+function clearTipUnsaved(){
+  var b = document.getElementById("tipUnsavedBadge");
+  if(b) b.style.display = "none";
+}
+
+function saveTipData(){
+  collectTipFromDOM();
+  saveTipDataStore(tipRows);
+  clearTipUnsaved();
+  showToast("✅ Burner tip data saved successfully!");
+}
+
+function collectTipFromDOM(){
+  /* Pull current values from DOM inputs/selects into tipRows */
+  var tbody = document.getElementById("tipDamageBody");
+  if(!tbody) return;
+  var trs = tbody.querySelectorAll("tr");
+  trs.forEach(function(tr, i){
+    if(!tipRows[i]) return;
+    var inputs = tr.querySelectorAll("input,select,textarea");
+    /* field order matches renderTipTable column order */
+    tipRows[i].wall        = inputs[0] ? inputs[0].value : "";
+    tipRows[i].row         = inputs[1] ? inputs[1].value : "";
+    tipRows[i].burner      = inputs[2] ? inputs[2].value : "";
+    tipRows[i].damaged     = inputs[3] ? inputs[3].value : "No";
+    tipRows[i].damageDate  = inputs[4] ? inputs[4].value : "";
+    tipRows[i].replaced    = inputs[5] ? inputs[5].value : "No";
+    tipRows[i].replaceDate = inputs[6] ? inputs[6].value : "";
+    tipRows[i].remarks     = inputs[7] ? inputs[7].value : "";
+  });
+}
+
+function renderTipTable(){
+  var tbody = document.getElementById("tipDamageBody");
+  if(!tbody) return;
+
+  var selectStyle = "background:#0f1f38;border:1px solid #334155;border-radius:5px;color:#e2e8f0;font-size:12px;font-weight:600;font-family:Rajdhani,sans-serif;padding:4px 7px;outline:none;cursor:pointer;width:100%;";
+  var inputStyle  = "background:#0f1f38;border:1px solid #334155;border-radius:5px;color:#e2e8f0;font-size:12px;font-family:Rajdhani,sans-serif;padding:4px 7px;outline:none;width:100%;";
+  var cellStyle   = "padding:6px 8px;border-bottom:1px solid rgba(255,255,255,0.05);vertical-align:middle;";
+
+  var wallOpts   = ["A","B","C","D"].map(function(w){ return '<option value="'+w+'">'+w+'</option>'; }).join("");
+  var rowOpts    = [1,2,3,4,5,6].map(function(r){ return '<option value="'+r+'">R'+r+'</option>'; }).join("");
+  var burnerOpts = Array.from({length:15},function(_,i){ return '<option value="'+(i+1)+'">B'+(i+1)+'</option>'; }).join("");
+
+  var html = "";
+  tipRows.forEach(function(row, i){
+    var dmgColor  = row.damaged  === "Yes" ? "#f87171" : "#4ade80";
+    var repColor  = row.replaced === "Yes" ? "#4ade80" : (row.damaged === "Yes" ? "#fb923c" : "#64748b");
+
+    /* Damage select options */
+    var dmgOpts = ['<option value="No"'+(row.damaged==="No"?" selected":"")+'>✅ No Damage</option>',
+                   '<option value="Yes"'+(row.damaged==="Yes"?" selected":"")+'>⚠️ Damaged</option>'].join("");
+    /* Replaced select */
+    var repOpts = ['<option value="No"'+(row.replaced==="No"?" selected":"")+'>❌ Not Replaced</option>',
+                   '<option value="Yes"'+(row.replaced==="Yes"?" selected":"")+'>✅ Replaced</option>'].join("");
+
+    /* Set wall/row/burner selected */
+    var wOpts = ["A","B","C","D"].map(function(w){ return '<option value="'+w+'"'+(row.wall===w?" selected":"")+'>'+w+'</option>'; }).join("");
+    var rOpts = [1,2,3,4,5,6].map(function(r){ return '<option value="'+r+'"'+(row.row==r?" selected":"")+'>R'+r+'</option>'; }).join("");
+    var bOpts = Array.from({length:15},function(_,b){ return '<option value="'+(b+1)+'"'+(row.burner==(b+1)?" selected":"")+'>B'+(b+1)+'</option>'; }).join("");
+
+    html += '<tr style="background:'+(i%2===0?'rgba(255,255,255,0.015)':'rgba(0,0,0,0.1)')+';transition:background 0.15s;"'
+          + ' onmouseenter="this.style.background=\'rgba(243,112,34,0.06)\'"'
+          + ' onmouseleave="this.style.background=\''+(i%2===0?'rgba(255,255,255,0.015)':'rgba(0,0,0,0.1)')+'\'">';
+
+    html += '<td style="'+cellStyle+'text-align:center;color:#64748b;font-size:11px;font-weight:700;">'+(i+1)+'</td>';
+
+    /* Wall */
+    html += '<td style="'+cellStyle+'"><select style="'+selectStyle+'" onchange="markTipUnsaved()">'+wOpts+'</select></td>';
+    /* Row */
+    html += '<td style="'+cellStyle+'"><select style="'+selectStyle+'" onchange="markTipUnsaved()">'+rOpts+'</select></td>';
+    /* Burner */
+    html += '<td style="'+cellStyle+'"><select style="'+selectStyle+'" onchange="markTipUnsaved()">'+bOpts+'</select></td>';
+
+    /* Tip Damage */
+    html += '<td style="'+cellStyle+'"><select style="'+selectStyle+'color:'+dmgColor+';border-color:'+dmgColor+'66;" onchange="handleTipDmgChange(this,'+i+')">'+dmgOpts+'</select></td>';
+
+    /* Damage Date */
+    html += '<td style="'+cellStyle+'"><input type="date" style="'+inputStyle+'" value="'+( row.damageDate||"" )+'" onchange="markTipUnsaved()" '+(row.damaged==="Yes"?'':'disabled style="'+inputStyle+'opacity:0.35;cursor:not-allowed;"')+'></td>';
+
+    /* Replaced */
+    html += '<td style="'+cellStyle+'"><select style="'+selectStyle+'color:'+repColor+';border-color:'+repColor+'66;" onchange="handleTipRepChange(this,'+i+')">'+repOpts+'</select></td>';
+
+    /* Replacement Date */
+    html += '<td style="'+cellStyle+'"><input type="date" style="'+inputStyle+'" value="'+(row.replaceDate||"")+'" onchange="markTipUnsaved()" '+(row.replaced==="Yes"?'':'disabled style="'+inputStyle+'opacity:0.35;cursor:not-allowed;"')+'></td>';
+
+    /* Remarks */
+    html += '<td style="'+cellStyle+'"><input type="text" placeholder="Optional remark..." style="'+inputStyle+'" value="'+( row.remarks||"" ).replace(/"/g,"&quot;")+'" onchange="markTipUnsaved()"></td>';
+
+    /* Delete */
+    html += '<td style="'+cellStyle+'text-align:center;">'
+          + '<button onclick="deleteTipRow('+i+')" style="background:rgba(239,68,68,0.15);border:1px solid rgba(239,68,68,0.35);color:#f87171;padding:4px 10px;border-radius:4px;font-size:12px;font-weight:700;font-family:Rajdhani,sans-serif;cursor:pointer;" title="Delete this row">🗑</button>'
+          + '</td>';
+
+    html += '</tr>';
+  });
+
+  if(!html) html = '<tr><td colspan="10" style="text-align:center;color:#475569;padding:20px;">No records. Click ＋ Add Row to begin.</td></tr>';
+  tbody.innerHTML = html;
+}
+
+function handleTipDmgChange(sel, idx){
+  collectTipFromDOM();
+  tipRows[idx].damaged = sel.value;
+  if(sel.value === "No"){ tipRows[idx].damageDate = ""; tipRows[idx].replaced = "No"; tipRows[idx].replaceDate = ""; }
+  renderTipTable();
+  markTipUnsaved();
+}
+function handleTipRepChange(sel, idx){
+  collectTipFromDOM();
+  tipRows[idx].replaced = sel.value;
+  if(sel.value === "No") tipRows[idx].replaceDate = "";
+  renderTipTable();
+  markTipUnsaved();
+}
 const FREQ_ALARM_MAX  = 3; /* alarm if cleaned more than this many times in a month */
 
 /* --- Current date log (single date per burner) --- */
@@ -3122,6 +3743,9 @@ function init(){
   loadData();
   generateAnalysis();
   buildCleaningTable();
+  initTipTable();
+  /* Render heatmap on load since it is the first visible tab */
+  setTimeout(renderHeatMap, 0);
 }
 
 /* auto-init if session already active */
@@ -3164,6 +3788,7 @@ function switchTab(tab){
   document.getElementById('tab-'+tab).classList.add('tab-active');
   document.getElementById('btab-'+tab).classList.add('btab-active');
   if(tab === 'alarms') refreshAlarmPanel();
+  if(tab === 'heatmap') renderHeatMap();
 }
 
 /* ==================================================
@@ -3674,30 +4299,154 @@ function renderTempDataTable(){
     return;
   }
   var display = tempDataEntries.slice(0, 3);
+  var shiftColors = {Morning:"#34d399",Evening:"#fb923c",Night:"#818cf8"};
   var rows = "";
   for(var i = 0; i < display.length; i++){
     var ent = display[i];
-    rows += '<tr>'
-      + '<td>' + ent.dt + '</td>'
-      + '<td style="text-align:center;">' + ent.shift + '</td>'
+    var sc = shiftColors[ent.shift] || "#94a3b8";
+    rows += '<tr style="border-bottom:1px solid rgba(255,255,255,0.05);">'
+      + '<td style="font-size:11px;white-space:nowrap;">' + ent.dt + '</td>'
+      + '<td style="text-align:center;"><span style="color:'+sc+';font-weight:700;font-size:11px;background:rgba(0,0,0,0.25);padding:2px 8px;border-radius:10px;border:1px solid '+sc+'44;">' + ent.shift + '</span></td>'
       + '<td style="text-align:center;">' + (ent.abCot  || "—") + '</td>'
       + '<td style="text-align:center;">' + (ent.cdCot  || "—") + '</td>'
       + '<td style="text-align:center;">' + (ent.flueGas|| "—") + '</td>'
       + '<td style="text-align:center;">' + (ent.excessO2||"—") + '</td>'
       + '<td style="text-align:center;">' + (ent.preRefMax||"—") + '</td>'
       + '<td style="text-align:center;">' + (ent.preRefMin||"—") + '</td>'
-      + '<td style="text-align:center;font-size:12px;">' + phMinMax(ent,"ab-bot") + '</td>'
-      + '<td style="text-align:center;font-size:12px;">' + phMinMax(ent,"cd-bot") + '</td>'
-      + '<td style="text-align:center;font-size:12px;">' + phMinMax(ent,"ab-top") + '</td>'
-      + '<td style="text-align:center;font-size:12px;">' + phMinMax(ent,"cd-top") + '</td>'
-      + '<td><button onclick="deleteTempEntry(' + i + ')" style="background:#c0392b;color:#fff;border:none;padding:4px 10px;border-radius:4px;cursor:pointer;font-size:11px;">🗑 Del</button></td>'
+      + '<td style="text-align:center;font-size:11px;">' + phMinMax(ent,"ab-bot") + '</td>'
+      + '<td style="text-align:center;font-size:11px;">' + phMinMax(ent,"cd-bot") + '</td>'
+      + '<td style="text-align:center;font-size:11px;">' + phMinMax(ent,"ab-top") + '</td>'
+      + '<td style="text-align:center;font-size:11px;">' + phMinMax(ent,"cd-top") + '</td>'
+      + '<td style="text-align:center;"><button onclick="deleteTempEntry(' + i + ')" style="background:rgba(192,57,43,0.2);color:#f87171;border:1px solid rgba(192,57,43,0.4);border-radius:4px;font-size:11px;padding:4px 10px;cursor:pointer;font-family:Rajdhani,sans-serif;" title="Delete entry">🗑 Del</button></td>'
       + '</tr>';
   }
-  if(tempDataEntries.length > 3){
-    rows += '<tr><td colspan="13" style="text-align:center;color:#64748b;padding:8px;font-size:11px;">Showing latest 3 of ' + tempDataEntries.length + ' entries</td></tr>';
-  }
-  tbody.innerHTML = rows;
+  tbody.innerHTML = rows || '<tr><td colspan="13" style="text-align:center;color:#475569;padding:20px;">No entries saved yet.</td></tr>';
 }
+
+
+/* ==================================================
+   ALL PEEP HOLE TST DATA MODAL
+================================================== */
+function openAllPHModal(){
+  document.getElementById("all-ph-modal").style.display = "block";
+  renderAllPHData();
+}
+function closeAllPHModal(){
+  document.getElementById("all-ph-modal").style.display = "none";
+}
+
+function renderAllPHData(){
+  var filterShift = document.getElementById("all-ph-shift-filter").value;
+  var entries = getAllTempEntries();
+  if(filterShift && filterShift !== "All"){
+    entries = entries.filter(function(e){ return e.shift === filterShift; });
+  }
+
+  var body = document.getElementById("all-ph-modal-body");
+  if(!entries.length){
+    body.innerHTML = '<div style="text-align:center;color:#64748b;padding:60px;font-size:14px;">No saved TST data found'+(filterShift!=="All"?' for '+filterShift+' shift':'')+'. Go to the Temp. Data tab and save some entries first.</div>';
+    return;
+  }
+
+  var shiftColors = {Morning:"#34d399", Evening:"#fb923c", Night:"#818cf8"};
+  var phRowKeys   = ["ab-bot","cd-bot","ab-top","cd-top"];
+  var phRowLabels = {"ab-bot":"AB Bot","cd-bot":"CD Bot","ab-top":"AB Top","cd-top":"CD Top"};
+  var phRowColors = {"ab-bot":"#F37022","cd-bot":"#7ec8f0","ab-top":"#fb923c","cd-top":"#60c8ff"};
+
+  var html = '';
+
+  entries.forEach(function(ent, idx){
+    var sc = shiftColors[ent.shift] || "#94a3b8";
+    html += '<div style="margin-bottom:24px;background:#0f1f38;border:1px solid #1e3a5e;border-radius:10px;overflow:hidden;">';
+    // Entry header
+    html += '<div style="background:linear-gradient(90deg,#0f2744,#152d52);padding:10px 16px;display:flex;align-items:center;gap:14px;border-bottom:1px solid #1e3a5e;">';
+    html += '<span style="font-size:12px;font-weight:700;color:#e2e8f0;">'+ent.dt+'</span>';
+    html += '<span style="font-size:11px;font-weight:700;color:'+sc+';background:rgba(0,0,0,0.3);padding:3px 10px;border-radius:20px;border:1px solid '+sc+'55;">'+ent.shift+'</span>';
+    if(ent.abCot) html += '<span style="font-size:11px;color:#94a3b8;">AB COT: <b style="color:#e2e8f0;">'+ent.abCot+'°C</b></span>';
+    if(ent.cdCot) html += '<span style="font-size:11px;color:#94a3b8;">CD COT: <b style="color:#e2e8f0;">'+ent.cdCot+'°C</b></span>';
+    if(ent.flueGas) html += '<span style="font-size:11px;color:#94a3b8;">Flue Gas: <b style="color:#e2e8f0;">'+ent.flueGas+'°C</b></span>';
+    html += '</div>';
+
+    // Peep hole data
+    html += '<div style="padding:14px 16px;">';
+    // Header row
+    html += '<div style="display:grid;grid-template-columns:80px repeat(15,1fr);gap:4px;margin-bottom:6px;">';
+    html += '<div style="font-size:10px;color:#64748b;font-weight:700;text-align:center;">PH No.</div>';
+    for(var ph=1;ph<=15;ph++){
+      html += '<div style="font-size:10px;color:#7ec8f0;font-weight:700;text-align:center;background:rgba(255,255,255,0.05);border-radius:3px;padding:2px 0;">'+ph+'</div>';
+    }
+    html += '</div>';
+
+    phRowKeys.forEach(function(rk){
+      var vals = (ent.peepHoles && ent.peepHoles[rk]) ? ent.peepHoles[rk] : [];
+      var nums = vals.filter(function(v){ return v!=='' && !isNaN(Number(v)); }).map(Number);
+      var minT = nums.length ? Math.min.apply(null,nums) : null;
+      var maxT = nums.length ? Math.max.apply(null,nums) : null;
+      var rowColor = phRowColors[rk];
+
+      html += '<div style="display:grid;grid-template-columns:80px repeat(15,1fr);gap:4px;margin-bottom:4px;align-items:center;">';
+      html += '<div style="font-size:10px;font-weight:700;color:'+rowColor+';text-align:center;background:rgba(0,0,0,0.3);border-radius:4px;padding:4px 2px;border:1px solid '+rowColor+'44;">'+phRowLabels[rk]+'</div>';
+
+      for(var ph=0;ph<15;ph++){
+        var val = vals[ph];
+        var numVal = (val!=='' && val!==null && val!==undefined && !isNaN(Number(val))) ? Number(val) : null;
+        var cellBg = (numVal!==null && minT!==null && maxT!==null) ? tempToColorInline(numVal, minT, maxT) : "#1e293b";
+        var textColor = (numVal!==null) ? "#fff" : "#334155";
+        var dispVal = (numVal!==null) ? numVal+'°' : '—';
+        var glowStyle = (numVal!==null) ? 'box-shadow:0 0 6px 1px '+cellBg+'99;' : '';
+        html += '<div title="PH'+(ph+1)+': '+(numVal!==null?numVal+'°C':'No data')+'" style="text-align:center;font-size:10px;font-weight:700;color:'+textColor+';background:'+cellBg+';border-radius:4px;padding:4px 1px;'+glowStyle+'border:1px solid rgba(255,255,255,0.08);">'+dispVal+'</div>';
+      }
+      html += '</div>';
+    });
+
+    html += '</div></div>';
+  });
+
+  body.innerHTML = html;
+}
+
+function tempToColorInline(val, minT, maxT){
+  if(val===null || isNaN(val)) return "#334155";
+  var ratio = maxT===minT ? 0.5 : Math.max(0,Math.min(1,(val-minT)/(maxT-minT)));
+  var r,g,b;
+  if(ratio<0.33){ var t=ratio/0.33; r=Math.round(30+t*4); g=Math.round(64+t*133); b=Math.round(175+t*(-92)); }
+  else if(ratio<0.66){ var t=(ratio-0.33)/0.33; r=Math.round(34+t*200); g=Math.round(197+t*(-18)); b=Math.round(83+t*(-75)); }
+  else { var t=(ratio-0.66)/0.34; r=Math.round(234+t*5); g=Math.round(179+t*(-111)); b=Math.round(8+t*60); }
+  return "rgb("+r+","+g+","+b+")";
+}
+
+/* Fix renderTempDataTable to show ALL entries, not just 3 */
 </script>
+
+<!-- ====================================================
+     ALL PEEP HOLE TST DATA MODAL
+==================================================== -->
+<div id="all-ph-modal" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.85);z-index:9000;overflow:auto;padding:24px;">
+  <div style="max-width:1400px;margin:0 auto;background:#0a1628;border:1px solid #1e3a5e;border-radius:14px;overflow:hidden;box-shadow:0 8px 40px rgba(0,0,0,0.7);">
+    <!-- Modal Header -->
+    <div style="background:linear-gradient(90deg,#0f2744,#1e3a6a);padding:14px 22px;display:flex;align-items:center;justify-content:space-between;border-bottom:2px solid #F37022;">
+      <div>
+        <div style="font-size:17px;font-weight:700;color:#F37022;letter-spacing:1.5px;">👁️ ALL PEEP HOLE TST DATA</div>
+        <div style="font-size:11px;color:#7ec8f0;margin-top:2px;">All saved temperature readings by shift · AB Bot · CD Bot · AB Top · CD Top</div>
+      </div>
+      <div style="display:flex;align-items:center;gap:12px;">
+        <div style="display:flex;align-items:center;gap:8px;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.15);border-radius:7px;padding:5px 12px;">
+          <span style="font-size:11px;font-weight:700;color:#7ec8f0;">Filter Shift:</span>
+          <select id="all-ph-shift-filter" onchange="renderAllPHData()" style="background:#0f1f38;border:1px solid #334155;border-radius:5px;color:#e2e8f0;font-family:'Rajdhani',sans-serif;font-size:13px;font-weight:700;outline:none;cursor:pointer;padding:3px 8px;">
+            <option value="All">🔁 All Shifts</option>
+            <option value="Morning" style="color:#34d399;">🌅 Morning</option>
+            <option value="Evening" style="color:#fb923c;">🌆 Evening</option>
+            <option value="Night" style="color:#818cf8;">🌙 Night</option>
+          </select>
+        </div>
+        <button onclick="closeAllPHModal()" style="background:rgba(239,68,68,0.15);border:1px solid rgba(239,68,68,0.4);color:#f87171;padding:7px 16px;border-radius:6px;font-size:13px;font-weight:700;font-family:'Rajdhani',sans-serif;cursor:pointer;">✕ Close</button>
+      </div>
+    </div>
+    <!-- Modal Body -->
+    <div style="padding:18px 22px;" id="all-ph-modal-body">
+      <div style="text-align:center;color:#64748b;padding:40px;">Loading...</div>
+    </div>
+  </div>
+</div>
 </body>
 </html>

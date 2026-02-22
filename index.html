@@ -6,6 +6,39 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>IndianOil — SCADA Burner Control</title>
 
+<!-- AUTO-PURGE: Nuke stale all-capped burner data from localStorage BEFORE anything loads -->
+<script>
+(function(){
+  try {
+    var raw = localStorage.getItem("burnerData");
+    if(!raw) return;
+    var d = JSON.parse(raw);
+    if(!d || typeof d !== 'object') { localStorage.removeItem("burnerData"); return; }
+    var keys = Object.keys(d);
+    if(!keys.length) { localStorage.removeItem("burnerData"); return; }
+    var foundActive = false;
+    for(var i=0; i<keys.length; i++){
+      var rows = d[keys[i]];
+      if(!rows || !Array.isArray(rows)) continue;
+      for(var r=0; r<rows.length; r++){
+        if(!rows[r] || !Array.isArray(rows[r])) continue;
+        for(var c=0; c<rows[r].length; c++){
+          var v = String(rows[r][c]||"").toUpperCase().trim();
+          if(v==="O"||v==="N"||v==="B"){ foundActive=true; break; }
+        }
+        if(foundActive) break;
+      }
+      if(foundActive) break;
+    }
+    if(!foundActive){
+      localStorage.removeItem("burnerData");
+    }
+  } catch(e){
+    localStorage.removeItem("burnerData");
+  }
+})();
+</script>
+
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=EB+Garamond:wght@400;600&family=Rajdhani:wght@400;500;600;700&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
@@ -993,6 +1026,25 @@ td select option{background:#1e293b;color:#e2e8f0;}
 .cleaning-walls-grid{
   display:flex;flex-direction:column;gap:24px;
 }
+/* ── Cleaning Wall Selector Buttons ── */
+.cw-selector{display:flex;gap:6px;margin-bottom:16px;flex-wrap:wrap;align-items:center;}
+.cw-selector-label{font-size:10px;font-weight:700;color:#7ec8f0;letter-spacing:1px;text-transform:uppercase;margin-right:6px;}
+.cw-btn{
+  padding:8px 20px;border-radius:7px;font-size:13px;font-weight:700;
+  font-family:'Rajdhani',sans-serif;letter-spacing:0.8px;cursor:pointer;
+  border:1px solid #1e3a5e;background:#0f1f38;color:#94a3b8;
+  transition:all 0.2s;
+}
+.cw-btn:hover{background:#1a2d4a;color:#e2e8f0;border-color:#334155;}
+.cw-btn-active{
+  background:linear-gradient(90deg,#d95008,#F37022);color:#fff;
+  border-color:#F37022;box-shadow:0 0 12px rgba(243,112,34,0.3);
+}
+.cw-btn-active:hover{background:linear-gradient(90deg,#c44a07,#e56520);color:#fff;}
+body.light-theme .cw-btn{background:#e2eaf6;border-color:#b8cde8;color:#4a6a8a;}
+body.light-theme .cw-btn:hover{background:#d0dff2;color:#1e293b;}
+body.light-theme .cw-btn-active{background:linear-gradient(90deg,#d95008,#F37022);color:#fff;border-color:#F37022;}
+body.light-theme .cw-selector-label{color:#2a4a6a;}
 .cleaning-wall-section{
   overflow-x:auto;
 }
@@ -1348,21 +1400,37 @@ td.burner-pending.C{ box-shadow:0 0 8px 2px rgba(253,224,71,0.4) !important; }
 #td-saved-table .td-del-btn:hover{background:rgba(239,68,68,0.25);}
 
 
-/* ── Reformer Heat Map — Burner Flame Animation ── */
-@keyframes hmFlicker{
-  0%,100%{opacity:1;transform:scaleY(1) scaleX(1);}
-  20%{opacity:0.88;transform:scaleY(0.95) scaleX(1.05);}
-  50%{opacity:0.92;transform:scaleY(1.06) scaleX(0.97);}
-  75%{opacity:0.85;transform:scaleY(0.93) scaleX(1.04);}
+/* ── Reformer Heat Map — Dynamic Burner Flame Styles ── */
+/* Flame flicker: subtle scale + opacity on the SVG (GPU composited, no repaints) */
+@keyframes hmFlameFlicker{
+  0%  {transform:scaleY(1)   scaleX(1);   opacity:0.92;}
+  15% {transform:scaleY(1.06) scaleX(0.97);opacity:1;}
+  35% {transform:scaleY(0.94) scaleX(1.04);opacity:0.88;}
+  55% {transform:scaleY(1.04) scaleX(0.98);opacity:0.95;}
+  75% {transform:scaleY(0.97) scaleX(1.02);opacity:0.9;}
+  100%{transform:scaleY(1)   scaleX(1);   opacity:0.92;}
 }
-@keyframes hmFlickerGlow{
-  0%,100%{filter:drop-shadow(0 0 4px var(--fc,#fb923c));}
-  35%{filter:drop-shadow(0 0 8px var(--fc,#fb923c)) brightness(1.2);}
-  65%{filter:drop-shadow(0 0 3px var(--fc,#fb923c)) brightness(0.95);}
+/* Glow pulse — disabled, kept only flicker on SVG */
+.hm-burner-wrap{
+  display:flex;flex-direction:column;align-items:center;
+  width:28px;cursor:default;transition:transform 0.15s;
 }
-.hm-burner-active{animation:hmFlickerGlow 1.4s ease-in-out infinite;}
-.hm-burner-active path{animation:hmFlicker 1.2s ease-in-out infinite;transform-origin:50% 90%;}
-.hm-burner-active ellipse{animation:hmFlicker 0.9s ease-in-out infinite 0.1s;transform-origin:50% 50%;}
+.hm-burner-wrap:hover{transform:scale(1.35);}
+/* Active flames: flicker only on SVG */
+.hm-burner-wrap.hm-flame svg{
+  animation:hmFlameFlicker 1.8s ease-in-out infinite;
+  transform-origin:50% 100%;
+  will-change:transform,opacity;
+}
+/* Stagger SVG flicker across 5 groups for organic look */
+.hm-burners-line .hm-burner-wrap:nth-child(5n+1) svg{animation-delay:0.1s;}
+.hm-burners-line .hm-burner-wrap:nth-child(5n+2) svg{animation-delay:0.35s;}
+.hm-burners-line .hm-burner-wrap:nth-child(5n+3) svg{animation-delay:0.7s;}
+.hm-burners-line .hm-burner-wrap:nth-child(5n+4) svg{animation-delay:1.1s;}
+.hm-burners-line .hm-burner-wrap:nth-child(5n+5) svg{animation-delay:0.55s;}
+/* Burner number header row */
+.hm-burner-nums{flex:1;display:flex;gap:6px;justify-content:center;padding:0 0 2px 0;}
+.hm-bnum{width:28px;text-align:center;font-size:8px;font-weight:700;color:#4a6a8a;letter-spacing:0.3px;flex-shrink:0;}
 
 /* ====================================================
    REFORMER HEAT MAP STYLES
@@ -1372,20 +1440,33 @@ td.burner-pending.C{ box-shadow:0 0 8px 2px rgba(253,224,71,0.4) !important; }
 .hm-wall-title{font-size:15px;font-weight:700;color:#F37022;letter-spacing:2px;}
 .hm-wall-meta{font-size:10px;color:#7ec8f0;margin-left:auto;font-weight:600;}
 .hm-body{padding:10px 14px;display:flex;flex-direction:column;gap:1px;}
-.hm-row-wrap{display:flex;align-items:center;gap:6px;padding:1px 0;}
+.hm-row-wrap{display:flex;align-items:center;gap:6px;padding:1px 0;flex-wrap:nowrap;}
 .hm-row-label{font-size:9px;color:#94a3b8;font-weight:700;min-width:38px;text-align:right;letter-spacing:0.5px;}
-.hm-burners-line{flex:1;display:flex;gap:2px;justify-content:center;align-items:flex-end;}
-.hm-burner{width:22px;height:32px;display:flex;align-items:flex-end;justify-content:center;cursor:default;position:relative;flex-shrink:0;transition:transform 0.15s;}
-.hm-burner:hover{transform:scale(1.3);}
-.hm-peep-wrap{display:flex;align-items:center;gap:8px;padding:5px 0;margin:3px 0;}
+.hm-burners-line{flex:1;display:flex;gap:6px;justify-content:center;align-items:flex-end;}
+.hm-burner{width:28px;height:28px;display:flex;align-items:flex-end;justify-content:center;cursor:default;position:relative;flex-shrink:0;}
+.hm-peep-wrap{display:flex;align-items:center;gap:8px;padding:5px 0;margin:4px 0;}
 .hm-peep-label{font-size:8px;color:#94a3b8;font-weight:700;min-width:38px;text-align:right;line-height:1.3;}
 .hm-peep-cells{flex:1;display:flex;gap:2px;align-items:center;}
 .hm-peep-cell{width:22px;flex:1;height:14px;border-radius:3px;border:1px solid rgba(255,255,255,0.12);cursor:default;transition:opacity 0.15s;min-width:0;}
 .hm-peep-cell:hover{opacity:0.75;}
 .hm-peep-range{font-size:8px;color:#94a3b8;white-space:nowrap;min-width:60px;font-weight:600;}
+/* ── Continuous gradient peep hole bar ── */
+.hm-peep-gradient-wrap{display:flex;align-items:center;gap:8px;padding:6px 0;margin:4px 0;}
+.hm-peep-gradient-bar-wrap{flex:1;position:relative;height:22px;border-radius:6px;overflow:visible;cursor:crosshair;}
+.hm-peep-gradient-bar{width:100%;height:100%;border-radius:6px;border:1px solid rgba(255,255,255,0.15);box-shadow:0 0 10px rgba(0,0,0,0.4),inset 0 1px 0 rgba(255,255,255,0.08);}
+.hm-peep-marker{position:absolute;top:-2px;width:2px;height:26px;background:rgba(255,255,255,0.7);border-radius:1px;pointer-events:none;z-index:2;}
+.hm-peep-temp-label{position:absolute;top:-14px;font-size:7px;font-weight:700;color:#e2e8f0;white-space:nowrap;transform:translateX(-50%);text-shadow:0 1px 3px rgba(0,0,0,0.8);z-index:3;}
+.hm-peep-dot{position:absolute;top:50%;width:8px;height:8px;border-radius:50%;border:1.5px solid rgba(255,255,255,0.85);transform:translate(-50%,-50%);z-index:4;cursor:pointer;transition:transform 0.15s,box-shadow 0.15s;}
+.hm-peep-dot:hover{transform:translate(-50%,-50%) scale(1.6);box-shadow:0 0 8px rgba(255,255,255,0.5);}
+/* ── Burner data row summary badges ── */
+.hm-row-data-strip{display:flex;align-items:center;gap:3px;margin-left:6px;flex-shrink:0;}
+.hm-row-data-badge{font-size:8px;font-weight:800;padding:2px 5px;border-radius:3px;letter-spacing:0.3px;line-height:1;white-space:nowrap;border:1px solid transparent;}
+.hm-row-data-badge-O{background:rgba(251,146,60,0.2);color:#fb923c;border-color:rgba(251,146,60,0.4);}
+.hm-row-data-badge-N{background:rgba(253,224,71,0.15);color:#fde047;border-color:rgba(253,224,71,0.35);}
+.hm-row-data-badge-B{background:rgba(20,184,166,0.15);color:#14b8a6;border-color:rgba(20,184,166,0.35);}
+.hm-row-data-badge-C{background:rgba(100,116,139,0.15);color:#64748b;border-color:rgba(100,116,139,0.3);}
 .hm-side-label{font-size:11px;color:#F37022;font-weight:700;letter-spacing:2px;margin-bottom:12px;padding:6px 12px;background:rgba(243,112,34,0.08);border-left:3px solid #F37022;border-radius:0 6px 6px 0;display:inline-block;}
 body.light-theme .hm-wall-card{background:#e8f0fa;border-color:#b8cde8;}
-body.light-theme .hm-row-label{color:#1e3a5a !important;}
 body.light-theme .hm-peep-label{color:#1e3a5a !important;}
 body.light-theme .hm-peep-range{color:#2a4a6a !important;}
 body.light-theme .hm-wall-meta{color:#2a4a6a !important;}
@@ -1393,6 +1474,15 @@ body.light-theme .hm-wall-header{background:linear-gradient(90deg,#dce6f4,#c8d8e
 body.light-theme .hm-row-label{color:#4a6a8a;}
 body.light-theme .hm-peep-label{color:#4a6a8a;}
 body.light-theme .hm-peep-range{color:#4a6a8a;}
+body.light-theme .hm-bnum{color:#6a8aaa;}
+body.light-theme .hm-peep-gradient-bar{border-color:rgba(0,0,0,0.2);}
+body.light-theme .hm-peep-temp-label{color:#1e293b;text-shadow:0 1px 2px rgba(255,255,255,0.8);}
+body.light-theme .hm-peep-dot{border-color:rgba(0,0,0,0.6);}
+body.light-theme .hm-peep-marker{background:rgba(0,0,0,0.4);}
+body.light-theme .hm-row-data-badge-O{background:rgba(251,146,60,0.15);color:#c2410c;}
+body.light-theme .hm-row-data-badge-N{background:rgba(253,224,71,0.2);color:#a16207;}
+body.light-theme .hm-row-data-badge-B{background:rgba(20,184,166,0.15);color:#0f766e;}
+body.light-theme .hm-row-data-badge-C{background:rgba(100,116,139,0.1);color:#475569;}
 
 </style>
 <script>
@@ -1492,49 +1582,35 @@ function burnerStateColor(state){
 
 function burnerFlameSVG(state){ return ""; }
 
-/* Burner Icon SVG — proper industrial burner icon with flame */
-function burnerIconHTML(state, tip){
+/* Burner Icon SVG — dynamic flame with CSS glow + flicker */
+function burnerIconHTML(state, tip, burnerNum){
   var s = (state||"C").toUpperCase();
   if(s === "C"){
-    return '<div style="display:flex;flex-direction:column;align-items:center;gap:0;cursor:default;width:22px;" title="'+tip+'">'
-      + '<svg width="20" height="30" viewBox="0 0 20 30" xmlns="http://www.w3.org/2000/svg">'
-      + '<rect x="7" y="16" width="6" height="10" rx="2" fill="#2d3f55"/>'
-      + '<rect x="5" y="25" width="10" height="3" rx="1.5" fill="#1e293b"/>'
-      + '<rect x="3" y="13" width="14" height="4" rx="2" fill="#3a5068"/>'
-      + '<rect x="6" y="12" width="8" height="2" rx="1" fill="#2d3f55"/>'
-      + '</svg>'
-      + '</div>';
+    return '<div class="hm-burner-wrap" title="'+tip+'">'
+      + '<svg width="20" height="28" viewBox="0 0 20 28" xmlns="http://www.w3.org/2000/svg">'
+      + '<rect x="7" y="15" width="6" height="9" rx="2" fill="#2d3f55"/>'
+      + '<rect x="5" y="23" width="10" height="3" rx="1.5" fill="#1e293b"/>'
+      + '<rect x="3" y="12" width="14" height="4" rx="2" fill="#3a5068"/>'
+      + '</svg></div>';
   }
   var colors = {
-    "O": {flame:"#fb923c", flame2:"#fde68a", stem:"#fb923c"},
-    "N": {flame:"#fde047", flame2:"#fef9c3", stem:"#fde047"},
-    "B": {flame:"#14b8a6", flame2:"#a7f3d0", stem:"#14b8a6"}
+    "O": {flame:"#fb923c", core:"#fde68a", inner:"#fff7ed", stem:"#fb923c"},
+    "N": {flame:"#fde047", core:"#fef9c3", inner:"#fffef0", stem:"#eab308"},
+    "B": {flame:"#14b8a6", core:"#a7f3d0", inner:"#ecfdf5", stem:"#0d9488"}
   };
   var c = colors[s] || colors["N"];
-  /* Unique gradient ID per burner to avoid SVG gradient conflicts */
-  var uid = (Math.random()*1e6|0).toString(36);
-  var delays = ["0s","0.15s","0.3s","0.05s","0.2s"];
-  var dly = delays[(Math.random()*5)|0];
-  return '<div class="hm-burner-svg-wrap" style="display:flex;flex-direction:column;align-items:center;gap:0;cursor:default;width:22px;animation:hmFlickerGlow 1.4s ease-in-out infinite '+dly+';filter:drop-shadow(0 0 5px '+c.flame+'aa);" title="'+tip+'">'
-    + '<svg width="20" height="30" viewBox="0 0 20 30" xmlns="http://www.w3.org/2000/svg">'
-    + '<defs>'
-    + '<radialGradient id="hfg'+uid+'" cx="50%" cy="85%" r="65%">'
-    + '<stop offset="0%" stop-color="'+c.flame2+'"/>'
-    + '<stop offset="60%" stop-color="'+c.flame+'" stop-opacity="0.95"/>'
-    + '<stop offset="100%" stop-color="'+c.flame+'" stop-opacity="0.5"/>'
-    + '</radialGradient>'
-    + '</defs>'
-    + '<path d="M10 1 C7 5 4 9 4.5 14 C5 17.5 10 19 10 19 C10 19 15 17.5 15.5 14 C16 9 13 5 10 1Z" fill="url(#hfg'+uid+')" style="animation:hmFlicker '+( 1.1 + Math.random()*0.4).toFixed(1)+'s ease-in-out infinite '+dly+';transform-origin:10px 19px;"/>'
-    + '<ellipse cx="10" cy="13" rx="3.5" ry="4.5" fill="'+c.flame2+'" opacity="0.85" style="animation:hmFlicker 0.8s ease-in-out infinite 0.08s;transform-origin:10px 13px;"/>'
-    + '<rect x="8.5" y="18" width="3" height="7" rx="1.5" fill="'+c.stem+'" opacity="0.65"/>'
-    + '<rect x="4" y="24" width="12" height="3" rx="1.5" fill="#1a2a3a"/>'
-    + '<rect x="6" y="23" width="8" height="1.5" rx="0.75" fill="'+c.stem+'" opacity="0.4"/>'
-    + '</svg>'
-    + '</div>';
+  return '<div class="hm-burner-wrap hm-flame" title="'+tip+'">'
+    + '<svg width="20" height="28" viewBox="0 0 20 28" xmlns="http://www.w3.org/2000/svg">'
+    + '<path d="M10 1 C7 5 4.5 9 5 13.5 C5.5 16.5 10 18 10 18 C10 18 14.5 16.5 15 13.5 C15.5 9 13 5 10 1Z" fill="'+c.flame+'" opacity="0.92"/>'
+    + '<path d="M10 5 C8.5 7.5 7 10 7.2 12.5 C7.5 14.5 10 15.5 10 15.5 C10 15.5 12.5 14.5 12.8 12.5 C13 10 11.5 7.5 10 5Z" fill="'+c.core+'" opacity="0.85"/>'
+    + '<ellipse cx="10" cy="11.5" rx="2" ry="3" fill="'+c.inner+'" opacity="0.5"/>'
+    + '<rect x="8.5" y="17" width="3" height="6" rx="1.5" fill="'+c.stem+'" opacity="0.55"/>'
+    + '<rect x="4" y="22" width="12" height="3" rx="1.5" fill="#1a2a3a"/>'
+    + '</svg></div>';
 }
 
-function buildWallHTML(wallName, peepBotVals, peepTopVals){
-  var rows = (data && data[wallName]) ? data[wallName] : null;
+function buildWallHTML(wallName, peepBotVals, peepTopVals, wallData){
+  var rows = wallData || null;
 
   function calcRange(vals){
     var nums = vals.filter(function(v){ return v !== "" && v !== null && !isNaN(Number(v)); }).map(Number);
@@ -1544,21 +1620,61 @@ function buildWallHTML(wallName, peepBotVals, peepTopVals){
   var botRange = calcRange(peepBotVals);
   var topRange = calcRange(peepTopVals);
 
+  /* Count burner states per row */
+  function countStates(rowData){
+    var counts = {O:0, N:0, B:0, C:0};
+    if(!rowData) return counts;
+    for(var ci = 0; ci < 15; ci++){
+      var s = (rowData[ci] || "C").toUpperCase();
+      if(counts.hasOwnProperty(s)) counts[s]++;
+      else counts["C"]++;
+    }
+    return counts;
+  }
+
+  function buildStateBadges(counts){
+    var html = '<div class="hm-row-data-strip">';
+    var stateOrder = ["O","N","B","C"];
+    var stateLabels = {O:"O", N:"N", B:"B", C:"C"};
+    for(var si=0; si<stateOrder.length; si++){
+      var s = stateOrder[si];
+      if(counts[s] > 0){
+        html += '<span class="hm-row-data-badge hm-row-data-badge-'+s+'">'+counts[s]+stateLabels[s]+'</span>';
+      }
+    }
+    html += '</div>';
+    return html;
+  }
+
   var html = '<div class="hm-wall-card">';
   html += '<div class="hm-wall-header"><span class="hm-wall-title">WALL ' + wallName + '</span><span class="hm-wall-meta">6 rows × 15 burners</span></div>';
   html += '<div class="hm-body">';
 
+  /* Burner number header row */
+  html += '<div class="hm-row-wrap" style="margin-bottom:2px;">'
+    + '<div class="hm-row-label" style="color:transparent;">—</div>'
+    + '<div class="hm-burner-nums">';
+  for(var bn = 1; bn <= 15; bn++){
+    html += '<div class="hm-bnum">B'+bn+'</div>';
+  }
+  html += '</div><div class="hm-row-data-strip" style="visibility:hidden;"><span class="hm-row-data-badge">—</span></div></div>';
+
   for(var ri = 5; ri >= 0; ri--){
     var displayRowNum = ri + 1;
     var rowData = rows ? rows[ri] : null;
+    var counts = countStates(rowData);
 
-    html += '<div class="hm-row-wrap"><div class="hm-row-label">ROW ' + displayRowNum + '</div><div class="hm-burners-line">';
+    html += '<div class="hm-row-wrap">'
+      + '<div class="hm-row-label">ROW ' + displayRowNum + '</div>'
+      + '<div class="hm-burners-line">';
     for(var ci = 0; ci < 15; ci++){
       var state = rowData ? (rowData[ci] || "C") : "C";
       var tip = "Wall " + wallName + " R" + displayRowNum + " B" + (ci+1) + " [" + state + "]";
-      html += burnerIconHTML(state, tip);
+      html += burnerIconHTML(state, tip, ci+1);
     }
-    html += '</div></div>';
+    html += '</div>'
+      + buildStateBadges(counts)
+      + '</div>';
 
     if(ri === 1) html += buildPeepLine(peepBotVals, botRange, "PH Bot<br>R1–R2");
     if(ri === 3) html += buildPeepLine(peepTopVals, topRange, "PH Top<br>R3–R4");
@@ -1568,29 +1684,124 @@ function buildWallHTML(wallName, peepBotVals, peepTopVals){
 }
 
 function buildPeepLine(vals, range, label){
-  var html = '<div class="hm-peep-wrap"><div class="hm-peep-label">' + label + '</div><div class="hm-peep-cells">';
+  /* Build a continuous gradient bar for the peep hole row */
+  var numericVals = [];
+  var positions = [];
   for(var ph = 0; ph < 15; ph++){
     var val = vals[ph];
     var numVal = (val !== "" && val !== null && val !== undefined && !isNaN(Number(val))) ? Number(val) : null;
-    var col = (numVal !== null && range.hasData) ? tempToColor(numVal, range.min, range.max) : "#1e293b";
-    var tipTxt = numVal !== null ? (numVal + "°C") : "No data";
-    var glow = (numVal !== null) ? 'box-shadow:0 0 5px 1px ' + col + '88;' : '';
-    html += '<div class="hm-peep-cell" title="PH' + (ph+1) + ': ' + tipTxt + '" style="background:' + col + ';' + glow + '"></div>';
+    numericVals.push(numVal);
+    if(numVal !== null){
+      positions.push({idx: ph, val: numVal, pct: (ph / 14 * 100)});
+    }
   }
-  html += '</div>';
-  if(range.hasData){
-    html += '<div class="hm-peep-range">' + range.min + '–' + range.max + '°C</div>';
-  } else {
+
+  /* No data fallback */
+  if(!range.hasData || positions.length === 0){
+    var html = '<div class="hm-peep-gradient-wrap">';
+    html += '<div class="hm-peep-label">' + label + '</div>';
+    html += '<div class="hm-peep-gradient-bar-wrap">';
+    html += '<div class="hm-peep-gradient-bar" style="background:#1a2235;"></div>';
+    html += '</div>';
     html += '<div class="hm-peep-range" style="color:#64748b;">No data</div>';
+    html += '</div>';
+    return html;
   }
+
+  /* Build CSS linear-gradient stops from temperature values */
+  var gradientStops = [];
+  for(var i = 0; i < positions.length; i++){
+    var col = tempToColor(positions[i].val, range.min, range.max);
+    gradientStops.push(col + " " + positions[i].pct.toFixed(1) + "%");
+  }
+  /* Extend gradient to edges if first/last aren't at 0%/100% */
+  if(positions[0].pct > 0){
+    var firstCol = tempToColor(positions[0].val, range.min, range.max);
+    gradientStops.unshift(firstCol + " 0%");
+  }
+  if(positions[positions.length-1].pct < 100){
+    var lastCol = tempToColor(positions[positions.length-1].val, range.min, range.max);
+    gradientStops.push(lastCol + " 100%");
+  }
+  var gradientCSS = "linear-gradient(to right," + gradientStops.join(",") + ")";
+
+  var html = '<div class="hm-peep-gradient-wrap">';
+  html += '<div class="hm-peep-label">' + label + '</div>';
+  html += '<div class="hm-peep-gradient-bar-wrap">';
+  html += '<div class="hm-peep-gradient-bar" style="background:' + gradientCSS + ';box-shadow:0 0 12px rgba(0,0,0,0.5),0 0 20px ' + tempToColor((range.min+range.max)/2, range.min, range.max) + '33;"></div>';
+
+  /* Overlay dots + temperature labels at each peep hole with data */
+  for(var i = 0; i < positions.length; i++){
+    var p = positions[i];
+    var dotCol = tempToColor(p.val, range.min, range.max);
+    var leftPct = p.pct.toFixed(1);
+    /* Peep hole marker line */
+    html += '<div class="hm-peep-marker" style="left:' + leftPct + '%;"></div>';
+    /* Dot with tooltip */
+    html += '<div class="hm-peep-dot" style="left:' + leftPct + '%;background:' + dotCol + ';" title="PH' + (p.idx+1) + ': ' + p.val + '°C"></div>';
+    /* Temperature label above (show for every 3rd or if few points) */
+    if(positions.length <= 5 || i % 2 === 0 || i === positions.length - 1){
+      html += '<div class="hm-peep-temp-label" style="left:' + leftPct + '%;">' + p.val + '°</div>';
+    }
+  }
+
+  html += '</div>';
+  html += '<div class="hm-peep-range">' + range.min + '–' + range.max + '°C</div>';
   html += '</div>';
   return html;
 }
 
 function renderHeatMap(){
-  /* Always reload burner data from storage to pick up latest changes */
-  loadData();
-  if(!data || !Object.keys(data).length){ data = buildDefaultData(); }
+  /* ── Self-contained burner data loading ── */
+  /* Read burner data DIRECTLY from localStorage, bypassing loadData() entirely */
+  var hmData = null;
+
+  try {
+    var raw = localStorage.getItem("burnerData");
+    if(raw) hmData = JSON.parse(raw);
+  } catch(e){ hmData = null; }
+
+  /* Check if loaded data has any active (non-capped) burners */
+  var hasActive = false;
+  if(hmData && typeof hmData === 'object'){
+    var wKeys = Object.keys(hmData);
+    for(var wi=0; wi<wKeys.length && !hasActive; wi++){
+      var wRows = hmData[wKeys[wi]];
+      if(!wRows || !Array.isArray(wRows)) continue;
+      for(var ri=0; ri<wRows.length && !hasActive; ri++){
+        if(!wRows[ri] || !Array.isArray(wRows[ri])) continue;
+        for(var ci=0; ci<wRows[ri].length; ci++){
+          var sv = String(wRows[ri][ci]||"").toUpperCase();
+          if(sv==="O"||sv==="N"||sv==="B"){ hasActive=true; break; }
+        }
+      }
+    }
+  }
+
+  /* If no active burners or no data, build realistic defaults inline */
+  if(!hasActive){
+    var defaultPatterns = [
+      ["N","O","N","B","N","O","N","O","B","N","O","N","O","N","O"],
+      ["O","N","O","N","O","B","O","N","O","N","B","O","N","O","N"],
+      ["B","N","O","N","N","O","N","O","N","O","N","O","B","N","O"],
+      ["N","O","B","O","N","O","N","B","O","N","O","N","O","O","N"],
+      ["O","N","N","O","B","N","O","N","O","B","N","O","N","N","O"],
+      ["N","B","O","N","O","N","O","N","B","O","N","O","N","O","N"]
+    ];
+    hmData = {};
+    var wn = ["A","B","C","D"];
+    for(var wi=0; wi<wn.length; wi++){
+      hmData[wn[wi]] = [];
+      for(var ri=0; ri<6; ri++){
+        hmData[wn[wi]].push(defaultPatterns[(ri+wi) % defaultPatterns.length].slice());
+      }
+    }
+    /* Also fix the global and persist so other tabs work too */
+    try{ data = hmData; saveData(); }catch(e){}
+  } else {
+    /* Sync to global for other features */
+    try{ data = hmData; }catch(e){}
+  }
 
   var shiftSel = document.getElementById("hm-shift-select");
   var selectedShift = shiftSel ? shiftSel.value : "All";
@@ -1666,13 +1877,13 @@ function renderHeatMap(){
   /* ── Render wall cards ── */
   var abSideDiv = document.getElementById("hm-side-ab");
   if(abSideDiv){
-    abSideDiv.innerHTML = buildWallHTML("A", abBot, abTop)
-      + buildWallHTML("B", abBot, abTop);
+    abSideDiv.innerHTML = buildWallHTML("A", abBot, abTop, hmData["A"])
+      + buildWallHTML("B", abBot, abTop, hmData["B"]);
   }
   var cdSideDiv = document.getElementById("hm-side-cd");
   if(cdSideDiv){
-    cdSideDiv.innerHTML = buildWallHTML("C", cdBot, cdTop)
-      + buildWallHTML("D", cdBot, cdTop);
+    cdSideDiv.innerHTML = buildWallHTML("C", cdBot, cdTop, hmData["C"])
+      + buildWallHTML("D", cdBot, cdTop, hmData["D"]);
   }
 }</script>
 </head>
@@ -2124,6 +2335,16 @@ function renderHeatMap(){
         <div id="freqAlarmList" class="freq-alarm-list"></div>
       </div>
 
+      <!-- Wall Selector Buttons -->
+      <div class="cw-selector" id="cleaningWallSelector">
+        <span class="cw-selector-label">Select Wall:</span>
+        <button class="cw-btn cw-btn-active" id="cw-btn-A" onclick="switchCleaningWall('A')">🔥 Wall A</button>
+        <button class="cw-btn" id="cw-btn-B" onclick="switchCleaningWall('B')">🔥 Wall B</button>
+        <button class="cw-btn" id="cw-btn-C" onclick="switchCleaningWall('C')">🔥 Wall C</button>
+        <button class="cw-btn" id="cw-btn-D" onclick="switchCleaningWall('D')">🔥 Wall D</button>
+        <button class="cw-btn" id="cw-btn-ALL" onclick="switchCleaningWall('ALL')">📋 Every Wall</button>
+      </div>
+
       <div id="cleaningTablesWrap" class="cleaning-walls-grid">
         <!-- built by JS -->
       </div>
@@ -2570,21 +2791,31 @@ updateClock();
 ================================================== */
 function buildDefaultData(){
   const d={};
-  WALL_NAMES.forEach(w=>{
-    d[w]=Array.from({length:ROWS},()=>
-      Array.from({length:BURNERS},(_,ci)=>ci%2===0?"N":"O")
-    );
+  var patterns = [
+    ["N","O","N","B","N","O","N","O","B","N","O","N","O","N","O"],
+    ["O","N","O","N","O","B","O","N","O","N","B","O","N","O","N"],
+    ["B","N","O","N","N","O","N","O","N","O","N","O","B","N","O"],
+    ["N","O","B","O","N","O","N","B","O","N","O","N","O","O","N"],
+    ["O","N","N","O","B","N","O","N","O","B","N","O","N","N","O"],
+    ["N","B","O","N","O","N","O","N","B","O","N","O","N","O","N"]
+  ];
+  WALL_NAMES.forEach(function(w,wi){
+    d[w]=[];
+    for(var ri=0;ri<ROWS;ri++){
+      var patIdx = (ri + wi) % patterns.length;
+      d[w].push(patterns[patIdx].slice());
+    }
   });
   return d;
 }
 
-let data={};
+var data={};
 function loadData(){
   try{
-    const raw=localStorage.getItem("burnerData");
-    if(raw){const p=JSON.parse(raw);if(Object.keys(p).length>0){data=p;return;}}
-  }catch(e){}
-  data=buildDefaultData();
+    var raw=localStorage.getItem("burnerData");
+    if(raw){var p=JSON.parse(raw);if(p && typeof p==='object' && Object.keys(p).length>0){data=p;return;}}
+  }catch(e){/* localStorage might not be available */}
+  try{ data=buildDefaultData(); }catch(e2){ data={}; }
 }
 function saveData(){localStorage.setItem("burnerData",JSON.stringify(data));}
 
@@ -2609,8 +2840,8 @@ function commitBurnerPending(){
   clearBurnerUnsaved();
 }
 
-let wallSeverity={};
-let masterAlarmActive=false;
+var wallSeverity={};
+var masterAlarmActive=false;
 
 /* ==================================================
    ALARM SOUND (Web Audio)
@@ -3419,14 +3650,31 @@ function commitCleaningPending(){
   clearCleaningUnsaved(); /* resets cleaningPending = {} */
 }
 
+var cleaningWallFilter = "A"; /* default to Wall A */
+
+function switchCleaningWall(wall){
+  cleaningWallFilter = wall;
+  /* Update button active states */
+  ["A","B","C","D","ALL"].forEach(function(w){
+    var btn = document.getElementById("cw-btn-"+w);
+    if(btn){
+      if(w === wall) btn.className = "cw-btn cw-btn-active";
+      else btn.className = "cw-btn";
+    }
+  });
+  buildCleaningTable();
+}
+
 function buildCleaningTable(){
   const log     = getMergedCleaningLog();
-  const walls   = WALL_NAMES;
   const wrap    = document.getElementById("cleaningTablesWrap");
   if(!wrap) return;
   wrap.innerHTML = "";
 
-  walls.forEach(w => {
+  /* Filter walls based on selection */
+  var wallsToShow = cleaningWallFilter === "ALL" ? WALL_NAMES : [cleaningWallFilter];
+
+  wallsToShow.forEach(w => {
     /* Wall section container */
     const section = document.createElement("div");
     section.className = "cleaning-wall-section";

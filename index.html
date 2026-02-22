@@ -1528,7 +1528,7 @@ async function login(){
 
       <div class="ls-helpdesk">
         <span>🛟 IT Helpdesk</span>
-        <span><b>8476056756</b>&nbsp;|&nbsp;<b><a href="mailto:dubeya1@indianoil.in" style="color:#fff;font-weight:700;text-decoration:none;">dubeya1@indianoil.in</a></b></span>
+        <span><b>8476056756</b>&nbsp;|&nbsp;<b><a href="/cdn-cgi/l/email-protection#fb9f8e999e829acabb92959f929a95949297d59295" style="color:#fff;font-weight:700;text-decoration:none;"><span class="__cf_email__" data-cfemail="badecfd8dfc3db8bfad3d4ded3dbd4d5d3d694d3d4">[email&#160;protected]</span></a></b></span>
       </div>
     </div>
 
@@ -1556,7 +1556,7 @@ async function login(){
     </div>
     <div class="fm-card">
       <div class="fm-label">✉️ Helpdesk Email</div>
-      <div class="fm-value"><a href="mailto:dubeya1@indianoil.in" style="color:#F37022;text-decoration:none;">dubeya1@indianoil.in</a></div>
+      <div class="fm-value"><a href="/cdn-cgi/l/email-protection#ee8a9b8c8b978fdfae87808a878f80818782c08780" style="color:#F37022;text-decoration:none;"><span class="__cf_email__" data-cfemail="0c68796e69756d3d4c656268656d62636560226562">[email&#160;protected]</span></a></div>
     </div>
     <div class="fm-note">Support available during office hours (Mon–Sat, 8 AM – 6 PM).<br>Please quote your Employee ID: <b style="color:#F37022;">00514267</b></div>
     <button class="fm-btn" onclick="hideForgotModal()">Close</button>
@@ -2031,7 +2031,7 @@ async function login(){
   </button>
 </div>
 
-<script>
+<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
 var alarmLog = [];
 
 
@@ -3657,6 +3657,13 @@ function clearTempData(){
   }
 }
 
+function phMinMax(vals){
+  var nums = vals.filter(function(v){ return v!=="" && !isNaN(Number(v)); }).map(Number);
+  if(!nums.length) return "—";
+  var mn = Math.min.apply(null,nums), mx = Math.max.apply(null,nums);
+  return mn===mx ? mn+"°C" : mn+"°C / "+mx+"°C";
+}
+
 function renderTempDataTable(){
   var tbody = document.getElementById("td-saved-tbody");
   if(!tbody) return;
@@ -3664,14 +3671,12 @@ function renderTempDataTable(){
     tbody.innerHTML='<tr><td colspan="13" style="text-align:center;color:#475569;padding:20px;">No entries saved yet.</td></tr>';
     return;
   }
-  var rowKeys = ["ab-bot","cd-bot","ab-top","cd-top"];
-  var rowLabels = {"ab-bot":"AB Bot","cd-bot":"CD Bot","ab-top":"AB Top","cd-top":"CD Top"};
-  tbody.innerHTML = tempDataEntries.map(function(e,i){
-    var phSummaries = rowKeys.map(function(rk){
+  var display = tempDataEntries.slice(0,3);
+  tbody.innerHTML = display.map(function(e,i){
+    function getMinMax(rk){
       var vals = (e.peepHoles && e.peepHoles[rk]) ? e.peepHoles[rk] : [];
-      var filled = vals.filter(function(v){ return v!==""; });
-      return rowLabels[rk]+": "+( filled.length ? filled.join(", ") : "—" );
-    });
+      return phMinMax(vals);
+    }
     return '<tr>'
       +'<td>'+e.dt+'</td>'
       +'<td style="text-align:center;">'+e.shift+'</td>'
@@ -3681,15 +3686,16 @@ function renderTempDataTable(){
       +'<td style="text-align:center;">'+(e.excessO2||"—")+'</td>'
       +'<td style="text-align:center;">'+(e.preRefMax||"—")+'</td>'
       +'<td style="text-align:center;">'+(e.preRefMin||"—")+'</td>'
-      +'<td style="font-size:11px;">'+(e.peepHoles && e.peepHoles["ab-bot"] ? e.peepHoles["ab-bot"].filter(function(v){return v!=="";}).join(", ")||"—" : "—")+'</td>'
-      +'<td style="font-size:11px;">'+(e.peepHoles && e.peepHoles["cd-bot"] ? e.peepHoles["cd-bot"].filter(function(v){return v!=="";}).join(", ")||"—" : "—")+'</td>'
-      +'<td style="font-size:11px;">'+(e.peepHoles && e.peepHoles["ab-top"] ? e.peepHoles["ab-top"].filter(function(v){return v!=="";}).join(", ")||"—" : "—")+'</td>'
-      +'<td style="font-size:11px;">'+(e.peepHoles && e.peepHoles["cd-top"] ? e.peepHoles["cd-top"].filter(function(v){return v!=="";}).join(", ")||"—" : "—")+'</td>'
-      +'<td style="text-align:center;"><button class="td-del-btn" onclick="deleteTempEntry('+i+')">🗑 Del</button></td>'
+      +'<td style="text-align:center;font-size:12px;">'+getMinMax("ab-bot")+'</td>'
+      +'<td style="text-align:center;font-size:12px;">'+getMinMax("cd-bot")+'</td>'
+      +'<td style="text-align:center;font-size:12px;">'+getMinMax("ab-top")+'</td>'
+      +'<td style="text-align:center;font-size:12px;">'+getMinMax("cd-top")+'</td>'
+      +'<td><button onclick="deleteTempEntry('+i+')" style="background:#c0392b;color:#fff;border:none;padding:4px 10px;border-radius:4px;cursor:pointer;font-size:11px;">🗑 Del</button></td>'
       +'</tr>';
-  }).join("");
+  }).join("")
+  +(tempDataEntries.length>3 ? '<tr><td colspan="13" style="text-align:center;color:#64748b;padding:8px;font-size:11px;">Showing latest 3 of '+tempDataEntries.length+' entries</td></tr>' : "");
 }
-
+-e 
 </script>
 </body>
 </html>

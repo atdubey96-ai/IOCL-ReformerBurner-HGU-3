@@ -116,6 +116,14 @@ body.light-theme .alarm-group-header{color:#4a6a8a;}
 body.light-theme .analytics-panel{background:#f0f4fa;color:#1e293b;}
 body.light-theme .chart-card{background:#fff;border:1px solid #b8cde8;color:#1e293b;}
 
+/* ── Temp Data tab ── */
+body.light-theme .td-field-group{}
+body.light-theme .td-input{background:#fff;border-color:#b8cde8;color:#1e293b;}
+body.light-theme .td-ph-input{background:#fff;border-color:#b8cde8;color:#1e293b;}
+body.light-theme .td-row-label{color:#1e293b;}
+body.light-theme #td-saved-table th{color:#2a4a6a;}
+body.light-theme #td-saved-table td{color:#1e293b;border-color:#dde8f4;}
+
 /* Theme toggle in light mode */
 body.light-theme .theme-toggle-wrap{color:#2a4a6a;}
 body.light-theme .theme-slider{background:#334155;}
@@ -346,13 +354,17 @@ body.light-theme .theme-toggle input:checked + .theme-slider{background:#94b4d8;
   color:#7090b8;  /* was #2a4068 — now clearly visible */
 }
 .ls-forgot-link{
-  color:#60b0f0;   /* was #4a8fc8 — brighter sky blue */
+  color:#60b0f0;
   text-decoration:none;font-weight:600;
   padding:6px 14px;border-radius:5px;
   border:1px solid rgba(96,176,240,0.4);
   background:rgba(96,176,240,0.08);
   display:inline-block;
   transition:background .2s,color .2s;
+  cursor:pointer;
+  font-family:'Rajdhani',sans-serif;
+  font-size:12px;
+  outline:none;
 }
 .ls-forgot-link:hover{
   background:rgba(96,176,240,0.2);
@@ -387,10 +399,67 @@ body.light-theme .theme-toggle input:checked + .theme-slider{background:#94b4d8;
   color:#90b8e0;  /* was #3a5a7a — now readable */
   display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:6px;
 }
+.ls-helpdesk a{
+  color:#ffffff;
+  text-decoration:none;
+  font-weight:700;
+  letter-spacing:0.3px;
+}
+.ls-helpdesk a:hover{
+  color:#F37022;
+  text-decoration:underline;
+}
 .ls-helpdesk b{
-  color:#F37022;  /* was #5a7aaa — now orange accent, vibrant */
+  color:#F37022;
   font-weight:700;
 }
+
+/* Forgot Password Modal */
+#forgotModal{
+  display:none;position:fixed;inset:0;z-index:99999;
+  background:rgba(0,0,0,0.7);
+  align-items:center;justify-content:center;
+}
+#forgotModal.open{display:flex;}
+.fm-box{
+  background:linear-gradient(175deg,#071e54 0%,#030f3a 100%);
+  border:1px solid rgba(243,112,34,0.5);
+  border-radius:10px;
+  padding:36px 40px;
+  max-width:420px;width:90%;
+  box-shadow:0 8px 48px rgba(0,0,0,0.7);
+  position:relative;
+  text-align:center;
+}
+.fm-close{
+  position:absolute;top:12px;right:16px;
+  background:none;border:none;color:#a0bcd8;
+  font-size:22px;cursor:pointer;line-height:1;
+}
+.fm-close:hover{color:#fff;}
+.fm-icon{font-size:42px;margin-bottom:12px;}
+.fm-title{font-size:20px;font-weight:700;color:#fff;margin-bottom:6px;}
+.fm-sub{font-size:12.5px;color:#a8c8f0;margin-bottom:22px;line-height:1.6;}
+.fm-card{
+  background:rgba(255,255,255,0.06);
+  border:1px solid rgba(243,112,34,0.3);
+  border-radius:7px;padding:14px 18px;
+  margin-bottom:12px;
+}
+.fm-label{font-size:10px;color:#7ec8f0;letter-spacing:1.2px;text-transform:uppercase;font-weight:700;margin-bottom:5px;}
+.fm-value{font-size:15px;font-weight:700;color:#ffffff;}
+.fm-value a{color:#F37022;text-decoration:none;}
+.fm-value a:hover{text-decoration:underline;}
+.fm-note{font-size:11px;color:#6090c0;margin-top:16px;line-height:1.6;}
+.fm-btn{
+  margin-top:18px;
+  background:linear-gradient(90deg,#d95008,#F37022);
+  border:none;color:#fff;padding:11px 28px;border-radius:6px;
+  font-size:14px;font-weight:700;font-family:'Rajdhani',sans-serif;
+  cursor:pointer;letter-spacing:0.5px;
+  box-shadow:0 4px 18px rgba(243,112,34,0.4);
+}
+.fm-btn:hover{opacity:0.9;}
 
 /* Footer */
 .ls-footer{
@@ -776,6 +845,18 @@ td select option{background:#1e293b;color:#e2e8f0;}
   font-size:11px;font-weight:700;color:#e2e8f0;width:38px;text-align:left;
 }
 .cdash-bar-of{ color:#475569;font-weight:400; }
+
+#cleaningMonthSelect{
+  background:#1e293b;color:#fbbf24;
+  border:1px solid rgba(251,191,36,0.45);
+  border-radius:5px;padding:3px 8px;
+  font-size:11px;font-family:'Rajdhani',sans-serif;font-weight:700;
+  cursor:pointer;outline:none;margin-top:4px;
+  letter-spacing:0.3px;width:100%;max-width:140px;
+}
+#cleaningMonthSelect:hover{ border-color:rgba(251,191,36,0.8);background:#263148; }
+#cleaningMonthSelect option{ background:#1e293b;color:#e2e8f0; }
+
 @media(max-width:900px){
   .cdash-period-row{ grid-template-columns:repeat(2,1fr); }
   .cdash-breakdown-row{ grid-template-columns:1fr; }
@@ -1221,7 +1302,80 @@ td.burner-pending.N{ box-shadow:0 0 8px 2px rgba(253,224,71,0.5),0 0 6px 1px rgb
 td.burner-pending.O{ box-shadow:0 0 8px 2px rgba(253,224,71,0.4),0 0 6px 1px rgba(251,146,60,0.55),inset 0 1px 0 rgba(255,255,255,0.2) !important; }
 td.burner-pending.C{ box-shadow:0 0 8px 2px rgba(253,224,71,0.4) !important; }
 
+/* ====================================================
+   TEMP DATA TAB
+==================================================== */
+.td-field-group{display:flex;flex-direction:column;gap:6px;}
+.td-label{
+  font-size:11px;font-weight:700;color:#7ec8f0;
+  letter-spacing:0.6px;text-transform:uppercase;
+}
+.td-unit{font-size:10px;color:#64748b;text-transform:none;letter-spacing:0;}
+.td-input{
+  background:rgba(255,255,255,0.06);
+  border:1px solid rgba(255,255,255,0.14);
+  border-radius:6px;color:#e2e8f0;
+  font-family:'Rajdhani',sans-serif;font-size:15px;font-weight:600;
+  padding:9px 12px;outline:none;transition:border-color .2s,box-shadow .2s;
+  width:100%;
+}
+.td-input:focus{border-color:#F37022;box-shadow:0 0 0 3px rgba(243,112,34,0.18);}
+.td-input::placeholder{color:#475569;font-size:13px;}
+.td-ph-input{
+  background:rgba(255,255,255,0.05);
+  border:1px solid rgba(255,255,255,0.1);
+  border-radius:5px;color:#e2e8f0;
+  font-family:'Rajdhani',sans-serif;font-size:13px;font-weight:600;
+  padding:6px 4px;outline:none;text-align:center;
+  transition:border-color .2s,box-shadow .2s;width:100%;
+}
+.td-ph-input:focus{border-color:#F37022;box-shadow:0 0 0 2px rgba(243,112,34,0.18);}
+.td-ph-input::placeholder{color:#334155;font-size:11px;}
+.td-row-label{
+  font-size:11px;font-weight:700;letter-spacing:0.5px;
+  text-align:center;border-radius:5px;
+  border:1px solid;padding:6px 3px;
+}
+#td-saved-table tbody tr:nth-child(even){background:rgba(255,255,255,0.025);}
+#td-saved-table tbody tr:hover{background:rgba(255,255,255,0.05);}
+#td-saved-table td{padding:8px 10px;border-bottom:1px solid rgba(255,255,255,0.06);color:#cbd5e1;vertical-align:top;}
+#td-saved-table .td-del-btn{
+  background:rgba(239,68,68,0.12);border:1px solid rgba(239,68,68,0.3);
+  color:#f87171;padding:4px 10px;border-radius:5px;
+  font-size:11px;font-weight:700;cursor:pointer;font-family:'Rajdhani',sans-serif;
+}
+#td-saved-table .td-del-btn:hover{background:rgba(239,68,68,0.25);}
+
 </style>
+<script>
+function showForgotModal(){
+  document.getElementById("forgotModal").classList.add("open");
+}
+function hideForgotModal(){
+  document.getElementById("forgotModal").classList.remove("open");
+}
+async function login(){
+  /* Delegate to loginWithFolderSupport() in the main script.
+     It auto-loads from the saved folder — never opens a file picker. */
+  if(typeof loginWithFolderSupport === "function"){
+    await loginWithFolderSupport();
+  } else {
+    var PASS = "Dubey123";
+    var pw   = document.getElementById("passwordInput").value;
+    var err  = document.getElementById("ls-error");
+    if(pw === PASS){
+      sessionStorage.setItem("scadaLoggedIn","true");
+      document.getElementById("loginScreen").style.display="none";
+      err.style.display="none";
+      if(typeof init === "function") init();
+    } else {
+      err.style.display="block";
+      document.getElementById("passwordInput").value="";
+      document.getElementById("passwordInput").focus();
+    }
+  }
+}
+</script>
 </head>
 <body>
 
@@ -1360,7 +1514,7 @@ td.burner-pending.C{ box-shadow:0 0 8px 2px rgba(253,224,71,0.4) !important; }
       </button>
 
       <div class="ls-helper">
-        <a href="/cdn-cgi/l/email-protection#f99d8c9b9c8098c8b990979d909897969095d79097" class="ls-forgot-link">🔑 Forgot Password? Contact IT Helpdesk</a>
+        <button class="ls-forgot-link" onclick="showForgotModal()">🔑 Forgot Password? Contact IT Helpdesk</button>
       </div>
 
       <div class="ls-security">
@@ -1374,7 +1528,7 @@ td.burner-pending.C{ box-shadow:0 0 8px 2px rgba(253,224,71,0.4) !important; }
 
       <div class="ls-helpdesk">
         <span>🛟 IT Helpdesk</span>
-        <span><b>8476056756</b>&nbsp;|&nbsp;<b><a href="/cdn-cgi/l/email-protection#99fdecfbfce0f8a8d9f0f7fdf0f8f7f6f0f5b7f0f7"><span class="__cf_email__" data-cfemail="fc98899e99859dcdbc959298959d92939590d29592">[email&#160;protected]</span></a></b></span>
+        <span><b>8476056756</b>&nbsp;|&nbsp;<b><a href="mailto:dubeya1@indianoil.in" style="color:#fff;font-weight:700;text-decoration:none;">dubeya1@indianoil.in</a></b></span>
       </div>
     </div>
 
@@ -1386,7 +1540,28 @@ td.burner-pending.C{ box-shadow:0 0 8px 2px rgba(253,224,71,0.4) !important; }
     <span>CIN: L23201MH1959GOI011388</span>
     <span>Regd. Office: IndianOil Bhavan, G-9 Ali Yavar Jung Marg, Bandra (E), Mumbai – 400 051</span>
   </div>
+  <div style="background:#010c2e;border-top:1px solid rgba(243,112,34,0.15);padding:5px 32px;text-align:center;font-size:10.5px;color:#5a80a8;letter-spacing:0.3px;">Dashboard designed &amp; developed by <b style="color:#F37022;">Ashutosh Dubey</b></div>
 
+
+<!-- Forgot Password Modal -->
+<div id="forgotModal">
+  <div class="fm-box">
+    <button class="fm-close" onclick="hideForgotModal()">&#10005;</button>
+    <div class="fm-icon">🔑</div>
+    <div class="fm-title">Forgot Password?</div>
+    <div class="fm-sub">Please contact the IT Helpdesk to reset your IOCL portal password. Mention your Employee ID for faster resolution.</div>
+    <div class="fm-card">
+      <div class="fm-label">📞 Helpdesk Phone</div>
+      <div class="fm-value">8476056756</div>
+    </div>
+    <div class="fm-card">
+      <div class="fm-label">✉️ Helpdesk Email</div>
+      <div class="fm-value"><a href="mailto:dubeya1@indianoil.in" style="color:#F37022;text-decoration:none;">dubeya1@indianoil.in</a></div>
+    </div>
+    <div class="fm-note">Support available during office hours (Mon–Sat, 8 AM – 6 PM).<br>Please quote your Employee ID: <b style="color:#F37022;">00514267</b></div>
+    <button class="fm-btn" onclick="hideForgotModal()">Close</button>
+  </div>
+</div>
 </div><!-- /loginScreen -->
 
 
@@ -1520,7 +1695,10 @@ td.burner-pending.C{ box-shadow:0 0 8px 2px rgba(253,224,71,0.4) !important; }
           <div class="cdash-period-card">
             <div class="cdash-period-icon">🗓</div>
             <div class="cdash-period-val" id="cdash-val-month">0</div>
-            <div class="cdash-period-label">This Month</div>
+            <div class="cdash-period-label">
+              <select id="cleaningMonthSelect" onchange="updateCleaningStatus(loadCleaningLog())" title="Select month">
+              </select>
+            </div>
           </div>
           <div class="cdash-period-card cdash-total-card">
             <div class="cdash-period-icon">🔥</div>
@@ -1546,7 +1724,7 @@ td.burner-pending.C{ box-shadow:0 0 8px 2px rgba(253,224,71,0.4) !important; }
         <div class="freq-alarm-header">
           <span class="freq-alarm-icon">🚨</span>
           <span class="freq-alarm-title">HIGH FREQUENCY CLEANING ALARM</span>
-          <span class="freq-alarm-sub">Burners cleaned more than 3 times this month</span>
+          <span class="freq-alarm-sub" id="freqAlarmMonthLabel">Burners cleaned more than 3 times this month</span>
         </div>
         <div id="freqAlarmList" class="freq-alarm-list"></div>
       </div>
@@ -1596,6 +1774,237 @@ td.burner-pending.C{ box-shadow:0 0 8px 2px rgba(253,224,71,0.4) !important; }
     </div>
   </div>
 
+  <!-- TAB 4: Temp. Data -->
+  <div id="tab-tempdata" class="tab-panel">
+    <div style="padding:24px 28px;max-width:1200px;margin:0 auto;">
+
+      <!-- Header -->
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:22px;flex-wrap:wrap;gap:12px;">
+        <div>
+          <h2 style="font-size:20px;font-weight:700;color:#F37022;margin-bottom:4px;">🌡️ Temperature Data Entry</h2>
+          <span style="font-size:12px;color:#94a3b8;">Manual entry of reformer and process temperature readings</span>
+        </div>
+        <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center;">
+          <!-- Shift Selection -->
+          <div style="display:flex;align-items:center;gap:8px;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.12);border-radius:7px;padding:7px 14px;">
+            <span style="font-size:12px;font-weight:700;color:#7ec8f0;letter-spacing:0.8px;text-transform:uppercase;">TST Shift:</span>
+            <select id="td-shift" style="background:transparent;border:none;color:#e2e8f0;font-family:'Rajdhani',sans-serif;font-size:14px;font-weight:600;outline:none;cursor:pointer;">
+              <option value="">-- Select --</option>
+              <option value="Morning">Morning</option>
+              <option value="Evening">Evening</option>
+              <option value="Night">Night</option>
+            </select>
+          </div>
+          <!-- Date/Time -->
+          <div style="background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.12);border-radius:7px;padding:7px 14px;">
+            <input type="datetime-local" id="td-datetime"
+              style="background:transparent;border:none;color:#e2e8f0;font-family:'Rajdhani',sans-serif;font-size:13px;font-weight:600;outline:none;cursor:pointer;">
+          </div>
+          <!-- Save / Clear -->
+          <button onclick="saveTempData()"
+            style="background:linear-gradient(90deg,#d95008,#F37022);border:none;color:#fff;padding:9px 20px;border-radius:7px;font-size:14px;font-weight:700;font-family:'Rajdhani',sans-serif;cursor:pointer;letter-spacing:0.5px;box-shadow:0 3px 14px rgba(243,112,34,0.4);">
+            💾 Save Entry
+          </button>
+          <button onclick="clearTempData()"
+            style="background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.14);color:#94a3b8;padding:9px 16px;border-radius:7px;font-size:13px;font-weight:600;font-family:'Rajdhani',sans-serif;cursor:pointer;">
+            🗑 Clear
+          </button>
+        </div>
+      </div>
+
+      <!-- ── Section 1: General Temps ── -->
+      <div style="background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.1);border-radius:10px;padding:20px 24px;margin-bottom:18px;">
+        <div style="font-size:12px;font-weight:700;color:#7ec8f0;letter-spacing:1px;text-transform:uppercase;margin-bottom:16px;padding-bottom:8px;border-bottom:1px solid rgba(255,255,255,0.08);">
+          ⚙️ Process Temperatures
+        </div>
+        <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:16px;">
+
+          <!-- AB Side COT -->
+          <div class="td-field-group">
+            <label class="td-label">AB Side Reformer COT <span class="td-unit">(°C)</span></label>
+            <input type="number" id="td-ab-cot" class="td-input" placeholder="Enter value" step="0.1">
+          </div>
+
+          <!-- CD Side COT -->
+          <div class="td-field-group">
+            <label class="td-label">CD Side Reformer COT <span class="td-unit">(°C)</span></label>
+            <input type="number" id="td-cd-cot" class="td-input" placeholder="Enter value" step="0.1">
+          </div>
+
+          <!-- Flue Gas -->
+          <div class="td-field-group">
+            <label class="td-label">Reformer Flue Gas <span class="td-unit">(°C)</span></label>
+            <input type="number" id="td-flue-gas" class="td-input" placeholder="Enter value" step="0.1">
+          </div>
+
+          <!-- Excess Oxygen -->
+          <div class="td-field-group">
+            <label class="td-label">Excess Oxygen <span class="td-unit">(%Vol)</span></label>
+            <input type="number" id="td-excess-o2" class="td-input" placeholder="Enter value" step="0.01">
+          </div>
+
+          <!-- Pre-reformer Bed Max -->
+          <div class="td-field-group">
+            <label class="td-label">Pre-reformer Bed Max <span class="td-unit">(°C)</span></label>
+            <input type="number" id="td-prereformer-max" class="td-input" placeholder="Enter value" step="0.1">
+          </div>
+
+          <!-- Pre-reformer Bed Min -->
+          <div class="td-field-group">
+            <label class="td-label">Pre-reformer Bed Min <span class="td-unit">(°C)</span></label>
+            <input type="number" id="td-prereformer-min" class="td-input" placeholder="Enter value" step="0.1">
+          </div>
+
+        </div>
+      </div>
+
+      <!-- ── Section 2: Peep Hole Temperatures ── -->
+      <div style="background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.1);border-radius:10px;padding:20px 24px;margin-bottom:18px;">
+        <div style="font-size:12px;font-weight:700;color:#7ec8f0;letter-spacing:1px;text-transform:uppercase;margin-bottom:16px;padding-bottom:8px;border-bottom:1px solid rgba(255,255,255,0.08);">
+          👁️ Peep Hole Temperatures — Peep Hole No. 1 – 15
+        </div>
+
+        <!-- Number header row -->
+        <div style="display:grid;grid-template-columns:80px repeat(15,1fr);gap:6px;margin-bottom:6px;align-items:center;">
+          <div style="font-size:10px;color:#64748b;text-align:center;font-weight:700;letter-spacing:0.5px;">PH No.</div>
+          <div style="font-size:11px;color:#94a3b8;text-align:center;font-weight:700;">1</div>
+          <div style="font-size:11px;color:#94a3b8;text-align:center;font-weight:700;">2</div>
+          <div style="font-size:11px;color:#94a3b8;text-align:center;font-weight:700;">3</div>
+          <div style="font-size:11px;color:#94a3b8;text-align:center;font-weight:700;">4</div>
+          <div style="font-size:11px;color:#94a3b8;text-align:center;font-weight:700;">5</div>
+          <div style="font-size:11px;color:#94a3b8;text-align:center;font-weight:700;">6</div>
+          <div style="font-size:11px;color:#94a3b8;text-align:center;font-weight:700;">7</div>
+          <div style="font-size:11px;color:#94a3b8;text-align:center;font-weight:700;">8</div>
+          <div style="font-size:11px;color:#94a3b8;text-align:center;font-weight:700;">9</div>
+          <div style="font-size:11px;color:#94a3b8;text-align:center;font-weight:700;">10</div>
+          <div style="font-size:11px;color:#94a3b8;text-align:center;font-weight:700;">11</div>
+          <div style="font-size:11px;color:#94a3b8;text-align:center;font-weight:700;">12</div>
+          <div style="font-size:11px;color:#94a3b8;text-align:center;font-weight:700;">13</div>
+          <div style="font-size:11px;color:#94a3b8;text-align:center;font-weight:700;">14</div>
+          <div style="font-size:11px;color:#94a3b8;text-align:center;font-weight:700;">15</div>
+        </div>
+
+        <!-- AB Bottom -->
+        <div style="display:grid;grid-template-columns:80px repeat(15,1fr);gap:6px;align-items:center;margin-bottom:8px;">
+          <div class="td-row-label" style="background:rgba(243,112,34,0.15);border-color:rgba(243,112,34,0.35);color:#F37022;">AB Bot.</div>
+          <input type="number" id="td-ph-ab-bot-1"  class="td-ph-input" placeholder="1"  step="0.1">
+          <input type="number" id="td-ph-ab-bot-2"  class="td-ph-input" placeholder="2"  step="0.1">
+          <input type="number" id="td-ph-ab-bot-3"  class="td-ph-input" placeholder="3"  step="0.1">
+          <input type="number" id="td-ph-ab-bot-4"  class="td-ph-input" placeholder="4"  step="0.1">
+          <input type="number" id="td-ph-ab-bot-5"  class="td-ph-input" placeholder="5"  step="0.1">
+          <input type="number" id="td-ph-ab-bot-6"  class="td-ph-input" placeholder="6"  step="0.1">
+          <input type="number" id="td-ph-ab-bot-7"  class="td-ph-input" placeholder="7"  step="0.1">
+          <input type="number" id="td-ph-ab-bot-8"  class="td-ph-input" placeholder="8"  step="0.1">
+          <input type="number" id="td-ph-ab-bot-9"  class="td-ph-input" placeholder="9"  step="0.1">
+          <input type="number" id="td-ph-ab-bot-10" class="td-ph-input" placeholder="10" step="0.1">
+          <input type="number" id="td-ph-ab-bot-11" class="td-ph-input" placeholder="11" step="0.1">
+          <input type="number" id="td-ph-ab-bot-12" class="td-ph-input" placeholder="12" step="0.1">
+          <input type="number" id="td-ph-ab-bot-13" class="td-ph-input" placeholder="13" step="0.1">
+          <input type="number" id="td-ph-ab-bot-14" class="td-ph-input" placeholder="14" step="0.1">
+          <input type="number" id="td-ph-ab-bot-15" class="td-ph-input" placeholder="15" step="0.1">
+        </div>
+
+        <!-- CD Bottom -->
+        <div style="display:grid;grid-template-columns:80px repeat(15,1fr);gap:6px;align-items:center;margin-bottom:8px;">
+          <div class="td-row-label" style="background:rgba(96,200,255,0.1);border-color:rgba(96,200,255,0.3);color:#7ec8f0;">CD Bot.</div>
+          <input type="number" id="td-ph-cd-bot-1"  class="td-ph-input" placeholder="1"  step="0.1">
+          <input type="number" id="td-ph-cd-bot-2"  class="td-ph-input" placeholder="2"  step="0.1">
+          <input type="number" id="td-ph-cd-bot-3"  class="td-ph-input" placeholder="3"  step="0.1">
+          <input type="number" id="td-ph-cd-bot-4"  class="td-ph-input" placeholder="4"  step="0.1">
+          <input type="number" id="td-ph-cd-bot-5"  class="td-ph-input" placeholder="5"  step="0.1">
+          <input type="number" id="td-ph-cd-bot-6"  class="td-ph-input" placeholder="6"  step="0.1">
+          <input type="number" id="td-ph-cd-bot-7"  class="td-ph-input" placeholder="7"  step="0.1">
+          <input type="number" id="td-ph-cd-bot-8"  class="td-ph-input" placeholder="8"  step="0.1">
+          <input type="number" id="td-ph-cd-bot-9"  class="td-ph-input" placeholder="9"  step="0.1">
+          <input type="number" id="td-ph-cd-bot-10" class="td-ph-input" placeholder="10" step="0.1">
+          <input type="number" id="td-ph-cd-bot-11" class="td-ph-input" placeholder="11" step="0.1">
+          <input type="number" id="td-ph-cd-bot-12" class="td-ph-input" placeholder="12" step="0.1">
+          <input type="number" id="td-ph-cd-bot-13" class="td-ph-input" placeholder="13" step="0.1">
+          <input type="number" id="td-ph-cd-bot-14" class="td-ph-input" placeholder="14" step="0.1">
+          <input type="number" id="td-ph-cd-bot-15" class="td-ph-input" placeholder="15" step="0.1">
+        </div>
+
+        <!-- AB Top -->
+        <div style="display:grid;grid-template-columns:80px repeat(15,1fr);gap:6px;align-items:center;margin-bottom:8px;">
+          <div class="td-row-label" style="background:rgba(243,112,34,0.15);border-color:rgba(243,112,34,0.35);color:#F37022;">AB Top</div>
+          <input type="number" id="td-ph-ab-top-1"  class="td-ph-input" placeholder="1"  step="0.1">
+          <input type="number" id="td-ph-ab-top-2"  class="td-ph-input" placeholder="2"  step="0.1">
+          <input type="number" id="td-ph-ab-top-3"  class="td-ph-input" placeholder="3"  step="0.1">
+          <input type="number" id="td-ph-ab-top-4"  class="td-ph-input" placeholder="4"  step="0.1">
+          <input type="number" id="td-ph-ab-top-5"  class="td-ph-input" placeholder="5"  step="0.1">
+          <input type="number" id="td-ph-ab-top-6"  class="td-ph-input" placeholder="6"  step="0.1">
+          <input type="number" id="td-ph-ab-top-7"  class="td-ph-input" placeholder="7"  step="0.1">
+          <input type="number" id="td-ph-ab-top-8"  class="td-ph-input" placeholder="8"  step="0.1">
+          <input type="number" id="td-ph-ab-top-9"  class="td-ph-input" placeholder="9"  step="0.1">
+          <input type="number" id="td-ph-ab-top-10" class="td-ph-input" placeholder="10" step="0.1">
+          <input type="number" id="td-ph-ab-top-11" class="td-ph-input" placeholder="11" step="0.1">
+          <input type="number" id="td-ph-ab-top-12" class="td-ph-input" placeholder="12" step="0.1">
+          <input type="number" id="td-ph-ab-top-13" class="td-ph-input" placeholder="13" step="0.1">
+          <input type="number" id="td-ph-ab-top-14" class="td-ph-input" placeholder="14" step="0.1">
+          <input type="number" id="td-ph-ab-top-15" class="td-ph-input" placeholder="15" step="0.1">
+        </div>
+
+        <!-- CD Top -->
+        <div style="display:grid;grid-template-columns:80px repeat(15,1fr);gap:6px;align-items:center;">
+          <div class="td-row-label" style="background:rgba(96,200,255,0.1);border-color:rgba(96,200,255,0.3);color:#7ec8f0;">CD Top</div>
+          <input type="number" id="td-ph-cd-top-1"  class="td-ph-input" placeholder="1"  step="0.1">
+          <input type="number" id="td-ph-cd-top-2"  class="td-ph-input" placeholder="2"  step="0.1">
+          <input type="number" id="td-ph-cd-top-3"  class="td-ph-input" placeholder="3"  step="0.1">
+          <input type="number" id="td-ph-cd-top-4"  class="td-ph-input" placeholder="4"  step="0.1">
+          <input type="number" id="td-ph-cd-top-5"  class="td-ph-input" placeholder="5"  step="0.1">
+          <input type="number" id="td-ph-cd-top-6"  class="td-ph-input" placeholder="6"  step="0.1">
+          <input type="number" id="td-ph-cd-top-7"  class="td-ph-input" placeholder="7"  step="0.1">
+          <input type="number" id="td-ph-cd-top-8"  class="td-ph-input" placeholder="8"  step="0.1">
+          <input type="number" id="td-ph-cd-top-9"  class="td-ph-input" placeholder="9"  step="0.1">
+          <input type="number" id="td-ph-cd-top-10" class="td-ph-input" placeholder="10" step="0.1">
+          <input type="number" id="td-ph-cd-top-11" class="td-ph-input" placeholder="11" step="0.1">
+          <input type="number" id="td-ph-cd-top-12" class="td-ph-input" placeholder="12" step="0.1">
+          <input type="number" id="td-ph-cd-top-13" class="td-ph-input" placeholder="13" step="0.1">
+          <input type="number" id="td-ph-cd-top-14" class="td-ph-input" placeholder="14" step="0.1">
+          <input type="number" id="td-ph-cd-top-15" class="td-ph-input" placeholder="15" step="0.1">
+        </div>
+      </div>
+
+      <!-- ── Saved Entries Table ── -->
+      <div style="background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.08);border-radius:10px;padding:20px 24px;">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;">
+          <div style="font-size:12px;font-weight:700;color:#7ec8f0;letter-spacing:1px;text-transform:uppercase;">
+            📋 Saved Entries
+          </div>
+          <button onclick="exportToExcel()"
+            style="background:rgba(74,222,128,0.1);border:1px solid rgba(74,222,128,0.3);color:#4ade80;padding:7px 16px;border-radius:6px;font-size:12px;font-weight:700;font-family:'Rajdhani',sans-serif;cursor:pointer;">
+            💾 Save to Burner Data File
+          </button>
+        </div>
+        <div style="overflow-x:auto;">
+          <table id="td-saved-table" style="width:100%;border-collapse:collapse;font-size:12px;min-width:900px;">
+            <thead>
+              <tr style="background:rgba(255,255,255,0.06);color:#7ec8f0;font-weight:700;letter-spacing:0.5px;text-transform:uppercase;">
+                <th style="padding:9px 10px;text-align:left;border-bottom:1px solid rgba(255,255,255,0.1);">Date/Time</th>
+                <th style="padding:9px 10px;text-align:center;border-bottom:1px solid rgba(255,255,255,0.1);">Shift</th>
+                <th style="padding:9px 10px;text-align:center;border-bottom:1px solid rgba(255,255,255,0.1);">AB COT (°C)</th>
+                <th style="padding:9px 10px;text-align:center;border-bottom:1px solid rgba(255,255,255,0.1);">CD COT (°C)</th>
+                <th style="padding:9px 10px;text-align:center;border-bottom:1px solid rgba(255,255,255,0.1);">Flue Gas (°C)</th>
+                <th style="padding:9px 10px;text-align:center;border-bottom:1px solid rgba(255,255,255,0.1);">O₂ (%Vol)</th>
+                <th style="padding:9px 10px;text-align:center;border-bottom:1px solid rgba(255,255,255,0.1);">Pre-ref Max (°C)</th>
+                <th style="padding:9px 10px;text-align:center;border-bottom:1px solid rgba(255,255,255,0.1);">Pre-ref Min (°C)</th>
+                <th style="padding:9px 10px;text-align:center;border-bottom:1px solid rgba(255,255,255,0.1);">AB Bot PH 1-15</th>
+                <th style="padding:9px 10px;text-align:center;border-bottom:1px solid rgba(255,255,255,0.1);">CD Bot PH 1-15</th>
+                <th style="padding:9px 10px;text-align:center;border-bottom:1px solid rgba(255,255,255,0.1);">AB Top PH 1-15</th>
+                <th style="padding:9px 10px;text-align:center;border-bottom:1px solid rgba(255,255,255,0.1);">CD Top PH 1-15</th>
+                <th style="padding:9px 10px;text-align:center;border-bottom:1px solid rgba(255,255,255,0.1);">Action</th>
+              </tr>
+            </thead>
+            <tbody id="td-saved-tbody">
+              <tr><td colspan="13" style="text-align:center;color:#475569;padding:20px;">No entries saved yet.</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+    </div>
+  </div><!-- /tab-tempdata -->
+
 </div><!-- /tab-panels -->
 
 <!-- ====================================================
@@ -1615,6 +2024,10 @@ td.burner-pending.C{ box-shadow:0 0 8px 2px rgba(253,224,71,0.4) !important; }
     <span class="btab-label">Alarms</span>
     <span class="btab-alarm-count" id="btab-alarm-count" style="display:none">0</span>
   </button>
+  <button class="btab" id="btab-tempdata" onclick="switchTab('tempdata')">
+    <span class="btab-icon">🌡️</span>
+    <span class="btab-label">Temp. Data</span>
+  </button>
 </div>
 
 <script>
@@ -1624,7 +2037,7 @@ var alarmLog = [];
 /* ==================================================
    CONSTANTS
 ================================================== */
-const SCADA_PASSWORD = "admin123";
+const SCADA_PASSWORD = "Dubey123";
 const WALL_NAMES     = ["A","B","C","D"];
 const ROWS           = 6;
 const BURNERS        = 15;
@@ -1635,22 +2048,14 @@ const chartInstances = {};
    LOGIN / LOGOUT
 ================================================== */
 
-function login(){
-  const pw  = document.getElementById("passwordInput").value;
-  const err = document.getElementById("ls-error");
-  if(pw === SCADA_PASSWORD){
-    sessionStorage.setItem("scadaLoggedIn","true");
-    document.getElementById("loginScreen").style.display="none";
-    err.style.display="none";
-    /* Trigger file picker immediately — browser allows this because
-       it is called directly within the Sign In button click event. */
-    document.getElementById("autoImportInput").click();
-  } else {
-    err.style.display="block";
-    document.getElementById("passwordInput").value="";
-    document.getElementById("passwordInput").focus();
-  }
-}
+
+document.addEventListener("DOMContentLoaded",function(){
+  var m=document.getElementById("forgotModal");
+  if(m) m.addEventListener("click",function(e){ if(e.target===this) hideForgotModal(); });
+});
+
+
+
 
 /* Called when user picks a file from the auto-import dialog after login */
 function handleAutoImport(event){
@@ -1978,66 +2383,94 @@ function generateAnalysis(){
 /* Track the last imported file name so Save writes back same filename */
 let lastImportedFileName = "Burner_SCADA_Report.xlsx";
 
-function exportToExcel(){
-  /* Commit any pending burner state changes */
+async function exportToExcel(){
+  /* Commit pending burner changes */
   const hadBurnerPending = Object.keys(burnerPending).length > 0;
   commitBurnerPending();
-  if(hadBurnerPending){
-    render(); /* clears pending styles — fresh render from committed data */
-    showToast("✅ Burner data saved successfully");
-  }
+  if(hadBurnerPending){ render(); showToast("✅ Burner data saved successfully"); }
 
-  /* Commit any pending cleaning date changes */
+  /* Commit pending cleaning changes */
   const hadCleaningPending = Object.keys(cleaningPending).length > 0;
   commitCleaningPending();
-  if(hadCleaningPending){
-    buildCleaningTable();
-    showToast("✅ Cleaning dates saved successfully");
-  }
+  if(hadCleaningPending){ buildCleaningTable(); showToast("✅ Cleaning dates saved successfully"); }
 
-  const wb=XLSX.utils.book_new();
+  const wb = XLSX.utils.book_new();
 
   /* Sheet 1: Burner Data */
-  const rows=[["Wall","Row","Burner","Value"]];
+  const rows = [["Wall","Row","Burner","Value"]];
   Object.entries(data).forEach(([w,wr])=>{
     wr.forEach((r,ri)=>r.forEach((c,ci)=>rows.push([w,"R"+(ri+1),"B"+(ci+1),c])));
   });
-  const ws1=XLSX.utils.aoa_to_sheet(rows);
-  ws1["!cols"]=[{wch:12},{wch:8},{wch:10},{wch:10}];
-  XLSX.utils.book_append_sheet(wb,ws1,"Burner Data");
+  const ws1 = XLSX.utils.aoa_to_sheet(rows);
+  ws1["!cols"] = [{wch:12},{wch:8},{wch:10},{wch:10}];
+  XLSX.utils.book_append_sheet(wb, ws1, "Burner Data");
 
-  /* Sheet 2: Cleaning Log */
-  const log=loadCleaningLog();
+  /* Sheet 2+: Cleaning Log per wall */
+  const log = loadCleaningLog();
   WALL_NAMES.forEach(w=>{
-    const clRows=[["Row \\ Burner",...Array.from({length:BURNERS},(_,i)=>"B"+(i+1))]];
+    const clRows = [["Row \\ Burner",...Array.from({length:BURNERS},(_,i)=>"B"+(i+1))]];
     for(let r=1;r<=ROWS;r++){
-      const row=["R"+r];
+      const row = ["R"+r];
       for(let b=1;b<=BURNERS;b++){
         const key="R"+r+"B"+b;
         row.push((log[w]&&log[w][key])?log[w][key]:"—");
       }
       clRows.push(row);
     }
-    const ws2=XLSX.utils.aoa_to_sheet(clRows);
-    ws2["!cols"]=clRows[0].map((_,i)=>({wch:i===0?12:14}));
-    XLSX.utils.book_append_sheet(wb,ws2,"Cleaning Wall "+w);
+    const ws2 = XLSX.utils.aoa_to_sheet(clRows);
+    ws2["!cols"] = clRows[0].map((_,i)=>({wch:i===0?12:14}));
+    XLSX.utils.book_append_sheet(wb, ws2, "Cleaning Wall "+w);
   });
 
-  /* Use File System Access API if available — saves to same folder as imported file */
+  /* Sheet: Temp Data */
+  var tdHeaders = [
+    "Date/Time","Shift",
+    "AB Side COT (°C)","CD Side COT (°C)","Flue Gas (°C)","Excess O2 (%Vol)",
+    "Pre-ref Max (°C)","Pre-ref Min (°C)"
+  ];
+  var phRowKeys   = ["ab-bot","cd-bot","ab-top","cd-top"];
+  var phRowLabels = {"ab-bot":"AB Bot","cd-bot":"CD Bot","ab-top":"AB Top","cd-top":"CD Top"};
+  phRowKeys.forEach(function(rk){
+    for(var ph=1;ph<=15;ph++) tdHeaders.push(phRowLabels[rk]+" PH"+ph);
+  });
+  var tdRows = [tdHeaders];
+  if(Array.isArray(tempDataEntries) && tempDataEntries.length){
+    tempDataEntries.forEach(function(e){
+      var row=[e.dt||"", e.shift||"", e.abCot||"", e.cdCot||"", e.flueGas||"",
+               e.excessO2||"", e.preRefMax||"", e.preRefMin||""];
+      phRowKeys.forEach(function(rk){
+        var vals=(e.peepHoles&&e.peepHoles[rk])?e.peepHoles[rk]:[];
+        for(var ph=0;ph<15;ph++) row.push(vals[ph]!==undefined?vals[ph]:"");
+      });
+      tdRows.push(row);
+    });
+  }
+  var wsTD = XLSX.utils.aoa_to_sheet(tdRows);
+  wsTD["!cols"] = tdHeaders.map(function(_,i){ return {wch: i<2?18:14}; });
+  XLSX.utils.book_append_sheet(wb, wsTD, "Temp Data");
+
+  const fname = lastImportedFileName || "Burner_SCADA_Report.xlsx";
+
+  /* Try folder auto-export first */
+  if(scadaFolderHandle){
+    const ok = await autoExportToFolder(wb, fname);
+    if(ok){ showToast("✅ Saved to folder \""+scadaFolderHandle.name+"\": "+fname); return; }
+  }
+
+  /* Fallback: showSaveFilePicker or XLSX.writeFile */
   const wbOut = XLSX.write(wb, {bookType:"xlsx", type:"array"});
   const blob  = new Blob([wbOut], {type:"application/octet-stream"});
-
   if(window.showSaveFilePicker){
     window.showSaveFilePicker({
-      suggestedName: lastImportedFileName,
+      suggestedName: fname,
       types:[{description:"Excel Workbook", accept:{"application/vnd.openxmlformats-officedocument.spreadsheetml.sheet":[".xlsx"]}}]
-    }).then(fileHandle => fileHandle.createWritable())
-      .then(writable => writable.write(blob).then(() => writable.close()))
-      .then(() => showToast("✅ Saved: " + lastImportedFileName))
-      .catch(err => { if(err.name !== "AbortError") XLSX.writeFile(wb, lastImportedFileName); });
+    }).then(fh=>fh.createWritable())
+      .then(w=>w.write(blob).then(()=>w.close()))
+      .then(()=>showToast("✅ Saved: "+fname))
+      .catch(err=>{ if(err.name!=="AbortError") XLSX.writeFile(wb, fname); });
   } else {
-    /* Fallback for browsers without File System Access API */
-    XLSX.writeFile(wb, lastImportedFileName);
+    XLSX.writeFile(wb, fname);
+    showToast("✅ Exported: "+fname);
   }
 }
 
@@ -2077,7 +2510,7 @@ async function smartRefresh(){
       _doImport(found.file, function(){
         buildCleaningTable();
         showToast("🔄 Refreshed: " + found.file.name + " from folder \"" + scadaFolderHandle.name + "\"");
-      });
+      }, true /* silent */);
     } catch(err){
       console.warn("smartRefresh folder error:", err);
       showToast("⚠ Could not read from folder. Falling back to file picker.");
@@ -2089,7 +2522,7 @@ async function smartRefresh(){
   }
 }
 
-function _doImport(file, onDone){
+function _doImport(file, onDone, silent){
   const reader=new FileReader();
 
   reader.onload=e=>{
@@ -2143,8 +2576,49 @@ function _doImport(file, onDone){
       render();                 /* explicit second call ensures selects are fresh */
       buildCleaningTable(); /* rebuild cleaning log after import */
 
+      /* ── Import Temp Data sheet if present ── */
+      try{
+        var tdSheetName = wb.SheetNames.find(function(n){ return n.trim().toLowerCase()==="temp data"; });
+        if(tdSheetName){
+          var tdWS   = wb.Sheets[tdSheetName];
+          var tdData = XLSX.utils.sheet_to_json(tdWS, {header:1, raw:false, defval:""});
+          if(tdData.length > 1){
+            var phRowKeys2   = ["ab-bot","cd-bot","ab-top","cd-top"];
+            var phRowLabels2 = {"ab-bot":"AB Bot","cd-bot":"CD Bot","ab-top":"AB Top","cd-top":"CD Top"};
+            tempDataEntries = [];
+            tdData.slice(1).forEach(function(row){
+              if(!row[0] && !row[1]) return; /* skip completely empty rows */
+              var entry = {
+                dt:         row[0]||"",
+                shift:      row[1]||"",
+                abCot:      row[2]||"",
+                cdCot:      row[3]||"",
+                flueGas:    row[4]||"",
+                excessO2:   row[5]||"",
+                preRefMax:  row[6]||"",
+                preRefMin:  row[7]||"",
+                peepHoles:  {}
+              };
+              var colOffset = 8;
+              phRowKeys2.forEach(function(rk){
+                entry.peepHoles[rk] = [];
+                for(var ph=0;ph<15;ph++){
+                  entry.peepHoles[rk].push(row[colOffset]||"");
+                  colOffset++;
+                }
+              });
+              tempDataEntries.push(entry);
+            });
+            try{ localStorage.setItem("tempDataEntries", JSON.stringify(tempDataEntries)); }catch(e){}
+            renderTempDataTable();
+          }
+        }
+      } catch(tdErr){
+        console.warn("Temp Data sheet import error:", tdErr);
+      }
+
       setTimeout(()=>{
-        alert("✅ Import successful!\n"+Object.keys(nd).length+" wall(s) loaded, "+parsedCount+" cells updated.");
+        if(!silent) alert("✅ Import successful!\n"+Object.keys(nd).length+" wall(s) loaded, "+parsedCount+" cells updated.");
       },50);
 
     }catch(err){
@@ -2215,7 +2689,8 @@ function getBurnerHistory(wall, key){
 /* Check if any burner has freq alarm this month */
 function getFreqAlarms(){
   const hist     = loadCleaningHistory();
-  const monthStr = new Date().toISOString().slice(0,7);
+  var _ms = document.getElementById("cleaningMonthSelect");
+  const monthStr = _ms ? _ms.value : new Date().toISOString().slice(0,7);
   const alarms   = [];
 
   WALL_NAMES.forEach(w => {
@@ -2448,15 +2923,34 @@ function buildCleaningTable(){
   renderFreqAlarmPanel();
 }
 
+function populateMonthDropdown(){
+  var sel = document.getElementById("cleaningMonthSelect");
+  if(!sel || sel.options.length > 0) return;
+  var now = new Date();
+  var mNames = ["January","February","March","April","May","June","July","August","September","October","November","December"];
+  for(var i=0;i<24;i++){
+    var d = new Date(now.getFullYear(), now.getMonth()-i, 1);
+    var val = d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0");
+    var opt = document.createElement("option");
+    opt.value = val;
+    opt.textContent = mNames[d.getMonth()]+" "+d.getFullYear();
+    if(i===0) opt.selected=true;
+    sel.appendChild(opt);
+  }
+}
 function updateCleaningStatus(log){
+  populateMonthDropdown();
   var now   = new Date();
   var today = now.toISOString().slice(0,10);
-
   var dow  = now.getDay();
   var diff = (dow===0?6:dow-1);
   var weekStart = new Date(now); weekStart.setDate(now.getDate()-diff);
   var weekStr   = weekStart.toISOString().slice(0,10);
-  var monthStr  = today.slice(0,7);
+  var sel = document.getElementById("cleaningMonthSelect");
+  var monthStr = sel ? sel.value : today.slice(0,7);
+  var mNames2 = ["January","February","March","April","May","June","July","August","September","October","November","December"];
+  var mParts = monthStr.split("-");
+  var mLabel = mNames2[parseInt(mParts[1])-1]+" "+mParts[0];
 
   var total=0, filled=0, todayC=0, weekC=0, monthC=0;
   var wallCounts = {};
@@ -2486,6 +2980,7 @@ function updateCleaningStatus(log){
   setEl("cdash-val-today",  todayC);
   setEl("cdash-val-week",   weekC);
   setEl("cdash-val-month",  monthC);
+  var freqLbl=document.getElementById("freqAlarmMonthLabel"); if(freqLbl) freqLbl.textContent="Burners cleaned more than 3 times in "+mLabel;
   setEl("cdash-val-total",  filled);
   setEl("cdash-val-pct",    "of "+total+" ("+Math.round(filled/total*100)+"%)");
 
@@ -2967,7 +3462,13 @@ async function pickFolder(){
     /* Try to auto-import the most recent xlsx from the folder immediately */
     await autoImportFromFolder(true);
   } catch(err){
-    if(err.name !== "AbortError") console.error("Folder pick error:", err);
+    if(err.name === "AbortError") return; /* user cancelled — silent */
+    if(err.name === "SecurityError"){
+      showToast("⚠ Folder picker blocked: please open this file directly in Chrome/Edge (not inside a preview frame).");
+      return;
+    }
+    console.error("Folder pick error:", err);
+    showToast("⚠ Could not open folder: " + err.message);
   }
 }
 
@@ -3015,7 +3516,7 @@ async function autoImportFromFolder(showMsg){
         buildCleaningTable();
         if(showMsg) showToast("✅ Auto-loaded: " + found.file.name + " from folder \"" + scadaFolderHandle.name + "\"");
         res(true);
-      });
+      }, true /* silent — no alert popup on auto-load */);
     });
   } catch(err){
     console.warn("autoImportFromFolder error:", err);
@@ -3043,107 +3544,150 @@ async function autoExportToFolder(wb, filename){
   }
 }
 
-/* ── Override login to also trigger folder auto-import ── */
-var _origLogin = login;
-async function loginWithFolder(){
-  /* Call original login logic */
+/* ── Full login with folder auto-import support ── */
+async function loginWithFolderSupport(){
   var pw  = document.getElementById("passwordInput").value;
   var err = document.getElementById("ls-error");
   if(pw === SCADA_PASSWORD){
     sessionStorage.setItem("scadaLoggedIn","true");
     document.getElementById("loginScreen").style.display="none";
     err.style.display="none";
-    /* If a folder handle is already stored, use it */
+
+    /* Always init the UI first so the app is usable */
+    init();
+
     if(scadaFolderHandle){
+      /* Folder was previously set — silently try to auto-import.
+         requestPermission() is allowed here because we are inside a
+         user-gesture (button click → loginWithFolderSupport). */
       var ok = await autoImportFromFolder(true);
       if(!ok){
-        /* Fall back to manual file picker */
-        document.getElementById("autoImportInput").click();
-      } else {
-        init();
+        /* Permission was denied or folder has no xlsx yet —
+           show a toast, do NOT open a file picker automatically */
+        showToast("⚠ Could not auto-load from saved folder. Use 🔄 Refresh Data or 📁 Set Folder to retry.");
       }
     } else {
-      /* No folder set — use the manual file picker as before */
-      document.getElementById("autoImportInput").click();
+      /* No folder set yet — just show a hint toast, no file picker popup */
+      showToast("💡 Tip: click 📁 Set Folder to enable automatic file loading on every login.");
     }
   } else {
-    err.style.display="block";
-    document.getElementById("passwordInput").value="";
-    document.getElementById("passwordInput").focus();
+    err.style.display = "block";
+    err.textContent   = "Incorrect password. Please try again.";
   }
 }
-/* Replace the login function */
-login = loginWithFolder;
 
-/* ── Override exportToExcel to also write to folder ── */
-var _origExport = exportToExcel;
-exportToExcel = async function(){
-  /* Commit pending changes */
-  var hadBurnerPending = Object.keys(burnerPending).length > 0;
-  commitBurnerPending();
-  if(hadBurnerPending){ render(); }
+/* ==================================================
+   TEMP DATA TAB — JavaScript
+================================================== */
+var tempDataEntries = [];
 
-  var hadCleaningPending = Object.keys(cleaningPending).length > 0;
-  commitCleaningPending();
-  if(hadCleaningPending){ buildCleaningTable(); }
-
-  /* Build workbook */
-  var wb = XLSX.utils.book_new();
-
-  /* Sheet 1: Burner Data */
-  var rows = [["Wall","Row","Burner","Value"]];
-  Object.entries(data).forEach(function(entry){
-    var w=entry[0]; var wr=entry[1];
-    wr.forEach(function(r,ri){ r.forEach(function(c,ci){ rows.push([w,"R"+(ri+1),"B"+(ci+1),c]); }); });
-  });
-  var ws1 = XLSX.utils.aoa_to_sheet(rows);
-  ws1["!cols"] = [{wch:12},{wch:8},{wch:10},{wch:10}];
-  XLSX.utils.book_append_sheet(wb, ws1, "Burner Data");
-
-  /* Sheet 2+: Cleaning Log per wall */
-  var log = loadCleaningLog();
-  WALL_NAMES.forEach(function(w){
-    var clRows = [["Row \\ Burner"].concat(Array.from({length:BURNERS},function(_,i){ return "B"+(i+1); }))];
-    for(var r=1;r<=ROWS;r++){
-      var row = ["R"+r];
-      for(var b=1;b<=BURNERS;b++){
-        var key="R"+r+"B"+b;
-        row.push((log[w]&&log[w][key])?log[w][key]:"—");
-      }
-      clRows.push(row);
+/* Initialize datetime field with current time */
+(function initTempDataTab(){
+  document.addEventListener("DOMContentLoaded", function(){
+    var dtInput = document.getElementById("td-datetime");
+    if(dtInput){
+      var now = new Date();
+      now.setMinutes(now.getMinutes() - now.getTimezoneOffset());
+      dtInput.value = now.toISOString().slice(0,16);
     }
-    var ws2 = XLSX.utils.aoa_to_sheet(clRows);
-    ws2["!cols"] = clRows[0].map(function(_,i){ return {wch:i===0?12:14}; });
-    XLSX.utils.book_append_sheet(wb, ws2, "Cleaning Wall "+w);
+    /* Load saved entries from localStorage if any */
+    try{
+      var saved = localStorage.getItem("tempDataEntries");
+      if(saved) tempDataEntries = JSON.parse(saved);
+      renderTempDataTable();
+    } catch(e){}
+  });
+})();
+
+function saveTempData(){
+  var dt    = document.getElementById("td-datetime").value;
+  var shift = document.getElementById("td-shift").value;
+
+  if(!dt){ alert("Please select a date and time."); return; }
+  if(!shift){ alert("Please select a shift (Morning / Evening / Night)."); return; }
+
+  var entry = {
+    dt: dt,
+    shift: shift,
+    abCot:  document.getElementById("td-ab-cot").value,
+    cdCot:  document.getElementById("td-cd-cot").value,
+    flueGas: document.getElementById("td-flue-gas").value,
+    excessO2: document.getElementById("td-excess-o2").value,
+    preRefMax: document.getElementById("td-prereformer-max").value,
+    preRefMin: document.getElementById("td-prereformer-min").value,
+    peepHoles: {}
+  };
+
+  ["ab-bot","cd-bot","ab-top","cd-top"].forEach(function(rowKey){
+    entry.peepHoles[rowKey] = [];
+    for(var ph=1;ph<=15;ph++){
+      var inp = document.getElementById("td-ph-"+rowKey+"-"+ph);
+      entry.peepHoles[rowKey].push(inp ? inp.value : "");
+    }
   });
 
-  var fname = lastImportedFileName || "Burner_SCADA_Report.xlsx";
+  tempDataEntries.unshift(entry);
+  try{ localStorage.setItem("tempDataEntries", JSON.stringify(tempDataEntries)); } catch(e){}
+  renderTempDataTable();
+  showToast("✅ Temperature entry saved successfully!");
+}
 
-  /* Try folder auto-export first */
-  if(scadaFolderHandle){
-    var ok = await autoExportToFolder(wb, fname);
-    if(ok){
-      showToast("✅ Saved to folder \"" + scadaFolderHandle.name + "\": " + fname);
-      return;
+function deleteTempEntry(idx){
+  if(!confirm("Delete this entry?")) return;
+  tempDataEntries.splice(idx,1);
+  try{ localStorage.setItem("tempDataEntries", JSON.stringify(tempDataEntries)); } catch(e){}
+  renderTempDataTable();
+}
+
+function clearTempData(){
+  var fields = ["td-ab-cot","td-cd-cot","td-flue-gas","td-excess-o2","td-prereformer-max","td-prereformer-min"];
+  fields.forEach(function(id){ var el=document.getElementById(id); if(el) el.value=""; });
+  ["ab-bot","cd-bot","ab-top","cd-top"].forEach(function(rowKey){
+    for(var ph=1;ph<=15;ph++){
+      var inp=document.getElementById("td-ph-"+rowKey+"-"+ph);
+      if(inp) inp.value="";
     }
+  });
+  document.getElementById("td-shift").value="";
+  var dtInput=document.getElementById("td-datetime");
+  if(dtInput){
+    var now=new Date(); now.setMinutes(now.getMinutes()-now.getTimezoneOffset());
+    dtInput.value=now.toISOString().slice(0,16);
   }
+}
 
-  /* Fallback: showSaveFilePicker or XLSX.writeFile */
-  var wbOut = XLSX.write(wb, {bookType:"xlsx", type:"array"});
-  var blob  = new Blob([wbOut], {type:"application/octet-stream"});
-  if(window.showSaveFilePicker){
-    window.showSaveFilePicker({
-      suggestedName: fname,
-      types:[{description:"Excel Workbook", accept:{"application/vnd.openxmlformats-officedocument.spreadsheetml.sheet":[".xlsx"]}}]
-    }).then(function(fh){ return fh.createWritable(); })
-      .then(function(w){ return w.write(blob).then(function(){ return w.close(); }); })
-      .then(function(){ showToast("✅ Saved: " + fname); })
-      .catch(function(err){ if(err.name!=="AbortError") XLSX.writeFile(wb, fname); });
-  } else {
-    XLSX.writeFile(wb, fname);
-    showToast("✅ Exported: " + fname);
+function renderTempDataTable(){
+  var tbody = document.getElementById("td-saved-tbody");
+  if(!tbody) return;
+  if(!tempDataEntries.length){
+    tbody.innerHTML='<tr><td colspan="13" style="text-align:center;color:#475569;padding:20px;">No entries saved yet.</td></tr>';
+    return;
   }
-};
+  var rowKeys = ["ab-bot","cd-bot","ab-top","cd-top"];
+  var rowLabels = {"ab-bot":"AB Bot","cd-bot":"CD Bot","ab-top":"AB Top","cd-top":"CD Top"};
+  tbody.innerHTML = tempDataEntries.map(function(e,i){
+    var phSummaries = rowKeys.map(function(rk){
+      var vals = (e.peepHoles && e.peepHoles[rk]) ? e.peepHoles[rk] : [];
+      var filled = vals.filter(function(v){ return v!==""; });
+      return rowLabels[rk]+": "+( filled.length ? filled.join(", ") : "—" );
+    });
+    return '<tr>'
+      +'<td>'+e.dt+'</td>'
+      +'<td style="text-align:center;">'+e.shift+'</td>'
+      +'<td style="text-align:center;">'+(e.abCot||"—")+'</td>'
+      +'<td style="text-align:center;">'+(e.cdCot||"—")+'</td>'
+      +'<td style="text-align:center;">'+(e.flueGas||"—")+'</td>'
+      +'<td style="text-align:center;">'+(e.excessO2||"—")+'</td>'
+      +'<td style="text-align:center;">'+(e.preRefMax||"—")+'</td>'
+      +'<td style="text-align:center;">'+(e.preRefMin||"—")+'</td>'
+      +'<td style="font-size:11px;">'+(e.peepHoles && e.peepHoles["ab-bot"] ? e.peepHoles["ab-bot"].filter(function(v){return v!=="";}).join(", ")||"—" : "—")+'</td>'
+      +'<td style="font-size:11px;">'+(e.peepHoles && e.peepHoles["cd-bot"] ? e.peepHoles["cd-bot"].filter(function(v){return v!=="";}).join(", ")||"—" : "—")+'</td>'
+      +'<td style="font-size:11px;">'+(e.peepHoles && e.peepHoles["ab-top"] ? e.peepHoles["ab-top"].filter(function(v){return v!=="";}).join(", ")||"—" : "—")+'</td>'
+      +'<td style="font-size:11px;">'+(e.peepHoles && e.peepHoles["cd-top"] ? e.peepHoles["cd-top"].filter(function(v){return v!=="";}).join(", ")||"—" : "—")+'</td>'
+      +'<td style="text-align:center;"><button class="td-del-btn" onclick="deleteTempEntry('+i+')">🗑 Del</button></td>'
+      +'</tr>';
+  }).join("");
+}
 
 </script>
 </body>

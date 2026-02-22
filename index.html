@@ -1528,7 +1528,7 @@ async function login(){
 
       <div class="ls-helpdesk">
         <span>🛟 IT Helpdesk</span>
-        <span><b>8476056756</b>&nbsp;|&nbsp;<b><a href="/cdn-cgi/l/email-protection#fb9f8e999e829acabb92959f929a95949297d59295" style="color:#fff;font-weight:700;text-decoration:none;"><span class="__cf_email__" data-cfemail="badecfd8dfc3db8bfad3d4ded3dbd4d5d3d694d3d4">[email&#160;protected]</span></a></b></span>
+        <span><b>8476056756</b>&nbsp;|&nbsp;<b><a href="mailto:dubeya1@indianoil.in" style="color:#fff;font-weight:700;text-decoration:none;">dubeya1@indianoil.in</a></b></span>
       </div>
     </div>
 
@@ -1556,7 +1556,7 @@ async function login(){
     </div>
     <div class="fm-card">
       <div class="fm-label">✉️ Helpdesk Email</div>
-      <div class="fm-value"><a href="/cdn-cgi/l/email-protection#ee8a9b8c8b978fdfae87808a878f80818782c08780" style="color:#F37022;text-decoration:none;"><span class="__cf_email__" data-cfemail="0c68796e69756d3d4c656268656d62636560226562">[email&#160;protected]</span></a></div>
+      <div class="fm-value"><a href="mailto:dubeya1@indianoil.in" style="color:#F37022;text-decoration:none;">dubeya1@indianoil.in</a></div>
     </div>
     <div class="fm-note">Support available during office hours (Mon–Sat, 8 AM – 6 PM).<br>Please quote your Employee ID: <b style="color:#F37022;">00514267</b></div>
     <button class="fm-btn" onclick="hideForgotModal()">Close</button>
@@ -1759,11 +1759,11 @@ async function login(){
           <!-- Shift Selection -->
           <div style="display:flex;align-items:center;gap:8px;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.12);border-radius:7px;padding:7px 14px;">
             <span style="font-size:12px;font-weight:700;color:#7ec8f0;letter-spacing:0.8px;text-transform:uppercase;">TST Shift:</span>
-            <select id="td-shift" style="background:transparent;border:none;color:#e2e8f0;font-family:'Rajdhani',sans-serif;font-size:14px;font-weight:600;outline:none;cursor:pointer;">
-              <option value="">-- Select --</option>
-              <option value="Morning">Morning</option>
-              <option value="Evening">Evening</option>
-              <option value="Night">Night</option>
+            <select id="td-shift" style="background:#1e293b;border:1px solid #334155;border-radius:6px;color:#e2e8f0;font-family:'Rajdhani',sans-serif;font-size:14px;font-weight:600;outline:none;cursor:pointer;padding:4px 8px;">
+              <option value="" style="background:#1e293b;color:#94a3b8;">-- Select --</option>
+              <option value="Morning" style="background:#1e293b;color:#34d399;">Morning</option>
+              <option value="Evening" style="background:#1e293b;color:#fb923c;">Evening</option>
+              <option value="Night" style="background:#1e293b;color:#818cf8;">Night</option>
             </select>
           </div>
           <!-- Date/Time -->
@@ -3657,45 +3657,47 @@ function clearTempData(){
   }
 }
 
-function phMinMax(vals){
-  var nums = vals.filter(function(v){ return v!=="" && !isNaN(Number(v)); }).map(Number);
+function phMinMax(entry, rk){
+  var rawVals = (entry.peepHoles && entry.peepHoles[rk]) ? entry.peepHoles[rk] : [];
+  var nums = rawVals.filter(function(v){ return v !== "" && !isNaN(Number(v)); }).map(Number);
   if(!nums.length) return "—";
-  var mn = Math.min.apply(null,nums), mx = Math.max.apply(null,nums);
-  return mn===mx ? mn+"°C" : mn+"°C / "+mx+"°C";
+  var mn = Math.min.apply(null, nums);
+  var mx = Math.max.apply(null, nums);
+  return mn === mx ? mn + "°C" : mn + "°C / " + mx + "°C";
 }
 
 function renderTempDataTable(){
   var tbody = document.getElementById("td-saved-tbody");
   if(!tbody) return;
   if(!tempDataEntries.length){
-    tbody.innerHTML='<tr><td colspan="13" style="text-align:center;color:#475569;padding:20px;">No entries saved yet.</td></tr>';
+    tbody.innerHTML = '<tr><td colspan="13" style="text-align:center;color:#475569;padding:20px;">No entries saved yet.</td></tr>';
     return;
   }
-  var display = tempDataEntries.slice(0,3);
-  tbody.innerHTML = display.map(function(e,i){
-    function getMinMax(rk){
-      var vals = (e.peepHoles && e.peepHoles[rk]) ? e.peepHoles[rk] : [];
-      return phMinMax(vals);
-    }
-    return '<tr>'
-      +'<td>'+e.dt+'</td>'
-      +'<td style="text-align:center;">'+e.shift+'</td>'
-      +'<td style="text-align:center;">'+(e.abCot||"—")+'</td>'
-      +'<td style="text-align:center;">'+(e.cdCot||"—")+'</td>'
-      +'<td style="text-align:center;">'+(e.flueGas||"—")+'</td>'
-      +'<td style="text-align:center;">'+(e.excessO2||"—")+'</td>'
-      +'<td style="text-align:center;">'+(e.preRefMax||"—")+'</td>'
-      +'<td style="text-align:center;">'+(e.preRefMin||"—")+'</td>'
-      +'<td style="text-align:center;font-size:12px;">'+getMinMax("ab-bot")+'</td>'
-      +'<td style="text-align:center;font-size:12px;">'+getMinMax("cd-bot")+'</td>'
-      +'<td style="text-align:center;font-size:12px;">'+getMinMax("ab-top")+'</td>'
-      +'<td style="text-align:center;font-size:12px;">'+getMinMax("cd-top")+'</td>'
-      +'<td><button onclick="deleteTempEntry('+i+')" style="background:#c0392b;color:#fff;border:none;padding:4px 10px;border-radius:4px;cursor:pointer;font-size:11px;">🗑 Del</button></td>'
-      +'</tr>';
-  }).join("")
-  +(tempDataEntries.length>3 ? '<tr><td colspan="13" style="text-align:center;color:#64748b;padding:8px;font-size:11px;">Showing latest 3 of '+tempDataEntries.length+' entries</td></tr>' : "");
+  var display = tempDataEntries.slice(0, 3);
+  var rows = "";
+  for(var i = 0; i < display.length; i++){
+    var ent = display[i];
+    rows += '<tr>'
+      + '<td>' + ent.dt + '</td>'
+      + '<td style="text-align:center;">' + ent.shift + '</td>'
+      + '<td style="text-align:center;">' + (ent.abCot  || "—") + '</td>'
+      + '<td style="text-align:center;">' + (ent.cdCot  || "—") + '</td>'
+      + '<td style="text-align:center;">' + (ent.flueGas|| "—") + '</td>'
+      + '<td style="text-align:center;">' + (ent.excessO2||"—") + '</td>'
+      + '<td style="text-align:center;">' + (ent.preRefMax||"—") + '</td>'
+      + '<td style="text-align:center;">' + (ent.preRefMin||"—") + '</td>'
+      + '<td style="text-align:center;font-size:12px;">' + phMinMax(ent,"ab-bot") + '</td>'
+      + '<td style="text-align:center;font-size:12px;">' + phMinMax(ent,"cd-bot") + '</td>'
+      + '<td style="text-align:center;font-size:12px;">' + phMinMax(ent,"ab-top") + '</td>'
+      + '<td style="text-align:center;font-size:12px;">' + phMinMax(ent,"cd-top") + '</td>'
+      + '<td><button onclick="deleteTempEntry(' + i + ')" style="background:#c0392b;color:#fff;border:none;padding:4px 10px;border-radius:4px;cursor:pointer;font-size:11px;">🗑 Del</button></td>'
+      + '</tr>';
+  }
+  if(tempDataEntries.length > 3){
+    rows += '<tr><td colspan="13" style="text-align:center;color:#64748b;padding:8px;font-size:11px;">Showing latest 3 of ' + tempDataEntries.length + ' entries</td></tr>';
+  }
+  tbody.innerHTML = rows;
 }
--e 
 </script>
 </body>
 </html>

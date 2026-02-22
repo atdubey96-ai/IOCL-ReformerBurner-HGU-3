@@ -1,10 +1,45 @@
-
 <!DOCTYPE html>
 <html>
 <head>
 <meta charset="UTF-8">
+<script>
+/* Source protection */
+(function(){
+  // Disable right-click context menu
+  document.addEventListener('contextmenu', function(e){ e.preventDefault(); return false; });
+  // Disable common keyboard shortcuts for view source / devtools
+  document.addEventListener('keydown', function(e){
+    // F12, Ctrl+U, Ctrl+Shift+I, Ctrl+Shift+J, Ctrl+Shift+C, Ctrl+S
+    if(e.key==='F12' ||
+      (e.ctrlKey && e.key==='u') ||
+      (e.ctrlKey && e.key==='U') ||
+      (e.ctrlKey && e.shiftKey && ['i','I','j','J','c','C'].includes(e.key)) ||
+      (e.ctrlKey && e.key==='s') ||
+      (e.ctrlKey && e.key==='S')){
+      e.preventDefault(); e.stopPropagation(); return false;
+    }
+  });
+  // DevTools open detector â€” blurs content if opened
+  var _devOpen = false;
+  var _thresh  = 160;
+  setInterval(function(){
+    var open = (window.outerWidth - window.innerWidth > _thresh) ||
+               (window.outerHeight - window.innerHeight > _thresh);
+    if(open && !_devOpen){
+      _devOpen = true;
+      document.body.style.filter = 'blur(12px)';
+      document.body.style.pointerEvents = 'none';
+    } else if(!open && _devOpen){
+      _devOpen = false;
+      document.body.style.filter = '';
+      document.body.style.pointerEvents = '';
+    }
+  }, 800);
+})();
+</script>
+
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>IndianOil — SCADA HGU-3 Reformer Burner Control System</title>
+<title>IndianOil â€” SCADA HGU-3 Reformer Burner Control System</title>
 
 <!-- AUTO-PURGE: Nuke stale all-capped burner data from localStorage BEFORE anything loads -->
 <script>
@@ -150,7 +185,7 @@ body.light-theme .alarm-group-header{color:#4a6a8a;}
 body.light-theme .analytics-panel{background:#f0f4fa;color:#1e293b;}
 body.light-theme .chart-card{background:#fff;border:1px solid #b8cde8;color:#1e293b;}
 
-/* ── Temp Data tab ── */
+/* â”€â”€ Temp Data tab â”€â”€ */
 body.light-theme .td-field-group{}
 body.light-theme .td-input{background:#fff;border-color:#b8cde8;color:#1e293b;}
 body.light-theme .td-ph-input{background:#fff;border-color:#b8cde8;color:#1e293b;}
@@ -164,7 +199,7 @@ body.light-theme .theme-slider{background:#334155;}
 body.light-theme .theme-toggle input:checked + .theme-slider{background:#94b4d8;}
 
 /* ====================================================
-   LOGIN — IOCL CORPORATE  (High-Contrast Vibrant)
+   LOGIN â€” IOCL CORPORATE  (High-Contrast Vibrant)
 ==================================================== */
 #loginScreen{
   position:fixed;top:0;left:0;width:100%;height:100%;
@@ -206,12 +241,12 @@ body.light-theme .theme-toggle input:checked + .theme-slider{background:#94b4d8;
 }
 .ls-brand-full{
   font-size:11.5px;
-  color:#c8dff8;  /* was #7a99c4 — now bright cool white-blue */
+  color:#c8dff8;  /* was #7a99c4 â€” now bright cool white-blue */
   letter-spacing:0.6px;margin-top:3px;font-weight:600;
 }
 .ls-brand-govt{
   font-size:10.5px;
-  color:#90b8e0;  /* was #4a6a94 — now clearly legible light blue */
+  color:#90b8e0;  /* was #4a6a94 â€” now clearly legible light blue */
   letter-spacing:0.4px;margin-top:2px;
 }
 .ls-portal-right{text-align:right;}
@@ -223,7 +258,7 @@ body.light-theme .theme-toggle input:checked + .theme-slider{background:#94b4d8;
 }
 .ls-portal-sub{
   font-size:11.5px;
-  color:#a8c8f0;  /* was #4a6a94 — now clearly visible */
+  color:#a8c8f0;  /* was #4a6a94 â€” now clearly visible */
   margin-top:4px;font-weight:500;
 }
 
@@ -265,7 +300,7 @@ body.light-theme .theme-toggle input:checked + .theme-slider{background:#94b4d8;
 }
 .ls-reformer-img-wrap{
   position:absolute;
-  top:-4%;
+  top:3%;
   right:0;
   bottom:42px;
   width:72%;
@@ -344,14 +379,14 @@ body.light-theme .theme-toggle input:checked + .theme-slider{background:#94b4d8;
 .ls-system-title span{color:#F37022;}
 .ls-desc{
   font-size:14px;
-  color:#c8dff8;  /* was #7a99c4 — now clearly readable */
+  color:#c8dff8;  /* was #7a99c4 â€” now clearly readable */
   line-height:1.75;margin-bottom:30px;
 }
 .ls-badges{display:flex;flex-wrap:wrap;gap:10px;}
 .ls-badge{
   background:rgba(243,112,34,0.12);
   border:1px solid rgba(243,112,34,0.45);
-  color:#f0c898;   /* warm amber — vibrant and visible */
+  color:#f0c898;   /* warm amber â€” vibrant and visible */
   font-size:12px;font-weight:600;
   padding:5px 14px;border-radius:20px;letter-spacing:0.3px;
 }
@@ -361,10 +396,10 @@ body.light-theme .theme-toggle input:checked + .theme-slider{background:#94b4d8;
   border-top:1px solid rgba(243,112,34,0.3);
   padding:9px 54px;display:flex;gap:36px;
   font-size:11px;
-  color:#90b8e0;  /* was #3a5a7a — now readable */
+  color:#90b8e0;  /* was #3a5a7a â€” now readable */
 }
 .ls-info-strip b{
-  color:#F37022;  /* was #6a8aaa — now orange accent, clearly visible */
+  color:#F37022;  /* was #6a8aaa â€” now orange accent, clearly visible */
   font-weight:700;
 }
 
@@ -379,19 +414,19 @@ body.light-theme .theme-toggle input:checked + .theme-slider{background:#94b4d8;
 }
 .ls-card-title{
   font-size:24px;font-weight:700;
-  color:#ffffff;  /* was #e8f0ff — pure white */
+  color:#ffffff;  /* was #e8f0ff â€” pure white */
   margin-bottom:5px;
 }
 .ls-card-sub{
   font-size:13px;
-  color:#a8c8f0;  /* was #4a6a94 — now clearly legible */
+  color:#a8c8f0;  /* was #4a6a94 â€” now clearly legible */
   margin-bottom:20px;font-weight:500;
 }
 .ls-accent-bar{width:36px;height:3px;background:#F37022;border-radius:2px;margin-bottom:28px;}
 .ls-field{margin-bottom:18px;}
 .ls-label{
   display:block;font-size:11px;
-  color:#7ec8f0;  /* was #4a6a94 — now bright cyan-blue, vibrant & readable */
+  color:#7ec8f0;  /* was #4a6a94 â€” now bright cyan-blue, vibrant & readable */
   letter-spacing:1.2px;text-transform:uppercase;
   font-weight:700;margin-bottom:7px;
 }
@@ -409,21 +444,21 @@ body.light-theme .theme-toggle input:checked + .theme-slider{background:#94b4d8;
 }
 .ls-input-icon{
   padding:0 13px;font-size:15px;
-  opacity:0.9;  /* was 0.55 — now clearly visible icons */
+  opacity:0.9;  /* was 0.55 â€” now clearly visible icons */
   user-select:none;
 }
 .ls-input{
   flex:1;background:transparent;border:none;outline:none;
-  color:#ffffff;  /* was #ddeaff — pure white for max clarity */
+  color:#ffffff;  /* was #ddeaff â€” pure white for max clarity */
   font-size:15px;
   font-family:'Rajdhani',sans-serif;
   padding:12px 12px 12px 0;letter-spacing:0.3px;
 }
 .ls-input::placeholder{
-  color:#5a80b0;  /* was #2a4068 — slightly brighter for readability */
+  color:#5a80b0;  /* was #2a4068 â€” slightly brighter for readability */
 }
 .ls-input[readonly]{
-  color:#a8c8f0;  /* was #7a99c4 — brighter */
+  color:#a8c8f0;  /* was #7a99c4 â€” brighter */
   cursor:default;
 }
 .ls-error{
@@ -450,7 +485,7 @@ body.light-theme .theme-toggle input:checked + .theme-slider{background:#94b4d8;
 .ls-btn:hover .ls-btn-arrow{transform:translateX(5px);}
 .ls-helper{
   text-align:center;margin-top:14px;font-size:12px;
-  color:#7090b8;  /* was #2a4068 — now clearly visible */
+  color:#7090b8;  /* was #2a4068 â€” now clearly visible */
 }
 .ls-forgot-link{
   color:#60b0f0;
@@ -477,16 +512,16 @@ body.light-theme .theme-toggle input:checked + .theme-slider{background:#94b4d8;
 }
 .ls-security-icon{
   font-size:20px;
-  opacity:0.85;  /* was 0.45 — now visible */
+  opacity:0.85;  /* was 0.45 â€” now visible */
   margin-top:2px;
 }
 .ls-security-text{
   font-size:11px;
-  color:#90b8e0;  /* was #2a4068 — now readable */
+  color:#90b8e0;  /* was #2a4068 â€” now readable */
   line-height:1.7;
 }
 .ls-security-text b{
-  color:#c8dff8;  /* was #3a5a7a — now clearly legible */
+  color:#c8dff8;  /* was #3a5a7a â€” now clearly legible */
   font-weight:700;
 }
 .ls-helpdesk{
@@ -495,7 +530,7 @@ body.light-theme .theme-toggle input:checked + .theme-slider{background:#94b4d8;
   border:1px solid rgba(243,112,34,0.2);
   border-radius:6px;padding:10px 14px;
   font-size:11.5px;
-  color:#90b8e0;  /* was #3a5a7a — now readable */
+  color:#90b8e0;  /* was #3a5a7a â€” now readable */
   display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:6px;
 }
 .ls-helpdesk a{
@@ -566,11 +601,11 @@ body.light-theme .theme-toggle input:checked + .theme-slider{background:#94b4d8;
   padding:7px 32px;
   display:flex;justify-content:space-between;align-items:center;
   flex-wrap:wrap;gap:6px;font-size:10px;
-  color:#6090c0;  /* was #2a4068 — now legible */
+  color:#6090c0;  /* was #2a4068 â€” now legible */
 }
 
 /* ====================================================
-   MAIN APP HEADER — CORPORATE
+   MAIN APP HEADER â€” CORPORATE
 ==================================================== */
 .app-topbar{
   background:#010e35;
@@ -692,10 +727,10 @@ body.light-theme .theme-toggle input:checked + .theme-slider{background:#94b4d8;
 /* ====================================================
    BURNER COLORS
 ==================================================== */
-td.B{background:#14b8a6;}
-td.N{background:#fde047;}
-td.O{background:#fb923c;}
-td.C{background:#64748b;}
+td.B{background:#2563eb;}
+td.N{background:#16a34a;}
+td.O{background:#dc2626;}
+td.C{background:#1e293b;}
 
 /* ====================================================
    LEGEND
@@ -708,10 +743,10 @@ td.C{background:#64748b;}
   padding:4px 14px;border-radius:16px;
   font-weight:700;font-size:12px;
 }
-.li-B{background:#14b8a6;color:#000;}
-.li-N{background:#fde047;color:#000;}
-.li-O{background:#fb923c;color:#000;}
-.li-C{background:#64748b;color:#fff;}
+.li-B{background:#2563eb;color:#fff;}
+.li-N{background:#d97706;color:#fff;}
+.li-O{background:#16a34a;color:#fff;}
+.li-C{background:#475569;color:#fff;}
 
 /* ====================================================
    SEVERITY
@@ -751,50 +786,47 @@ td{
   height:30px;
   border-radius:5px;
   border:1px solid rgba(255,255,255,0.04);
-  transition:transform .15s, box-shadow .15s, filter .15s;
+  transition:transform .15s, box-shadow .15s;
   cursor:pointer;
   position:relative;
+  contain:layout style;
+  will-change:transform;
 }
 
-/* Per-state glow */
+/* Per-state glow â€” single box-shadow per state to minimise paint cost */
 td.B{
-  background:#14b8a6;
-  box-shadow:0 0 6px 1px rgba(20,184,166,0.5), inset 0 1px 0 rgba(255,255,255,0.2);
+  background:#2563eb;
+  box-shadow:0 0 8px 2px rgba(37,99,235,0.65);
 }
 td.N{
-  background:#fde047;
-  box-shadow:0 0 6px 1px rgba(253,224,71,0.5), inset 0 1px 0 rgba(255,255,255,0.25);
+  background:#d97706;
+  box-shadow:0 0 9px 2px rgba(217,119,6,0.65);
 }
 td.O{
-  background:#fb923c;
-  box-shadow:0 0 6px 1px rgba(251,146,60,0.55), inset 0 1px 0 rgba(255,255,255,0.2);
+  background:#16a34a;
+  box-shadow:0 0 9px 2px rgba(22,163,74,0.65);
 }
 td.C{
   background:#1e293b;
-  box-shadow:inset 0 1px 0 rgba(255,255,255,0.04);
   border:1px solid #334155;
 }
 
-/* Hover - lift + stronger glow */
+/* Hover - lift only, single glow, no filter (filter triggers layer promotion on every cell) */
 td.B:hover{
   transform:scale(1.08);z-index:10;
-  box-shadow:0 0 14px 4px rgba(20,184,166,0.8), 0 4px 12px rgba(0,0,0,0.4);
-  filter:brightness(1.15);
+  box-shadow:0 0 16px 4px rgba(37,99,235,0.85);
 }
 td.N:hover{
   transform:scale(1.08);z-index:10;
-  box-shadow:0 0 14px 4px rgba(253,224,71,0.85), 0 4px 12px rgba(0,0,0,0.4);
-  filter:brightness(1.12);
+  box-shadow:0 0 16px 4px rgba(217,119,6,0.85);
 }
 td.O:hover{
   transform:scale(1.08);z-index:10;
-  box-shadow:0 0 14px 4px rgba(251,146,60,0.85), 0 4px 12px rgba(0,0,0,0.4);
-  filter:brightness(1.12);
+  box-shadow:0 0 16px 4px rgba(22,163,74,0.85);
 }
 td.C:hover{
   transform:scale(1.08);z-index:10;
-  box-shadow:0 0 10px 3px rgba(100,116,139,0.5), 0 4px 10px rgba(0,0,0,0.4);
-  filter:brightness(1.2);
+  box-shadow:0 0 8px 2px rgba(100,116,139,0.4);
   background:#2d3f52;
 }
 
@@ -845,15 +877,15 @@ td select option{background:#1e293b;color:#e2e8f0;}
 .analysis-block p b{color:#e2e8f0;}
 .chart-wrap{position:relative;height:190px;margin-top:12px;}
 
-/* Analysis block — counts pills */
+/* Analysis block â€” counts pills */
 .ab-counts{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:10px;}
 .ab-pill{padding:3px 10px;border-radius:12px;font-size:12px;font-weight:600;}
-.ab-both{background:#14b8a6;color:#000;}
-.ab-ng{background:#fde047;color:#000;}
-.ab-og{background:#fb923c;color:#000;}
+.ab-both{background:#2563eb;color:#fff;}
+.ab-ng{background:#16a34a;color:#fff;}
+.ab-og{background:#dc2626;color:#fff;}
 .ab-cold{background:#64748b;color:#fff;}
 
-/* Analysis block — key-value rows */
+/* Analysis block â€” key-value rows */
 .ab-row{display:flex;justify-content:space-between;align-items:center;
   padding:4px 0;border-bottom:1px solid rgba(255,255,255,0.05);font-size:13px;}
 .ab-label{color:#64748b;font-size:12px;letter-spacing:0.5px;text-transform:uppercase;}
@@ -1091,7 +1123,7 @@ td select option{background:#1e293b;color:#e2e8f0;}
 .cleaning-walls-grid{
   display:flex;flex-direction:column;gap:24px;
 }
-/* ── Cleaning Wall Selector Buttons ── */
+/* â”€â”€ Cleaning Wall Selector Buttons â”€â”€ */
 .cw-selector{display:flex;gap:6px;margin-bottom:16px;flex-wrap:wrap;align-items:center;}
 .cw-selector-label{font-size:10px;font-weight:700;color:#7ec8f0;letter-spacing:1px;text-transform:uppercase;margin-right:6px;}
 .cw-btn{
@@ -1247,7 +1279,7 @@ body{ padding-bottom:68px; }
   50%{ box-shadow:0 0 8px 2px rgba(234,179,8,0.3); }
 }
 
-/* Pending cell — yellow dashed border */
+/* Pending cell â€” yellow dashed border */
 .cleaning-table td.ct-pending{
   border:1.5px dashed rgba(253,224,71,0.7) !important;
   background:rgba(253,224,71,0.06) !important;
@@ -1415,9 +1447,9 @@ td.burner-pending{
   outline:2px dashed rgba(253,224,71,0.8) !important;
   outline-offset:-2px;
 }
-td.burner-pending.B{ box-shadow:0 0 8px 2px rgba(253,224,71,0.4),0 0 6px 1px rgba(20,184,166,0.5),inset 0 1px 0 rgba(255,255,255,0.2) !important; }
-td.burner-pending.N{ box-shadow:0 0 8px 2px rgba(253,224,71,0.5),0 0 6px 1px rgba(253,224,71,0.5),inset 0 1px 0 rgba(255,255,255,0.25) !important; }
-td.burner-pending.O{ box-shadow:0 0 8px 2px rgba(253,224,71,0.4),0 0 6px 1px rgba(251,146,60,0.55),inset 0 1px 0 rgba(255,255,255,0.2) !important; }
+td.burner-pending.B{ box-shadow:0 0 8px 2px rgba(253,224,71,0.5),0 0 6px 1px rgba(37,99,235,0.6),inset 0 1px 0 rgba(255,255,255,0.2) !important; }
+td.burner-pending.N{ box-shadow:0 0 8px 2px rgba(253,224,71,0.5),0 0 6px 1px rgba(217,119,6,0.6),inset 0 1px 0 rgba(255,255,255,0.25) !important; }
+td.burner-pending.O{ box-shadow:0 0 8px 2px rgba(253,224,71,0.4),0 0 6px 1px rgba(22,163,74,0.6),inset 0 1px 0 rgba(255,255,255,0.2) !important; }
 td.burner-pending.C{ box-shadow:0 0 8px 2px rgba(253,224,71,0.4) !important; }
 
 /* ====================================================
@@ -1465,7 +1497,7 @@ td.burner-pending.C{ box-shadow:0 0 8px 2px rgba(253,224,71,0.4) !important; }
 #td-saved-table .td-del-btn:hover{background:rgba(239,68,68,0.25);}
 
 
-/* ── Reformer Heat Map — Dynamic Burner Flame Styles ── */
+/* â”€â”€ Reformer Heat Map â€” Dynamic Burner Flame Styles â”€â”€ */
 /* Flame flicker: subtle scale + opacity on the SVG (GPU composited, no repaints) */
 @keyframes hmFlameFlicker{
   0%  {transform:scaleY(1)   scaleX(1);   opacity:0.92;}
@@ -1475,10 +1507,13 @@ td.burner-pending.C{ box-shadow:0 0 8px 2px rgba(253,224,71,0.4) !important; }
   75% {transform:scaleY(0.97) scaleX(1.02);opacity:0.9;}
   100%{transform:scaleY(1)   scaleX(1);   opacity:0.92;}
 }
-/* Glow pulse — disabled, kept only flicker on SVG */
+/* Glow via CSS classes â€” NO inline filter, no per-element layer promotion */
 .hm-burner-wrap{
   display:flex;flex-direction:column;align-items:center;
-  width:28px;cursor:default;transition:transform 0.15s;
+  width:28px;cursor:default;
+  transition:transform 0.15s;
+  position:relative;
+  contain:layout style;
 }
 .hm-burner-wrap:hover{transform:scale(1.35);}
 /* Active flames: flicker only on SVG */
@@ -1487,6 +1522,20 @@ td.burner-pending.C{ box-shadow:0 0 8px 2px rgba(253,224,71,0.4) !important; }
   transform-origin:50% 100%;
   will-change:transform,opacity;
 }
+/* Glow rings via pseudo-element â€” single shared compositing layer, zero filter cost */
+.hm-burner-wrap.hm-flame::after{
+  content:'';
+  position:absolute;
+  bottom:3px;left:50%;
+  transform:translateX(-50%);
+  width:14px;height:10px;
+  border-radius:50%;
+  opacity:0.6;
+  pointer-events:none;
+}
+.hm-flame-O::after{background:radial-gradient(ellipse,rgba(34,197,94,0.85) 0%,transparent 70%);box-shadow:0 0 7px 3px rgba(22,163,74,0.45);}
+.hm-flame-N::after{background:radial-gradient(ellipse,rgba(251,191,36,0.85) 0%,transparent 70%);box-shadow:0 0 7px 3px rgba(217,119,6,0.45);}
+.hm-flame-B::after{background:radial-gradient(ellipse,rgba(147,197,253,0.85) 0%,transparent 70%);box-shadow:0 0 7px 3px rgba(37,99,235,0.45);}
 /* Stagger SVG flicker across 5 groups for organic look */
 .hm-burners-line .hm-burner-wrap:nth-child(5n+1) svg{animation-delay:0.1s;}
 .hm-burners-line .hm-burner-wrap:nth-child(5n+2) svg{animation-delay:0.35s;}
@@ -1515,7 +1564,7 @@ td.burner-pending.C{ box-shadow:0 0 8px 2px rgba(253,224,71,0.4) !important; }
 .hm-peep-cell{width:22px;flex:1;height:14px;border-radius:3px;border:1px solid rgba(255,255,255,0.12);cursor:default;transition:opacity 0.15s;min-width:0;}
 .hm-peep-cell:hover{opacity:0.75;}
 .hm-peep-range{font-size:8px;color:#94a3b8;white-space:nowrap;min-width:60px;font-weight:600;}
-/* ── Continuous gradient peep hole bar ── */
+/* â”€â”€ Continuous gradient peep hole bar â”€â”€ */
 .hm-peep-gradient-wrap{display:flex;align-items:center;gap:8px;padding:6px 0;margin:4px 0;}
 .hm-peep-gradient-bar-wrap{flex:1;position:relative;height:22px;border-radius:6px;overflow:visible;cursor:crosshair;}
 .hm-peep-gradient-bar{width:100%;height:100%;border-radius:6px;border:1px solid rgba(255,255,255,0.15);box-shadow:0 0 10px rgba(0,0,0,0.4),inset 0 1px 0 rgba(255,255,255,0.08);}
@@ -1523,11 +1572,11 @@ td.burner-pending.C{ box-shadow:0 0 8px 2px rgba(253,224,71,0.4) !important; }
 .hm-peep-temp-label{position:absolute;top:-14px;font-size:7px;font-weight:700;color:#e2e8f0;white-space:nowrap;transform:translateX(-50%);text-shadow:0 1px 3px rgba(0,0,0,0.8);z-index:3;}
 .hm-peep-dot{position:absolute;top:50%;width:8px;height:8px;border-radius:50%;border:1.5px solid rgba(255,255,255,0.85);transform:translate(-50%,-50%);z-index:4;cursor:pointer;transition:transform 0.15s,box-shadow 0.15s;}
 .hm-peep-dot:hover{transform:translate(-50%,-50%) scale(1.6);box-shadow:0 0 8px rgba(255,255,255,0.5);}
-/* ── Burner data row summary badges ── */
+/* â”€â”€ Burner data row summary badges â”€â”€ */
 .hm-row-data-strip{display:flex;align-items:center;gap:3px;margin-left:6px;flex-shrink:0;}
 .hm-row-data-badge{font-size:8px;font-weight:800;padding:2px 5px;border-radius:3px;letter-spacing:0.3px;line-height:1;white-space:nowrap;border:1px solid transparent;}
-.hm-row-data-badge-O{background:rgba(251,146,60,0.2);color:#fb923c;border-color:rgba(251,146,60,0.4);}
-.hm-row-data-badge-N{background:rgba(253,224,71,0.15);color:#fde047;border-color:rgba(253,224,71,0.35);}
+.hm-row-data-badge-O{background:rgba(22,163,74,0.2);color:#4ade80;border-color:rgba(22,163,74,0.4);}
+.hm-row-data-badge-N{background:rgba(217,119,6,0.2);color:#fbbf24;border-color:rgba(217,119,6,0.4);}
 .hm-row-data-badge-B{background:rgba(20,184,166,0.15);color:#14b8a6;border-color:rgba(20,184,166,0.35);}
 .hm-row-data-badge-C{background:rgba(100,116,139,0.15);color:#64748b;border-color:rgba(100,116,139,0.3);}
 .hm-side-label{font-size:11px;color:#F37022;font-weight:700;letter-spacing:2px;margin-bottom:12px;padding:6px 12px;background:rgba(243,112,34,0.08);border-left:3px solid #F37022;border-radius:0 6px 6px 0;display:inline-block;}
@@ -1544,8 +1593,8 @@ body.light-theme .hm-peep-gradient-bar{border-color:rgba(0,0,0,0.2);}
 body.light-theme .hm-peep-temp-label{color:#1e293b;text-shadow:0 1px 2px rgba(255,255,255,0.8);}
 body.light-theme .hm-peep-dot{border-color:rgba(0,0,0,0.6);}
 body.light-theme .hm-peep-marker{background:rgba(0,0,0,0.4);}
-body.light-theme .hm-row-data-badge-O{background:rgba(251,146,60,0.15);color:#c2410c;}
-body.light-theme .hm-row-data-badge-N{background:rgba(253,224,71,0.2);color:#a16207;}
+body.light-theme .hm-row-data-badge-O{background:rgba(22,163,74,0.15);color:#15803d;}
+body.light-theme .hm-row-data-badge-N{background:rgba(217,119,6,0.2);color:#92400e;}
 body.light-theme .hm-row-data-badge-B{background:rgba(20,184,166,0.15);color:#0f766e;}
 body.light-theme .hm-row-data-badge-C{background:rgba(100,116,139,0.1);color:#475569;}
 
@@ -1559,14 +1608,14 @@ function hideForgotModal(){
 }
 async function login(){
   /* Delegate to loginWithFolderSupport() in the main script.
-     It auto-loads from the saved folder — never opens a file picker. */
+     It auto-loads from the saved folder â€” never opens a file picker. */
   if(typeof loginWithFolderSupport === "function"){
     await loginWithFolderSupport();
   } else {
-    var PASS = "Dubey123";
     var pw   = document.getElementById("passwordInput").value;
     var err  = document.getElementById("ls-error");
-    if(pw === PASS){
+    var _h = async function(s){const b=new TextEncoder().encode(s);const d=await crypto.subtle.digest("SHA-256",b);return Array.from(new Uint8Array(d)).map(x=>x.toString(16).padStart(2,"0")).join("");};
+    if((await _h(pw)) === "d06b2c4efe3519e98c052cced2f117599b7771edea220f6b45a4d7b63c8b9ca8"){
       sessionStorage.setItem("scadaLoggedIn","true");
       document.getElementById("loginScreen").style.display="none";
       err.style.display="none";
@@ -1638,16 +1687,16 @@ function tempToColor(val, minT, maxT){
 
 function burnerStateColor(state){
   switch((state||"C").toUpperCase()){
-    case "O": return {bg:"#fb923c", glow:"rgba(251,146,60,0.85)"};
-    case "N": return {bg:"#fde047", glow:"rgba(253,224,71,0.85)"};
-    case "B": return {bg:"#14b8a6", glow:"rgba(20,184,166,0.85)"};
+    case "O": return {bg:"#16a34a", glow:"rgba(22,163,74,0.9)"};
+    case "N": return {bg:"#d97706", glow:"rgba(217,119,6,0.9)"};
+    case "B": return {bg:"#2563eb", glow:"rgba(37,99,235,0.9)"};
     default:  return {bg:"#1e293b", glow:"rgba(100,116,139,0.3)"};
   }
 }
 
 function burnerFlameSVG(state){ return ""; }
 
-/* Burner Icon SVG — dynamic flame with CSS glow + flicker */
+/* Burner Icon SVG â€” dynamic flame with CSS glow + flicker */
 function burnerIconHTML(state, tip, burnerNum){
   var s = (state||"C").toUpperCase();
   if(s === "C"){
@@ -1659,12 +1708,12 @@ function burnerIconHTML(state, tip, burnerNum){
       + '</svg></div>';
   }
   var colors = {
-    "O": {flame:"#fb923c", core:"#fde68a", inner:"#fff7ed", stem:"#fb923c"},
-    "N": {flame:"#fde047", core:"#fef9c3", inner:"#fffef0", stem:"#eab308"},
-    "B": {flame:"#14b8a6", core:"#a7f3d0", inner:"#ecfdf5", stem:"#0d9488"}
+    "O": {flame:"#16a34a", core:"#86efac", inner:"#dcfce7", stem:"#15803d"},
+    "N": {flame:"#d97706", core:"#fcd34d", inner:"#fef9c3", stem:"#b45309"},
+    "B": {flame:"#2563eb", core:"#93c5fd", inner:"#dbeafe", stem:"#1d4ed8"}
   };
   var c = colors[s] || colors["N"];
-  return '<div class="hm-burner-wrap hm-flame" title="'+tip+'">'
+  return '<div class="hm-burner-wrap hm-flame hm-flame-'+s+'" title="'+tip+'">'
     + '<svg width="20" height="28" viewBox="0 0 20 28" xmlns="http://www.w3.org/2000/svg">'
     + '<path d="M10 1 C7 5 4.5 9 5 13.5 C5.5 16.5 10 18 10 18 C10 18 14.5 16.5 15 13.5 C15.5 9 13 5 10 1Z" fill="'+c.flame+'" opacity="0.92"/>'
     + '<path d="M10 5 C8.5 7.5 7 10 7.2 12.5 C7.5 14.5 10 15.5 10 15.5 C10 15.5 12.5 14.5 12.8 12.5 C13 10 11.5 7.5 10 5Z" fill="'+c.core+'" opacity="0.85"/>'
@@ -1712,17 +1761,17 @@ function buildWallHTML(wallName, peepBotVals, peepTopVals, wallData){
   }
 
   var html = '<div class="hm-wall-card">';
-  html += '<div class="hm-wall-header"><span class="hm-wall-title">WALL ' + wallName + '</span><span class="hm-wall-meta">6 rows × 15 burners</span></div>';
+  html += '<div class="hm-wall-header"><span class="hm-wall-title">WALL ' + wallName + '</span><span class="hm-wall-meta">6 rows Ã— 15 burners</span></div>';
   html += '<div class="hm-body">';
 
   /* Burner number header row */
   html += '<div class="hm-row-wrap" style="margin-bottom:2px;">'
-    + '<div class="hm-row-label" style="color:transparent;">—</div>'
+    + '<div class="hm-row-label" style="color:transparent;">â€”</div>'
     + '<div class="hm-burner-nums">';
   for(var bn = 1; bn <= 15; bn++){
     html += '<div class="hm-bnum">B'+bn+'</div>';
   }
-  html += '</div><div class="hm-row-data-strip" style="visibility:hidden;"><span class="hm-row-data-badge">—</span></div></div>';
+  html += '</div><div class="hm-row-data-strip" style="visibility:hidden;"><span class="hm-row-data-badge">â€”</span></div></div>';
 
   for(var ri = 5; ri >= 0; ri--){
     var displayRowNum = ri + 1;
@@ -1741,8 +1790,8 @@ function buildWallHTML(wallName, peepBotVals, peepTopVals, wallData){
       + buildStateBadges(counts)
       + '</div>';
 
-    if(ri === 1) html += buildPeepLine(peepBotVals, botRange, "PH Bot<br>R1–R2");
-    if(ri === 3) html += buildPeepLine(peepTopVals, topRange, "PH Top<br>R3–R4");
+    if(ri === 1) html += buildPeepLine(peepBotVals, botRange, "PH Bot<br>R1â€“R2");
+    if(ri === 3) html += buildPeepLine(peepTopVals, topRange, "PH Top<br>R3â€“R4");
   }
   html += '</div></div>';
   return html;
@@ -1803,21 +1852,21 @@ function buildPeepLine(vals, range, label){
     /* Peep hole marker line */
     html += '<div class="hm-peep-marker" style="left:' + leftPct + '%;"></div>';
     /* Dot with tooltip */
-    html += '<div class="hm-peep-dot" style="left:' + leftPct + '%;background:' + dotCol + ';" title="PH' + (p.idx+1) + ': ' + p.val + '°C"></div>';
+    html += '<div class="hm-peep-dot" style="left:' + leftPct + '%;background:' + dotCol + ';" title="PH' + (p.idx+1) + ': ' + p.val + 'Â°C"></div>';
     /* Temperature label above (show for every 3rd or if few points) */
     if(positions.length <= 5 || i % 2 === 0 || i === positions.length - 1){
-      html += '<div class="hm-peep-temp-label" style="left:' + leftPct + '%;">' + p.val + '°</div>';
+      html += '<div class="hm-peep-temp-label" style="left:' + leftPct + '%;">' + p.val + 'Â°</div>';
     }
   }
 
   html += '</div>';
-  html += '<div class="hm-peep-range">' + range.min + '–' + range.max + '°C</div>';
+  html += '<div class="hm-peep-range">' + range.min + 'â€“' + range.max + 'Â°C</div>';
   html += '</div>';
   return html;
 }
 
 function renderHeatMap(){
-  /* ── Self-contained burner data loading ── */
+  /* â”€â”€ Self-contained burner data loading â”€â”€ */
   /* Read burner data DIRECTLY from localStorage, bypassing loadData() entirely */
   var hmData = null;
 
@@ -1881,18 +1930,18 @@ function renderHeatMap(){
   var cdBot = getPH(entry, "cd-bot");
   var cdTop = getPH(entry, "cd-top");
 
-  /* ── Prominent shift/data status banner ── */
+  /* â”€â”€ Prominent shift/data status banner â”€â”€ */
   var tsBadgeEl = document.getElementById("hm-ts-badge");
   var shiftBannerEl = document.getElementById("hm-shift-banner");
 
   var shiftColors  = {Morning:"#34d399", Evening:"#fb923c", Night:"#818cf8"};
-  var shiftIcons   = {Morning:"🌅", Evening:"🌆", Night:"🌙"};
+  var shiftIcons   = {Morning:"ðŸŒ…", Evening:"ðŸŒ†", Night:"ðŸŒ™"};
   var shiftBg      = {Morning:"rgba(52,211,153,0.12)", Evening:"rgba(251,146,60,0.12)", Night:"rgba(129,140,248,0.12)"};
   var shiftBorder  = {Morning:"rgba(52,211,153,0.35)", Evening:"rgba(251,146,60,0.35)", Night:"rgba(129,140,248,0.35)"};
 
   if(entry){
     var sc   = shiftColors[entry.shift]  || "#7ec8f0";
-    var icon = shiftIcons[entry.shift]   || "📋";
+    var icon = shiftIcons[entry.shift]   || "ðŸ“‹";
     var bg   = shiftBg[entry.shift]      || "rgba(126,200,240,0.1)";
     var bdr  = shiftBorder[entry.shift]  || "rgba(126,200,240,0.3)";
 
@@ -1929,7 +1978,7 @@ function renderHeatMap(){
       shiftBannerEl.style.background = "rgba(248,113,113,0.08)";
       shiftBannerEl.style.borderColor = "rgba(248,113,113,0.25)";
       shiftBannerEl.innerHTML =
-        '<span style="font-size:18px;">⚠️</span>'
+        '<span style="font-size:18px;">âš ï¸</span>'
         +'<div style="display:flex;flex-direction:column;gap:2px;">'
         +'  <span style="font-size:13px;font-weight:700;color:#f87171;">'
         +    (selectedShift === "All" ? "No temp data saved yet" : 'No '+selectedShift+' shift data found')
@@ -1939,7 +1988,7 @@ function renderHeatMap(){
     }
   }
 
-  /* ── Render wall cards ── */
+  /* â”€â”€ Render wall cards â”€â”€ */
   var abSideDiv = document.getElementById("hm-side-ab");
   if(abSideDiv){
     abSideDiv.innerHTML = buildWallHTML("A", abBot, abTop, hmData["A"])
@@ -1955,13 +2004,13 @@ function renderHeatMap(){
 <body>
 
 <!-- ====================================================
-     LOGIN SCREEN — IOCL CORPORATE
+     LOGIN SCREEN â€” IOCL CORPORATE
 ==================================================== -->
 <div id="loginScreen">
 
   <!-- Top ribbon -->
   <div class="ls-topbar">
-    <span>🇮🇳&nbsp; A Government of India Enterprise &nbsp;|&nbsp; Ministry of Petroleum &amp; Natural Gas, Govt. of India</span>
+    <span>ðŸ‡®ðŸ‡³&nbsp; A Government of India Enterprise &nbsp;|&nbsp; Ministry of Petroleum &amp; Natural Gas, Govt. of India</span>
     <span id="ls-clock"></span>
   </div>
 
@@ -1978,9 +2027,9 @@ function renderHeatMap(){
         <circle cx="39" cy="39" r="33" fill="none" stroke="rgba(255,255,255,0.35)" stroke-width="0.8"/>
         <!-- Dark blue horizontal band -->
         <rect x="2" y="31" width="74" height="16" fill="#02164F"/>
-        <!-- Hindi: इंडियनऑयल -->
+        <!-- Hindi: à¤‡à¤‚à¤¡à¤¿à¤¯à¤¨à¤‘à¤¯à¤² -->
         <text x="39" y="41" text-anchor="middle" dominant-baseline="middle"
-              font-family="serif" font-size="9.5" fill="white" letter-spacing="0.3">इंडियनऑयल</text>
+              font-family="serif" font-size="9.5" fill="white" letter-spacing="0.3">à¤‡à¤‚à¤¡à¤¿à¤¯à¤¨à¤‘à¤¯à¤²</text>
         <!-- Outer saffron accent ring -->
         <circle cx="39" cy="39" r="38" fill="none" stroke="#F37022" stroke-width="1.5"/>
         <!-- Top highlight arc for depth -->
@@ -2016,7 +2065,7 @@ function renderHeatMap(){
       <div class="ls-hero-content">
         <div class="ls-tagline">The Energy of India</div>
         <div class="ls-system-title">
-          🔥 SCADA HGU-3 Reformer<br><span>Burner Control System</span>
+          ðŸ”¥ SCADA HGU-3 Reformer<br><span>Burner Control System</span>
         </div>
         <div class="ls-desc">
           Real-time monitoring and management of reformer<br>
@@ -2025,10 +2074,10 @@ function renderHeatMap(){
           Unauthorized access is<br>prohibited and subject to disciplinary action.
         </div>
         <div class="ls-badges">
-          <span class="ls-badge">🏭 Refinery Operations</span>
-          <span class="ls-badge">🔒 Secure Access</span>
-          <span class="ls-badge">📊 Live Analytics</span>
-          <span class="ls-badge">⚙️ IOCL IT Division</span>
+          <span class="ls-badge">ðŸ­ Refinery Operations</span>
+          <span class="ls-badge">ðŸ”’ Secure Access</span>
+          <span class="ls-badge">ðŸ“Š Live Analytics</span>
+          <span class="ls-badge">âš™ï¸ IOCL IT Division</span>
         </div>
       </div>
 
@@ -2049,7 +2098,7 @@ function renderHeatMap(){
       <div class="ls-field">
         <label class="ls-label">Employee ID</label>
         <div class="ls-input-box">
-          <span class="ls-input-icon">👤</span>
+          <span class="ls-input-icon">ðŸ‘¤</span>
           <input class="ls-input" type="text" value="00514267" readonly>
         </div>
       </div>
@@ -2057,13 +2106,13 @@ function renderHeatMap(){
       <div class="ls-field">
         <label class="ls-label">Password</label>
         <div class="ls-input-box">
-          <span class="ls-input-icon">🔐</span>
+          <span class="ls-input-icon">ðŸ”</span>
           <input class="ls-input" type="password" id="passwordInput"
                  placeholder="Enter your IOCL password"
                  onkeydown="if(event.key==='Enter') login()">
         </div>
         <div id="ls-error" class="ls-error">
-          ⚠&nbsp; Invalid credentials. Please try again or contact IT Helpdesk.
+          âš &nbsp; Invalid credentials. Please try again or contact IT Helpdesk.
         </div>
       </div>
 
@@ -2073,11 +2122,11 @@ function renderHeatMap(){
       </button>
 
       <div class="ls-helper">
-        <button class="ls-forgot-link" onclick="showForgotModal()">🔑 Forgot Password? Contact IT Helpdesk</button>
+        <button class="ls-forgot-link" onclick="showForgotModal()">ðŸ”‘ Forgot Password? Contact IT Helpdesk</button>
       </div>
 
       <div class="ls-security">
-        <div class="ls-security-icon">🔒</div>
+        <div class="ls-security-icon">ðŸ”’</div>
         <div class="ls-security-text">
           <b>256-bit TLS Encrypted Connection</b><br>
           This system is restricted to authorized IOCL employees only.
@@ -2086,7 +2135,7 @@ function renderHeatMap(){
       </div>
 
       <div class="ls-helpdesk">
-        <span>🛟 IT Helpdesk</span>
+        <span>ðŸ›Ÿ IT Helpdesk</span>
         <span><b>8476056756</b>&nbsp;|&nbsp;<b><a href="/cdn-cgi/l/email-protection#52362730372b3363123b3c363b333c3d3b3e7c3b3c" style="color:#fff;font-weight:700;text-decoration:none;"><span class="__cf_email__" data-cfemail="e7839285829e86d6a78e89838e8689888e8bc98e89">[email&#160;protected]</span></a></b></span>
       </div>
     </div>
@@ -2095,9 +2144,9 @@ function renderHeatMap(){
 
   <!-- Footer -->
   <div class="ls-footer">
-    <span>© 2026 Indian Oil Corporation Limited. All Rights Reserved.</span>
+    <span>Â© 2026 Indian Oil Corporation Limited. All Rights Reserved.</span>
     <span>CIN: L23201MH1959GOI011388</span>
-    <span>Regd. Office: IndianOil Bhavan, G-9 Ali Yavar Jung Marg, Bandra (E), Mumbai – 400 051</span>
+    <span>Regd. Office: IndianOil Bhavan, G-9 Ali Yavar Jung Marg, Bandra (E), Mumbai â€“ 400 051</span>
   </div>
   <div style="background:#010c2e;border-top:1px solid rgba(243,112,34,0.15);padding:5px 32px;text-align:center;font-size:10.5px;color:#5a80a8;letter-spacing:0.3px;">Dashboard designed &amp; developed by <b style="color:#F37022;">Ashutosh Dubey</b></div>
 
@@ -2106,18 +2155,18 @@ function renderHeatMap(){
 <div id="forgotModal">
   <div class="fm-box">
     <button class="fm-close" onclick="hideForgotModal()">&#10005;</button>
-    <div class="fm-icon">🔑</div>
+    <div class="fm-icon">ðŸ”‘</div>
     <div class="fm-title">Forgot Password?</div>
     <div class="fm-sub">Please contact the IT Helpdesk to reset your IOCL portal password. Mention your Employee ID for faster resolution.</div>
     <div class="fm-card">
-      <div class="fm-label">📞 Helpdesk Phone</div>
+      <div class="fm-label">ðŸ“ž Helpdesk Phone</div>
       <div class="fm-value">8476056756</div>
     </div>
     <div class="fm-card">
-      <div class="fm-label">✉️ Helpdesk Email</div>
+      <div class="fm-label">âœ‰ï¸ Helpdesk Email</div>
       <div class="fm-value"><a href="/cdn-cgi/l/email-protection#03677661667a6232436a6d676a626d6c6a6f2d6a6d" style="color:#F37022;text-decoration:none;"><span class="__cf_email__" data-cfemail="cbafbea9aeb2aafa8ba2a5afa2aaa5a4a2a7e5a2a5">[email&#160;protected]</span></a></div>
     </div>
-    <div class="fm-note">Support available during office hours (Mon–Sat, 8 AM – 6 PM).<br>Please quote your Employee ID: <b style="color:#F37022;">00514267</b></div>
+    <div class="fm-note">Support available during office hours (Monâ€“Sat, 8 AM â€“ 6 PM).<br>Please quote your Employee ID: <b style="color:#F37022;">00514267</b></div>
     <button class="fm-btn" onclick="hideForgotModal()">Close</button>
   </div>
 </div>
@@ -2131,7 +2180,7 @@ function renderHeatMap(){
 <!-- Top ribbon -->
 <div class="app-topbar">
   <div class="app-topbar-left">
-    <span>🇮🇳 <b>Indian Oil Corporation Limited</b> &nbsp;|&nbsp; Ministry of Petroleum &amp; Natural Gas, Govt. of India</span>
+    <span>ðŸ‡®ðŸ‡³ <b>Indian Oil Corporation Limited</b> &nbsp;|&nbsp; Ministry of Petroleum &amp; Natural Gas, Govt. of India</span>
     <span><b>CIN:</b> L23201MH1959GOI011388</span>
   </div>
   <div class="app-topbar-right">
@@ -2143,7 +2192,7 @@ function renderHeatMap(){
 
 <!-- Main header -->
 <div class="app-header">
-  <!-- Gujarat Refinery banner — 3 logos -->
+  <!-- Gujarat Refinery banner â€” 3 logos -->
   <div class="app-banner-wrap">
     <div class="app-banner-left">
       <img src="data:image/png;base64,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" alt="IndianOil" class="app-banner-logo">
@@ -2159,25 +2208,25 @@ function renderHeatMap(){
     <div class="app-header-left">
       <div class="app-system-info">
         <div class="app-system-title">SCADA Burner Control &amp; Monitoring System</div>
-        <div class="app-system-sub">REFORMER WALL OPERATIONS &nbsp;·&nbsp; REAL-TIME ANALYTICS &nbsp;·&nbsp; AUTHORIZED PERSONNEL ONLY</div>
+        <div class="app-system-sub">REFORMER WALL OPERATIONS &nbsp;Â·&nbsp; REAL-TIME ANALYTICS &nbsp;Â·&nbsp; AUTHORIZED PERSONNEL ONLY</div>
       </div>
     </div>
 
     <div class="app-header-right">
       <div class="theme-toggle-wrap" title="Toggle dark/light theme">
-        <span>☀️</span>
+        <span>â˜€ï¸</span>
         <label class="theme-toggle">
           <input type="checkbox" id="themeToggleChk" onchange="toggleTheme(this.checked)">
           <span class="theme-slider"></span>
         </label>
-        <span>🌙</span>
+        <span>ðŸŒ™</span>
       </div>
       <input type="file" id="excelFile" accept=".xlsx,.xls" onchange="importFromExcel(event)">
       <input type="file" id="autoImportInput" accept=".xlsx,.xls" style="display:none" onchange="handleAutoImport(event)">
-      <button class="hd-btn hd-btn-secondary" id="folderBtn" onclick="pickFolder()" title="Set auto import/export folder">📁 Set Folder</button>
-      <button class="hd-btn hd-btn-secondary" onclick="smartRefresh()">🔄 Refresh Data</button>
-      <button class="hd-btn hd-btn-primary" onclick="exportToExcel()">💾 Save New Data</button>
-      <button class="hd-btn hd-btn-danger" onclick="logout()">⏏ Logout</button>
+      <button class="hd-btn hd-btn-secondary" id="folderBtn" onclick="pickFolder()" title="Set auto import/export folder">ðŸ“ Set Folder</button>
+      <button class="hd-btn hd-btn-secondary" onclick="smartRefresh()">ðŸ”„ Refresh Data</button>
+      <button class="hd-btn hd-btn-primary" onclick="exportToExcel()">ðŸ’¾ Save New Data</button>
+      <button class="hd-btn hd-btn-danger" onclick="logout()">â Logout</button>
     </div>
   </div>
 
@@ -2186,10 +2235,10 @@ function renderHeatMap(){
     <div class="app-meta-left">
       <div class="app-meta-item"><span class="meta-dot"></span> <b>Status:</b> Live</div>
       <div class="app-meta-item"><b>Document:</b> SCADA-BCM-RPT-001</div>
-      <div class="app-meta-item"><b>Walls:</b> A · B · C · D</div>
-      <div class="app-meta-item"><b>Configuration:</b> 4 Walls × 6 Rows × 15 Burners = 360 Burners</div>
+      <div class="app-meta-item"><b>Walls:</b> A Â· B Â· C Â· D</div>
+      <div class="app-meta-item"><b>Configuration:</b> 4 Walls Ã— 6 Rows Ã— 15 Burners = 360 Burners</div>
       <div class="app-meta-item"><b>Operator:</b> EMP-00514267</div>
-      <div class="app-meta-item"><b>Last Sync:</b> <span id="lastSync">—</span></div>
+      <div class="app-meta-item"><b>Last Sync:</b> <span id="lastSync">â€”</span></div>
     </div>
     <span id="clock"></span>
   </div>
@@ -2197,15 +2246,15 @@ function renderHeatMap(){
 
 <!-- Folder status strip -->
 <div id="folderStatusBar" style="display:none;background:#0f2d1a;border-bottom:1px solid rgba(74,222,128,0.25);padding:5px 28px;font-size:11px;color:#4ade80;display:flex;align-items:center;gap:10px;">
-  <span>📁</span>
+  <span>ðŸ“</span>
   <span id="folderStatusText">No auto-folder set</span>
   <span style="color:#334155;">|</span>
   <span style="color:#64748b;">Network path: <b style="color:#a0bcd8;">\\10.138.128.112\pn_dept\SOUTH BLOCK DOCUMENTS\SOUTH BLOCK DOCUMENTATION FOLDER\HGU III\SCADA</b></span>
-  <button onclick="clearFolder()" style="margin-left:auto;background:rgba(220,38,38,0.15);color:#fca5a5;border:1px solid rgba(220,38,38,0.35);border-radius:4px;padding:2px 10px;font-size:10px;cursor:pointer;">✕ Clear</button>
+  <button onclick="clearFolder()" style="margin-left:auto;background:rgba(220,38,38,0.15);color:#fca5a5;border:1px solid rgba(220,38,38,0.35);border-radius:4px;padding:2px 10px;font-size:10px;cursor:pointer;">âœ• Clear</button>
 </div>
 
 <div id="masterAlarm" class="alarm-banner">
-  🚨 MASTER IMBALANCE ALARM
+  ðŸš¨ MASTER IMBALANCE ALARM
   <button onclick="acknowledgeAlarm()">Acknowledge</button>
 </div>
 
@@ -2222,24 +2271,24 @@ function renderHeatMap(){
       <!-- Header bar -->
       <div style="display:flex;align-items:center;gap:12px;margin-bottom:14px;flex-wrap:wrap;">
         <div style="display:flex;align-items:center;gap:10px;">
-          <svg width="28" height="28" viewBox="0 0 28 28"><rect width="28" height="28" rx="5" fill="#1e3a5e"/><text x="14" y="20" text-anchor="middle" font-size="16">🌡️</text></svg>
+          <svg width="28" height="28" viewBox="0 0 28 28"><rect width="28" height="28" rx="5" fill="#1e3a5e"/><text x="14" y="20" text-anchor="middle" font-size="16">ðŸŒ¡ï¸</text></svg>
           <div>
             <div style="font-size:16px;font-weight:700;color:#e2e8f0;letter-spacing:1.5px;line-height:1;">REFORMER HEAT MAP</div>
-            <div style="font-size:10px;color:#7ec8f0;margin-top:2px;font-weight:600;">Live burner state &amp; peep-hole temperature · 4 walls · 6 rows × 15 burners</div>
+            <div style="font-size:10px;color:#7ec8f0;margin-top:2px;font-weight:600;">Live burner state &amp; peep-hole temperature Â· 4 walls Â· 6 rows Ã— 15 burners</div>
           </div>
         </div>
         <div style="display:flex;align-items:center;gap:10px;margin-left:auto;flex-wrap:wrap;">
           <div style="display:flex;align-items:center;gap:8px;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.15);border-radius:7px;padding:6px 12px;">
             <span style="font-size:11px;font-weight:700;color:#7ec8f0;letter-spacing:0.8px;text-transform:uppercase;">Shift:</span>
             <select id="hm-shift-select" onchange="renderHeatMap()" style="background:#0f1f38;border:1px solid #334155;border-radius:5px;color:#e2e8f0;font-family:'Rajdhani',sans-serif;font-size:13px;font-weight:700;outline:none;cursor:pointer;padding:3px 8px;">
-              <option value="All" style="background:#0f1f38;">🔁 All Shifts</option>
-              <option value="Morning" style="background:#0f1f38;color:#34d399;">🌅 Morning</option>
-              <option value="Evening" style="background:#0f1f38;color:#fb923c;">🌆 Evening</option>
-              <option value="Night" style="background:#0f1f38;color:#818cf8;">🌙 Night</option>
+              <option value="All" style="background:#0f1f38;">ðŸ” All Shifts</option>
+              <option value="Morning" style="background:#0f1f38;color:#34d399;">ðŸŒ… Morning</option>
+              <option value="Evening" style="background:#0f1f38;color:#fb923c;">ðŸŒ† Evening</option>
+              <option value="Night" style="background:#0f1f38;color:#818cf8;">ðŸŒ™ Night</option>
             </select>
           </div>
           <span id="hm-ts-badge" style="font-size:10px;color:#94a3b8;background:#0f1f38;border:1px solid #1e3a5e;padding:4px 12px;border-radius:4px;"></span>
-          <button onclick="renderHeatMap()" style="background:#F37022;color:#fff;border:none;padding:7px 18px;border-radius:6px;font-size:12px;font-weight:700;cursor:pointer;font-family:'Rajdhani',sans-serif;letter-spacing:0.5px;box-shadow:0 0 12px rgba(243,112,34,0.35);">🔄 Refresh</button>
+          <button onclick="renderHeatMap()" style="background:#F37022;color:#fff;border:none;padding:7px 18px;border-radius:6px;font-size:12px;font-weight:700;cursor:pointer;font-family:'Rajdhani',sans-serif;letter-spacing:0.5px;box-shadow:0 0 12px rgba(243,112,34,0.35);">ðŸ”„ Refresh</button>
         </div>
       </div>
 
@@ -2247,24 +2296,24 @@ function renderHeatMap(){
       <div style="display:flex;gap:20px;flex-wrap:wrap;margin-bottom:14px;align-items:center;background:#0f1f38;border:1px solid #1e3a5e;border-radius:8px;padding:8px 14px;">
         <span style="font-size:10px;color:#f0c060;font-weight:700;letter-spacing:1px;">BURNER STATE</span>
         <div style="display:flex;align-items:center;gap:5px;">
-          <svg width="18" height="28" viewBox="0 0 20 30" xmlns="http://www.w3.org/2000/svg" style="filter:drop-shadow(0 0 3px #fb923c88);">
-            <defs><radialGradient id="lgO" cx="50%" cy="80%" r="60%"><stop offset="0%" stop-color="#fde68a"/><stop offset="100%" stop-color="#fb923c" stop-opacity="0.7"/></radialGradient></defs>
+          <svg width="18" height="28" viewBox="0 0 20 30" xmlns="http://www.w3.org/2000/svg" style="filter:drop-shadow(0 0 3px #22c55e88);">
+            <defs><radialGradient id="lgO" cx="50%" cy="80%" r="60%"><stop offset="0%" stop-color="#86efac"/><stop offset="100%" stop-color="#16a34a" stop-opacity="0.7"/></radialGradient></defs>
             <path d="M10 2 C6 6 4 10 5 14 C6 17 10 18 10 18 C10 18 14 17 15 14 C16 10 14 6 10 2Z" fill="url(#lgO)"/>
-            <ellipse cx="10" cy="13" rx="3" ry="4" fill="#fde68a" opacity="0.9"/>
-            <rect x="8" y="17" width="4" height="8" rx="1.5" fill="#fb923c" opacity="0.7"/>
+            <ellipse cx="10" cy="13" rx="3" ry="4" fill="#dcfce7" opacity="0.9"/>
+            <rect x="8" y="17" width="4" height="8" rx="1.5" fill="#16a34a" opacity="0.7"/>
             <rect x="4" y="24" width="12" height="3" rx="1.5" fill="#1e293b"/>
           </svg>
-          <span style="font-size:10px;color:#fb923c;font-weight:700;">OFF GAS (O)</span>
+          <span style="font-size:10px;color:#4ade80;font-weight:700;">OFF GAS (O)</span>
         </div>
         <div style="display:flex;align-items:center;gap:5px;">
-          <svg width="18" height="28" viewBox="0 0 20 30" xmlns="http://www.w3.org/2000/svg" style="filter:drop-shadow(0 0 3px #fde04788);">
-            <defs><radialGradient id="lgN" cx="50%" cy="80%" r="60%"><stop offset="0%" stop-color="#fef9c3"/><stop offset="100%" stop-color="#fde047" stop-opacity="0.7"/></radialGradient></defs>
+          <svg width="18" height="28" viewBox="0 0 20 30" xmlns="http://www.w3.org/2000/svg" style="filter:drop-shadow(0 0 3px #fbbf2488);">
+            <defs><radialGradient id="lgN" cx="50%" cy="80%" r="60%"><stop offset="0%" stop-color="#fef9c3"/><stop offset="100%" stop-color="#d97706" stop-opacity="0.7"/></radialGradient></defs>
             <path d="M10 2 C6 6 4 10 5 14 C6 17 10 18 10 18 C10 18 14 17 15 14 C16 10 14 6 10 2Z" fill="url(#lgN)"/>
             <ellipse cx="10" cy="13" rx="3" ry="4" fill="#fef9c3" opacity="0.9"/>
-            <rect x="8" y="17" width="4" height="8" rx="1.5" fill="#fde047" opacity="0.7"/>
+            <rect x="8" y="17" width="4" height="8" rx="1.5" fill="#d97706" opacity="0.7"/>
             <rect x="4" y="24" width="12" height="3" rx="1.5" fill="#1e293b"/>
           </svg>
-          <span style="font-size:10px;color:#fde047;font-weight:700;">NG ONLY (N)</span>
+          <span style="font-size:10px;color:#fbbf24;font-weight:700;">NG ONLY (N)</span>
         </div>
         <div style="display:flex;align-items:center;gap:5px;">
           <svg width="18" height="28" viewBox="0 0 20 30" xmlns="http://www.w3.org/2000/svg" style="filter:drop-shadow(0 0 3px #14b8a688);">
@@ -2288,21 +2337,386 @@ function renderHeatMap(){
         <span style="font-size:10px;color:#f0c060;font-weight:700;letter-spacing:1px;margin-left:12px;">PEEP HOLES</span>
         <div style="display:flex;align-items:center;gap:5px;">
           <div style="width:50px;height:10px;background:linear-gradient(to right,#1e40af,#3b82f6,#22c55e,#eab308,#ef4444);border-radius:3px;border:1px solid #334155;"></div>
-          <span style="font-size:10px;color:#94a3b8;">Cool → Hot gradient</span>
+          <span style="font-size:10px;color:#94a3b8;">Cool â†’ Hot gradient</span>
         </div>
       </div>
 
       <!-- Shift / data status banner -->
       <div id="hm-shift-banner" style="display:none;align-items:center;gap:14px;margin-bottom:14px;padding:12px 18px;border:1px solid transparent;border-radius:9px;flex-wrap:wrap;transition:background 0.3s,border-color 0.3s;"></div>
 
+      <!-- hidden offscreen wall render containers -->
+      <div id="wall-render-host" style="position:fixed;left:-9999px;top:0;z-index:-1;pointer-events:none;width:900px;"></div>
+
+      <!-- 3D Dual Cuboids: AB Side & CD Side â€” properly joined faces -->
+      <style>
+        /* Burner dots */
+        .cf-dot{width:7px;height:7px;border-radius:50%;background:#1a2a3a;border:1px solid #2d3f55;flex-shrink:0;}
+        .cf-dot.on{background:radial-gradient(circle,#fde68a 30%,#F37022 100%);border-color:#F37022;box-shadow:0 0 5px rgba(243,112,34,0.75);}
+        .cf-dot.ng{background:radial-gradient(circle,#fef9c3 30%,#d97706 100%);border-color:#d97706;box-shadow:0 0 4px rgba(217,119,6,0.7);}
+
+        /*
+          CUBOID DIMENSIONS (large):
+            W = 560px  (front/back face width  â€” wide enough for the full 15-burner table)
+            H = 380px  (front/back face height â€” fits 6 rows + 2 peep bars)
+            D = 120px  (depth)
+
+          Face transforms (all centred on group origin):
+            front : translateZ(60px)
+            back  : rotateY(180deg) translateZ(60px)
+            left  : rotateY(-90deg) translateZ(280px)   [280 = W/2]
+            right : rotateY( 90deg) translateZ(280px)
+            top   : rotateX( 90deg) translateZ(190px)   [190 = H/2]
+            bot   : rotateX(-90deg) translateZ(190px)
+        */
+
+        /* Scene container */
+        .cb-scene{
+          width:100%; height:520px;
+          perspective:1400px; perspective-origin:50% 42%;
+          position:relative; cursor:grab;
+          overflow:visible;      /* 3D children must not be clipped by the scene */
+        }
+        .cb-scene:active{cursor:grabbing;}
+        .cb-scene.cb-float{animation:cb-float 3.8s ease-in-out infinite;}
+        @keyframes cb-float{0%,100%{transform:translateY(0);}50%{transform:translateY(-10px);}}
+
+        /* Rotating group â€” centred in scene */
+        .cb-group{
+          position:absolute;
+          left:50%; top:50%;
+          width:0; height:0;
+          transform-style:preserve-3d;
+        }
+
+        .cb-face{
+          position:absolute;
+          transform-style:preserve-3d;
+          backface-visibility:visible;
+          box-sizing:border-box;
+          overflow:hidden;
+        }
+
+        /* Front & Back: WÃ—H */
+        .cb-fb{
+          width:560px; height:380px;
+          margin-left:-280px; margin-top:-190px;
+        }
+        /* Left & Right: DÃ—H */
+        .cb-lr{
+          width:120px; height:380px;
+          margin-left:-60px; margin-top:-190px;
+        }
+        /* Top & Bottom: WÃ—D */
+        .cb-tb{
+          width:560px; height:120px;
+          margin-left:-280px; margin-top:-60px;
+        }
+
+        /* Canvas face images */
+        .cb-face-img{
+          width:100%; height:100%;
+          object-fit:fill;
+          display:block;
+          border-radius:inherit;
+        }
+
+        /* Glow shadow under each cuboid */
+        .cb-glow{
+          position:absolute; bottom:-20px; left:50%;
+          transform:translateX(-50%);
+          width:400px; height:18px; border-radius:50%;
+          filter:blur(10px); pointer-events:none;
+        }
+
+        /* Wrap & titles */
+        .cb-wrap{display:flex;flex-direction:column;align-items:center;flex:1;min-width:0;}
+        .cb-title{font-size:13px;font-weight:700;letter-spacing:3px;text-transform:uppercase;padding:5px 24px;border-radius:20px;margin-bottom:3px;}
+        .cb-subtitle{font-size:9px;color:#94a3b8;margin-bottom:6px;letter-spacing:0.4px;}
+        .cb-hint{font-size:9px;color:#475569;margin-top:10px;letter-spacing:1px;}
+        .cb-loading{font-size:10px;color:#64748b;margin-top:8px;letter-spacing:1px;animation:blink 1.2s ease-in-out infinite;}
+        @keyframes blink{0%,100%{opacity:1;}50%{opacity:0.4;}}
+
+        .cb-divider{width:1px;background:linear-gradient(to bottom,transparent,rgba(243,112,34,0.45),rgba(126,200,240,0.45),transparent);margin:0 12px;align-self:stretch;margin-top:56px;}
+
+        /* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+           FACE-ONLY OVERRIDES
+           Scoped to .cb-face so the flat bottom wall cards are
+           completely unaffected. These push content to fill the
+           full 380px face height and widen the inter-burner gaps.
+           â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */
+
+        /* Wider gap between adjacent burner icons */
+        .cb-face .hm-burners-line { gap: 13px !important; }
+        .cb-face .hm-burner-nums  { gap: 13px !important; }
+        .cb-face .hm-bnum         { width: 32px !important; }
+
+        /* Burner wrap & SVG: wider slot, taller flame icon */
+        .cb-face .hm-burner-wrap        { width: 32px !important; }
+        .cb-face .hm-burner-wrap svg    { width: 24px !important; height: 38px !important; }
+
+        /* Taller rows â€” adds ~24px Ã— 6 rows = 144px native height */
+        .cb-face .hm-row-wrap { padding: 12px 0 !important; gap: 6px !important; }
+
+        /* Taller peep-hole bars â€” adds ~16px Ã— 2 bars = 32px native height */
+        .cb-face .hm-peep-gradient-wrap     { padding: 12px 0 !important; margin: 0 !important; }
+        .cb-face .hm-peep-gradient-bar-wrap { height: 28px !important; }
+        .cb-face .hm-peep-marker            { height: 32px !important; top: -2px !important; }
+        .cb-face .hm-peep-dot               { width: 10px !important; height: 10px !important; }
+        .cb-face .hm-peep-temp-label        { font-size: 8px !important; top: -16px !important; }
+
+        /* Wall card fills face edge-to-edge */
+        .cb-face .hm-wall-card { margin-bottom: 0 !important; border-radius: 0 !important; }
+      </style>
+
+      <!-- html2canvas removed â€” faces render via direct HTML injection -->
+
+      <div style="display:flex;align-items:flex-start;gap:0;margin-bottom:22px;user-select:none;background:linear-gradient(135deg,rgba(15,31,56,0.75),rgba(10,22,40,0.95));border:1px solid #1e3a5e;border-radius:14px;padding:18px 10px 14px;box-shadow:0 4px 40px rgba(0,0,0,0.6);min-height:600px;overflow:hidden;">
+
+        <!-- â•â• AB SIDE CUBOID â•â• -->
+        <div class="cb-wrap">
+          <div class="cb-title" style="color:#F37022;background:rgba(243,112,34,0.1);border:1px solid rgba(243,112,34,0.35);">â—€ AB SIDE</div>
+          <div class="cb-subtitle">Outer face = <span style="color:#F37022;font-weight:700;">Wall A</span> &nbsp;Â·&nbsp; Inner face = <span style="color:#fb923c;font-weight:700;">Wall B</span></div>
+
+          <div class="cb-scene cb-float" id="ab-scene">
+            <div class="cb-group" id="ab-cube" style="transform:rotateX(-8deg) rotateY(30deg);">
+
+              <!-- FRONT = Wall A -->
+              <div class="cb-face cb-fb" id="face-ab-front" style="transform:translateZ(60px);border:2px solid rgba(243,112,34,0.75);background:#0a1628;">
+                <div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;color:#F37022;font-size:11px;font-weight:700;letter-spacing:2px;" id="face-ab-front-loading">â³ RENDERING WALL Aâ€¦</div>
+              </div>
+
+              <!-- BACK = Wall B -->
+              <div class="cb-face cb-fb" id="face-ab-back" style="transform:rotateY(180deg) translateZ(60px);border:2px solid rgba(251,146,60,0.65);background:#0a1628;">
+                <div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;color:#fb923c;font-size:11px;font-weight:700;letter-spacing:2px;" id="face-ab-back-loading">â³ RENDERING WALL Bâ€¦</div>
+              </div>
+
+              <!-- LEFT side cap -->
+              <div class="cb-face cb-lr" style="transform:rotateY(-90deg) translateZ(280px);background:linear-gradient(180deg,#0d1f38,#0a1628);border:1.5px solid rgba(243,112,34,0.3);">
+                <div style="writing-mode:vertical-rl;transform:rotate(180deg);font-size:9px;font-weight:700;color:rgba(243,112,34,0.5);letter-spacing:3px;">AB SIDE</div>
+              </div>
+
+              <!-- RIGHT side cap -->
+              <div class="cb-face cb-lr" style="transform:rotateY(90deg) translateZ(280px);background:linear-gradient(180deg,#0d1f38,#0a1628);border:1.5px solid rgba(251,146,60,0.3);">
+                <div style="writing-mode:vertical-rl;font-size:9px;font-weight:700;color:rgba(251,146,60,0.5);letter-spacing:3px;">AB SIDE</div>
+              </div>
+
+              <!-- TOP cap -->
+              <div class="cb-face cb-tb" style="transform:rotateX(90deg) translateZ(190px);background:linear-gradient(135deg,rgba(243,112,34,0.3),rgba(251,146,60,0.15));border:1.5px solid rgba(243,112,34,0.5);display:flex;align-items:center;justify-content:center;">
+                <span style="font-size:10px;font-weight:700;color:#f0c060;letter-spacing:3px;">AB â€” REFORMER TOP</span>
+              </div>
+
+              <!-- BOTTOM cap -->
+              <div class="cb-face cb-tb" style="transform:rotateX(-90deg) translateZ(190px);background:rgba(8,16,32,0.9);border:1.5px solid rgba(100,116,139,0.25);display:flex;align-items:center;justify-content:center;">
+                <span style="font-size:9px;font-weight:700;color:#334155;letter-spacing:3px;">BASE</span>
+              </div>
+
+            </div>
+            <div class="cb-glow" style="background:radial-gradient(ellipse,rgba(243,112,34,0.4) 0%,transparent 70%);"></div>
+          </div>
+          <div class="cb-hint">â† DRAG LEFT / RIGHT TO ROTATE â†’</div>
+          <div id="ab-load-status" class="cb-loading" style="display:none;">Generating wall texturesâ€¦</div>
+        </div>
+
+        <div class="cb-divider"></div>
+
+        <!-- â•â• CD SIDE CUBOID â•â• -->
+        <div class="cb-wrap">
+          <div class="cb-title" style="color:#7ec8f0;background:rgba(126,200,240,0.1);border:1px solid rgba(126,200,240,0.35);">CD SIDE â–¶</div>
+          <div class="cb-subtitle">Outer face = <span style="color:#7ec8f0;font-weight:700;">Wall D</span> &nbsp;Â·&nbsp; Inner face = <span style="color:#60c8ff;font-weight:700;">Wall C</span></div>
+
+          <div class="cb-scene cb-float" id="cd-scene">
+            <div class="cb-group" id="cd-cube" style="transform:rotateX(-8deg) rotateY(-30deg);">
+
+              <!-- FRONT = Wall D -->
+              <div class="cb-face cb-fb" id="face-cd-front" style="transform:translateZ(60px);border:2px solid rgba(126,200,240,0.75);background:#0a1628;">
+                <div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;color:#7ec8f0;font-size:11px;font-weight:700;letter-spacing:2px;" id="face-cd-front-loading">â³ RENDERING WALL Dâ€¦</div>
+              </div>
+
+              <!-- BACK = Wall C -->
+              <div class="cb-face cb-fb" id="face-cd-back" style="transform:rotateY(180deg) translateZ(60px);border:2px solid rgba(96,200,255,0.65);background:#0a1628;">
+                <div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;color:#60c8ff;font-size:11px;font-weight:700;letter-spacing:2px;" id="face-cd-back-loading">â³ RENDERING WALL Câ€¦</div>
+              </div>
+
+              <!-- LEFT side cap -->
+              <div class="cb-face cb-lr" style="transform:rotateY(-90deg) translateZ(280px);background:linear-gradient(180deg,#0d1f38,#0a1628);border:1.5px solid rgba(126,200,240,0.3);">
+                <div style="writing-mode:vertical-rl;transform:rotate(180deg);font-size:9px;font-weight:700;color:rgba(126,200,240,0.5);letter-spacing:3px;">CD SIDE</div>
+              </div>
+
+              <!-- RIGHT side cap -->
+              <div class="cb-face cb-lr" style="transform:rotateY(90deg) translateZ(280px);background:linear-gradient(180deg,#0d1f38,#0a1628);border:1.5px solid rgba(96,200,255,0.3);">
+                <div style="writing-mode:vertical-rl;font-size:9px;font-weight:700;color:rgba(96,200,255,0.5);letter-spacing:3px;">CD SIDE</div>
+              </div>
+
+              <!-- TOP cap -->
+              <div class="cb-face cb-tb" style="transform:rotateX(90deg) translateZ(190px);background:linear-gradient(135deg,rgba(126,200,240,0.3),rgba(96,200,255,0.15));border:1.5px solid rgba(126,200,240,0.5);display:flex;align-items:center;justify-content:center;">
+                <span style="font-size:10px;font-weight:700;color:#7ec8f0;letter-spacing:3px;">CD â€” REFORMER TOP</span>
+              </div>
+
+              <!-- BOTTOM cap -->
+              <div class="cb-face cb-tb" style="transform:rotateX(-90deg) translateZ(190px);background:rgba(8,16,32,0.9);border:1.5px solid rgba(100,116,139,0.25);display:flex;align-items:center;justify-content:center;">
+                <span style="font-size:9px;font-weight:700;color:#334155;letter-spacing:3px;">BASE</span>
+              </div>
+
+            </div>
+            <div class="cb-glow" style="background:radial-gradient(ellipse,rgba(126,200,240,0.38) 0%,transparent 70%);"></div>
+          </div>
+          <div class="cb-hint">â† DRAG LEFT / RIGHT TO ROTATE â†’</div>
+          <div id="cd-load-status" class="cb-loading" style="display:none;">Generating wall texturesâ€¦</div>
+        </div>
+
+      </div><!-- end dual cuboid row -->
+
+      <script>
+      /* â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+         CUBOID DRAG + WALL TEXTURE ENGINE
+         Renders each wall as a scaled-down canvas snapshot and applies
+         it as a background-image on the corresponding cuboid face.
+      â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+      (function(){
+
+        /* â”€â”€ 1. Drag interaction (identical for both cuboids) â”€â”€ */
+        function makeDraggable(sceneId, cubeId, initY, initX){
+          var scene = document.getElementById(sceneId);
+          var cube  = document.getElementById(cubeId);
+          var rY = initY, rX = initX, dragging = false, lastX = 0;
+          function apply(){ cube.style.transform = 'rotateX('+rX+'deg) rotateY('+rY+'deg)'; }
+          scene.addEventListener('mousedown', function(e){ dragging=true; lastX=e.clientX; scene.classList.remove('cb-float'); e.preventDefault(); });
+          window.addEventListener('mousemove', function(e){ if(!dragging) return; rY+=(e.clientX-lastX)*0.45; lastX=e.clientX; apply(); });
+          window.addEventListener('mouseup',   function(){ if(dragging){ dragging=false; scene.classList.add('cb-float'); } });
+          scene.addEventListener('touchstart', function(e){ dragging=true; lastX=e.touches[0].clientX; scene.classList.remove('cb-float'); e.preventDefault(); },{passive:false});
+          window.addEventListener('touchmove', function(e){ if(!dragging) return; rY+=(e.touches[0].clientX-lastX)*0.45; lastX=e.touches[0].clientX; apply(); });
+          window.addEventListener('touchend',  function(){ if(dragging){ dragging=false; scene.classList.add('cb-float'); } });
+        }
+        makeDraggable('ab-scene','ab-cube', 30,-8);
+        makeDraggable('cd-scene','cd-cube',-30,-8);
+
+        /* â”€â”€ 2. Wall face renderer â€” direct HTML injection (no html2canvas) â”€â”€
+           The wall card is built at NATURAL_W=900px (same as before) and
+           scaled down to FACE_W=560px via CSS transform. The face div already
+           has overflow:hidden so nothing bleeds outside. CSS classes from the
+           page (.hm-wall-card, .hm-burner-wrap, etc.) apply globally so the
+           full burner-icon SVGs, flame animations and peep-hole bars render
+           identically to the flat wall cards at the bottom of the screen.
+        â”€â”€ */
+        var FACE_W = 560, FACE_H = 380;
+        var NATURAL_W = 900;
+        var FACE_SCALE = FACE_W / NATURAL_W;   /* 0.6222â€¦ */
+
+        function renderWallFace(wallName, peepBotVals, peepTopVals, wallData, faceEl, loadingEl, accentColor){
+          /* Build the same wall-card HTML used by the flat bottom tables */
+          var html = buildWallHTML(wallName, peepBotVals, peepTopVals, wallData);
+
+          /* Remove the loading spinner */
+          if(loadingEl && loadingEl.parentNode) loadingEl.parentNode.removeChild(loadingEl);
+
+          /* Clear any stale background-image from previous renders */
+          faceEl.style.backgroundImage = '';
+          faceEl.style.backgroundSize  = '';
+
+          /*
+            Inject a 900px-wide div and scale it down to 560px.
+            transform-origin:top left ensures the scaling anchors to the
+            face's top-left corner â€” no clipping math needed.
+            pointer-events:none keeps the 3D drag working.
+          */
+          faceEl.innerHTML =
+            '<div style="'
+            +   'position:absolute;top:0;left:0;'
+            +   'width:'+NATURAL_W+'px;'
+            +   'transform-origin:top left;'
+            +   'transform:scale('+FACE_SCALE.toFixed(6)+');'
+            +   'pointer-events:none;'
+            + '">'
+            + html
+            + '</div>';
+        }
+
+        /* â”€â”€ 3. Hook into renderHeatMap so textures refresh with data â”€â”€ */
+        var _origRenderHeatMap = window.renderHeatMap;
+        window.renderHeatMap = function(){
+          if(_origRenderHeatMap) _origRenderHeatMap.apply(this,arguments);
+          scheduleCuboidTextures();
+        };
+
+        var _textureScheduled = false;
+        function scheduleCuboidTextures(){
+          if(_textureScheduled) return;
+          _textureScheduled = true;
+          /* Short timeout: let renderHeatMap finish building data + DOM */
+          setTimeout(buildCuboidTextures, 350);
+        }
+
+        function buildCuboidTextures(){
+          _textureScheduled = false;
+
+          /* Get burner data same way renderHeatMap does */
+          var hmData = null;
+          try{ var r=localStorage.getItem("burnerData"); if(r) hmData=JSON.parse(r); }catch(e){}
+          if(!hmData){
+            /* Use defaults */
+            var def=[
+              ["N","O","N","B","N","O","N","O","B","N","O","N","O","N","O"],
+              ["O","N","O","N","O","B","O","N","O","N","B","O","N","O","N"],
+              ["B","N","O","N","N","O","N","O","N","O","N","O","B","N","O"],
+              ["N","O","B","O","N","O","N","B","O","N","O","N","O","O","N"],
+              ["O","N","N","O","B","N","O","N","O","B","N","O","N","N","O"],
+              ["N","B","O","N","O","N","O","N","B","O","N","O","N","O","N"]
+            ];
+            hmData={};
+            ["A","B","C","D"].forEach(function(w,wi){
+              hmData[w]=[];
+              for(var ri=0;ri<6;ri++) hmData[w].push(def[(ri+wi)%def.length].slice());
+            });
+          }
+
+          /* Peep hole data */
+          var shiftSel = document.getElementById("hm-shift-select");
+          var shift = shiftSel ? shiftSel.value : "All";
+          var entry = (typeof getTempEntryByShift === 'function') ? getTempEntryByShift(shift) : null;
+          function getPH(e,k){ return (e&&e.peepHoles&&e.peepHoles[k]) ? e.peepHoles[k] : Array(15).fill(""); }
+          var abBot=getPH(entry,"ab-bot"), abTop=getPH(entry,"ab-top");
+          var cdBot=getPH(entry,"cd-bot"), cdTop=getPH(entry,"cd-top");
+
+          /* Render all four faces */
+          renderWallFace("A", abBot, abTop, hmData["A"],
+            document.getElementById('face-ab-front'), document.getElementById('face-ab-front-loading'), '#F37022');
+
+          renderWallFace("B", abBot, abTop, hmData["B"],
+            document.getElementById('face-ab-back'),  document.getElementById('face-ab-back-loading'),  '#fb923c');
+
+          renderWallFace("D", cdBot, cdTop, hmData["D"],
+            document.getElementById('face-cd-front'), document.getElementById('face-cd-front-loading'), '#7ec8f0');
+
+          renderWallFace("C", cdBot, cdTop, hmData["C"],
+            document.getElementById('face-cd-back'),  document.getElementById('face-cd-back-loading'),  '#60c8ff');
+        }
+
+        /* â”€â”€ 4. Auto-trigger once DOM is ready â”€â”€ */
+        if(document.readyState === 'loading'){
+          document.addEventListener('DOMContentLoaded', scheduleCuboidTextures);
+        } else {
+          /* Also trigger when heatmap tab becomes visible */
+          setTimeout(scheduleCuboidTextures, 600);
+        }
+
+        /* Re-render textures when tab becomes active */
+        var _origSwitchTab = window.switchTab;
+        window.switchTab = function(tab){
+          if(_origSwitchTab) _origSwitchTab.apply(this,arguments);
+          if(tab === 'heatmap') setTimeout(scheduleCuboidTextures, 400);
+        };
+
+      })();
+      </script>
+
       <!-- 4-wall grid: AB left, CD right -->
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
         <div>
-          <div style="font-size:10px;color:#F37022;font-weight:700;letter-spacing:3px;margin-bottom:8px;text-align:center;border-bottom:1px solid #1e3a5e;padding-bottom:6px;">◀ AB SIDE</div>
+          <div style="font-size:10px;color:#F37022;font-weight:700;letter-spacing:3px;margin-bottom:8px;text-align:center;border-bottom:1px solid #1e3a5e;padding-bottom:6px;">â—€ AB SIDE</div>
           <div style="display:flex;flex-direction:column;gap:10px;" id="hm-side-ab"></div>
         </div>
         <div>
-          <div style="font-size:10px;color:#F37022;font-weight:700;letter-spacing:3px;margin-bottom:8px;text-align:center;border-bottom:1px solid #1e3a5e;padding-bottom:6px;">CD SIDE ▶</div>
+          <div style="font-size:10px;color:#F37022;font-weight:700;letter-spacing:3px;margin-bottom:8px;text-align:center;border-bottom:1px solid #1e3a5e;padding-bottom:6px;">CD SIDE â–¶</div>
           <div style="display:flex;flex-direction:column;gap:10px;" id="hm-side-cd"></div>
         </div>
       </div>
@@ -2313,17 +2727,17 @@ function renderHeatMap(){
   <!-- TAB 1: Burner Data & Analysis -->
   <div id="tab-burner" class="tab-panel">
     <div class="legend">
-      <span class="legend-item li-B">B — Both (NG + FO)</span>
-      <span class="legend-item li-N">N — NG Only</span>
-      <span class="legend-item li-O">O — Off Gas</span>
-      <span class="legend-item li-C">C — None / Cold</span>
+      <span class="legend-item li-B">B â€” Both (NG + FO)</span>
+      <span class="legend-item li-N">N â€” NG Only</span>
+      <span class="legend-item li-O">O â€” Off Gas</span>
+      <span class="legend-item li-C">C â€” None / Cold</span>
       <span id="burnerUnsavedBadge" class="cl-unsaved-badge" style="display:none;margin-left:auto;">
-        ⚠ Unsaved Changes — click <b>Save New Data</b> to confirm
+        âš  Unsaved Changes â€” click <b>Save New Data</b> to confirm
       </span>
     </div>
     <div class="wall-container" id="walls"></div>
     <div class="analytics">
-      <h2>📊 Burner Distribution Analytics</h2>
+      <h2>ðŸ“Š Burner Distribution Analytics</h2>
       <div id="analysisContainer"></div>
     </div>
   </div>
@@ -2331,24 +2745,24 @@ function renderHeatMap(){
   <!-- TAB 2: Burner Cleaning Status -->
   <div id="tab-cleaning" class="tab-panel">
     <div class="cleaning-section">
-      <h2>🧹 Burner Cleaning Log</h2>
-      <div class="cleaning-subtitle">Select the date of last cleaning for each burner (6 Rows × 15 Burners) across all 4 walls. Data is saved automatically.</div>
+      <h2>ðŸ§¹ Burner Cleaning Log</h2>
+      <div class="cleaning-subtitle">Select the date of last cleaning for each burner (6 Rows Ã— 15 Burners) across all 4 walls. Data is saved automatically.</div>
 
       <!-- STATUS DASHBOARD -->
       <div id="cleaningDashboard" class="cleaning-dashboard">
         <div class="cdash-period-row">
           <div class="cdash-period-card">
-            <div class="cdash-period-icon">📅</div>
+            <div class="cdash-period-icon">ðŸ“…</div>
             <div class="cdash-period-val" id="cdash-val-today">0</div>
             <div class="cdash-period-label">Cleaned Today</div>
           </div>
           <div class="cdash-period-card">
-            <div class="cdash-period-icon">📆</div>
+            <div class="cdash-period-icon">ðŸ“†</div>
             <div class="cdash-period-val" id="cdash-val-week">0</div>
             <div class="cdash-period-label">This Week</div>
           </div>
           <div class="cdash-period-card">
-            <div class="cdash-period-icon">🗓</div>
+            <div class="cdash-period-icon">ðŸ—“</div>
             <div class="cdash-period-val" id="cdash-val-month">0</div>
             <div class="cdash-period-label">
               <select id="cleaningMonthSelect" onchange="updateCleaningStatus(loadCleaningLog())" title="Select month">
@@ -2356,7 +2770,7 @@ function renderHeatMap(){
             </div>
           </div>
           <div class="cdash-period-card cdash-total-card">
-            <div class="cdash-period-icon">🔥</div>
+            <div class="cdash-period-icon">ðŸ”¥</div>
             <div class="cdash-period-val" id="cdash-val-total">0</div>
             <div class="cdash-period-label">Total Cleaned</div>
             <div class="cdash-period-sub" id="cdash-val-pct">of 360</div>
@@ -2377,7 +2791,7 @@ function renderHeatMap(){
       <!-- Frequency Alarm Panel -->
       <div id="freqAlarmPanel" class="freq-alarm-panel" style="display:none;">
         <div class="freq-alarm-header">
-          <span class="freq-alarm-icon">🚨</span>
+          <span class="freq-alarm-icon">ðŸš¨</span>
           <span class="freq-alarm-title">HIGH FREQUENCY CLEANING ALARM</span>
           <span class="freq-alarm-sub" id="freqAlarmMonthLabel">Burners cleaned more than 3 times this month</span>
         </div>
@@ -2387,11 +2801,11 @@ function renderHeatMap(){
       <!-- Wall Selector Buttons -->
       <div class="cw-selector" id="cleaningWallSelector">
         <span class="cw-selector-label">Select Wall:</span>
-        <button class="cw-btn cw-btn-active" id="cw-btn-A" onclick="switchCleaningWall('A')">🔥 Wall A</button>
-        <button class="cw-btn" id="cw-btn-B" onclick="switchCleaningWall('B')">🔥 Wall B</button>
-        <button class="cw-btn" id="cw-btn-C" onclick="switchCleaningWall('C')">🔥 Wall C</button>
-        <button class="cw-btn" id="cw-btn-D" onclick="switchCleaningWall('D')">🔥 Wall D</button>
-        <button class="cw-btn" id="cw-btn-ALL" onclick="switchCleaningWall('ALL')">📋 Every Wall</button>
+        <button class="cw-btn cw-btn-active" id="cw-btn-A" onclick="switchCleaningWall('A')">ðŸ”¥ Wall A</button>
+        <button class="cw-btn" id="cw-btn-B" onclick="switchCleaningWall('B')">ðŸ”¥ Wall B</button>
+        <button class="cw-btn" id="cw-btn-C" onclick="switchCleaningWall('C')">ðŸ”¥ Wall C</button>
+        <button class="cw-btn" id="cw-btn-D" onclick="switchCleaningWall('D')">ðŸ”¥ Wall D</button>
+        <button class="cw-btn" id="cw-btn-ALL" onclick="switchCleaningWall('ALL')">ðŸ“‹ Every Wall</button>
       </div>
 
       <div id="cleaningTablesWrap" class="cleaning-walls-grid">
@@ -2401,26 +2815,26 @@ function renderHeatMap(){
         <span id="cleaningStatus"></span>
         <div style="display:flex;gap:8px;align-items:center;">
           <span id="cleaningUnsavedBadge" class="cl-unsaved-badge" style="display:none;">
-            ⚠ Unsaved Changes — click <b>Save New Data</b> to confirm
+            âš  Unsaved Changes â€” click <b>Save New Data</b> to confirm
           </span>
-          <button class="cleaning-clear-btn" onclick="clearCleaningLog()">🗑 Clear All</button>
+          <button class="cleaning-clear-btn" onclick="clearCleaningLog()">ðŸ—‘ Clear All</button>
         </div>
       </div>
 
-      <!-- ══════════════════════════════════════════════════
+      <!-- â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
            BURNER TIP DAMAGE & REPLACEMENT TABLE
-      ══════════════════════════════════════════════════ -->
+      â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• -->
       <div style="margin-top:24px;background:#0a1628;border:1px solid #1e3a5e;border-radius:12px;overflow:hidden;">
 
         <!-- Header -->
         <div style="background:linear-gradient(90deg,#0f2744,#1a3560);padding:12px 18px;display:flex;align-items:center;justify-content:space-between;border-bottom:2px solid #F37022;flex-wrap:wrap;gap:10px;">
           <div>
-            <div style="font-size:15px;font-weight:700;color:#F37022;letter-spacing:1.5px;">🔧 Burner Tip — Damage &amp; Replacement Log</div>
+            <div style="font-size:15px;font-weight:700;color:#F37022;letter-spacing:1.5px;">ðŸ”§ Burner Tip â€” Damage &amp; Replacement Log</div>
             <div style="font-size:11px;color:#7ec8f0;margin-top:3px;">Track tip damage status and replacement history for each burner</div>
           </div>
           <div style="display:flex;gap:10px;align-items:center;">
-            <span id="tipUnsavedBadge" style="display:none;font-size:11px;font-weight:700;color:#fbbf24;background:rgba(251,191,36,0.1);border:1px solid rgba(251,191,36,0.3);padding:4px 12px;border-radius:4px;">⚠ Unsaved Changes</span>
-            <button onclick="addTipRow()" style="background:rgba(74,222,128,0.12);border:1px solid rgba(74,222,128,0.35);color:#4ade80;padding:7px 16px;border-radius:6px;font-size:12px;font-weight:700;font-family:Rajdhani,sans-serif;cursor:pointer;letter-spacing:0.5px;">＋ Add Row</button>
+            <span id="tipUnsavedBadge" style="display:none;font-size:11px;font-weight:700;color:#fbbf24;background:rgba(251,191,36,0.1);border:1px solid rgba(251,191,36,0.3);padding:4px 12px;border-radius:4px;">âš  Unsaved Changes</span>
+            <button onclick="addTipRow()" style="background:rgba(74,222,128,0.12);border:1px solid rgba(74,222,128,0.35);color:#4ade80;padding:7px 16px;border-radius:6px;font-size:12px;font-weight:700;font-family:Rajdhani,sans-serif;cursor:pointer;letter-spacing:0.5px;">ï¼‹ Add Row</button>
           </div>
         </div>
 
@@ -2449,7 +2863,7 @@ function renderHeatMap(){
 
         <!-- Footer save strip -->
         <div style="padding:12px 18px;background:rgba(255,255,255,0.02);border-top:1px solid #1e3a5e;display:flex;justify-content:flex-end;gap:10px;">
-          <button onclick="saveTipData()" style="background:linear-gradient(90deg,#d95008,#F37022);border:none;color:#fff;padding:8px 22px;border-radius:7px;font-size:13px;font-weight:700;font-family:Rajdhani,sans-serif;cursor:pointer;letter-spacing:0.5px;box-shadow:0 0 12px rgba(243,112,34,0.3);">💾 Save Tip Data</button>
+          <button onclick="saveTipData()" style="background:linear-gradient(90deg,#d95008,#F37022);border:none;color:#fff;padding:8px 22px;border-radius:7px;font-size:13px;font-weight:700;font-family:Rajdhani,sans-serif;cursor:pointer;letter-spacing:0.5px;box-shadow:0 0 12px rgba(243,112,34,0.3);">ðŸ’¾ Save Tip Data</button>
         </div>
 
       </div><!-- /tip slab -->
@@ -2465,7 +2879,7 @@ function renderHeatMap(){
       <!-- Header -->
       <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:22px;flex-wrap:wrap;gap:12px;">
         <div>
-          <h2 style="font-size:20px;font-weight:700;color:#F37022;margin-bottom:4px;">🌡️ Temperature Data Entry</h2>
+          <h2 style="font-size:20px;font-weight:700;color:#F37022;margin-bottom:4px;">ðŸŒ¡ï¸ Temperature Data Entry</h2>
           <span style="font-size:12px;color:#94a3b8;">Manual entry of reformer and process temperature readings</span>
         </div>
         <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center;">
@@ -2487,37 +2901,37 @@ function renderHeatMap(){
           <!-- Save / Clear -->
           <button onclick="saveTempData()"
             style="background:linear-gradient(90deg,#d95008,#F37022);border:none;color:#fff;padding:9px 20px;border-radius:7px;font-size:14px;font-weight:700;font-family:'Rajdhani',sans-serif;cursor:pointer;letter-spacing:0.5px;box-shadow:0 3px 14px rgba(243,112,34,0.4);">
-            💾 Save Entry
+            ðŸ’¾ Save Entry
           </button>
           <button onclick="clearTempData()"
             style="background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.14);color:#94a3b8;padding:9px 16px;border-radius:7px;font-size:13px;font-weight:600;font-family:'Rajdhani',sans-serif;cursor:pointer;">
-            🗑 Clear
+            ðŸ—‘ Clear
           </button>
         </div>
       </div>
 
-      <!-- ── Section 1: General Temps ── -->
+      <!-- â”€â”€ Section 1: General Temps â”€â”€ -->
       <div style="background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.1);border-radius:10px;padding:20px 24px;margin-bottom:18px;">
         <div style="font-size:12px;font-weight:700;color:#7ec8f0;letter-spacing:1px;text-transform:uppercase;margin-bottom:16px;padding-bottom:8px;border-bottom:1px solid rgba(255,255,255,0.08);">
-          ⚙️ Process Temperatures
+          âš™ï¸ Process Temperatures
         </div>
         <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:16px;">
 
           <!-- AB Side COT -->
           <div class="td-field-group">
-            <label class="td-label">AB Side Reformer COT <span class="td-unit">(°C)</span></label>
+            <label class="td-label">AB Side Reformer COT <span class="td-unit">(Â°C)</span></label>
             <input type="number" id="td-ab-cot" class="td-input" placeholder="Enter value" step="0.1">
           </div>
 
           <!-- CD Side COT -->
           <div class="td-field-group">
-            <label class="td-label">CD Side Reformer COT <span class="td-unit">(°C)</span></label>
+            <label class="td-label">CD Side Reformer COT <span class="td-unit">(Â°C)</span></label>
             <input type="number" id="td-cd-cot" class="td-input" placeholder="Enter value" step="0.1">
           </div>
 
           <!-- Flue Gas -->
           <div class="td-field-group">
-            <label class="td-label">Reformer Flue Gas <span class="td-unit">(°C)</span></label>
+            <label class="td-label">Reformer Flue Gas <span class="td-unit">(Â°C)</span></label>
             <input type="number" id="td-flue-gas" class="td-input" placeholder="Enter value" step="0.1">
           </div>
 
@@ -2529,23 +2943,23 @@ function renderHeatMap(){
 
           <!-- Pre-reformer Bed Max -->
           <div class="td-field-group">
-            <label class="td-label">Pre-reformer Bed Max <span class="td-unit">(°C)</span></label>
+            <label class="td-label">Pre-reformer Bed Max <span class="td-unit">(Â°C)</span></label>
             <input type="number" id="td-prereformer-max" class="td-input" placeholder="Enter value" step="0.1">
           </div>
 
           <!-- Pre-reformer Bed Min -->
           <div class="td-field-group">
-            <label class="td-label">Pre-reformer Bed Min <span class="td-unit">(°C)</span></label>
+            <label class="td-label">Pre-reformer Bed Min <span class="td-unit">(Â°C)</span></label>
             <input type="number" id="td-prereformer-min" class="td-input" placeholder="Enter value" step="0.1">
           </div>
 
         </div>
       </div>
 
-      <!-- ── Section 2: Peep Hole Temperatures ── -->
+      <!-- â”€â”€ Section 2: Peep Hole Temperatures â”€â”€ -->
       <div style="background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.1);border-radius:10px;padding:20px 24px;margin-bottom:18px;">
         <div style="font-size:12px;font-weight:700;color:#7ec8f0;letter-spacing:1px;text-transform:uppercase;margin-bottom:16px;padding-bottom:8px;border-bottom:1px solid rgba(255,255,255,0.08);">
-          👁️ Peep Hole Temperatures — Peep Hole No. 1 – 15
+          ðŸ‘ï¸ Peep Hole Temperatures â€” Peep Hole No. 1 â€“ 15
         </div>
 
         <!-- Number header row -->
@@ -2649,20 +3063,20 @@ function renderHeatMap(){
         </div>
       </div>
 
-      <!-- ── Saved Entries Table ── -->
+      <!-- â”€â”€ Saved Entries Table â”€â”€ -->
       <div style="background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.08);border-radius:10px;padding:20px 24px;">
         <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;flex-wrap:wrap;gap:10px;">
           <div style="font-size:12px;font-weight:700;color:#7ec8f0;letter-spacing:1px;text-transform:uppercase;">
-            📋 Saved Entries
+            ðŸ“‹ Saved Entries
           </div>
           <div style="display:flex;gap:10px;flex-wrap:wrap;">
             <button onclick="openAllPHModal()"
               style="background:rgba(129,140,248,0.15);border:1px solid rgba(129,140,248,0.4);color:#818cf8;padding:7px 16px;border-radius:6px;font-size:12px;font-weight:700;font-family:'Rajdhani',sans-serif;cursor:pointer;letter-spacing:0.5px;">
-              👁️ View All Peep Hole TST Data
+              ðŸ‘ï¸ View All Peep Hole TST Data
             </button>
             <button onclick="exportToExcel()"
               style="background:rgba(74,222,128,0.1);border:1px solid rgba(74,222,128,0.3);color:#4ade80;padding:7px 16px;border-radius:6px;font-size:12px;font-weight:700;font-family:'Rajdhani',sans-serif;cursor:pointer;">
-              💾 Save to Burner Data File
+              ðŸ’¾ Save to Burner Data File
             </button>
           </div>
         </div>
@@ -2672,12 +3086,12 @@ function renderHeatMap(){
               <tr style="background:rgba(255,255,255,0.06);color:#7ec8f0;font-weight:700;letter-spacing:0.5px;text-transform:uppercase;">
                 <th style="padding:9px 10px;text-align:left;border-bottom:1px solid rgba(255,255,255,0.1);">Date/Time</th>
                 <th style="padding:9px 10px;text-align:center;border-bottom:1px solid rgba(255,255,255,0.1);">Shift</th>
-                <th style="padding:9px 10px;text-align:center;border-bottom:1px solid rgba(255,255,255,0.1);">AB COT (°C)</th>
-                <th style="padding:9px 10px;text-align:center;border-bottom:1px solid rgba(255,255,255,0.1);">CD COT (°C)</th>
-                <th style="padding:9px 10px;text-align:center;border-bottom:1px solid rgba(255,255,255,0.1);">Flue Gas (°C)</th>
-                <th style="padding:9px 10px;text-align:center;border-bottom:1px solid rgba(255,255,255,0.1);">O₂ (%Vol)</th>
-                <th style="padding:9px 10px;text-align:center;border-bottom:1px solid rgba(255,255,255,0.1);">Pre-ref Max (°C)</th>
-                <th style="padding:9px 10px;text-align:center;border-bottom:1px solid rgba(255,255,255,0.1);">Pre-ref Min (°C)</th>
+                <th style="padding:9px 10px;text-align:center;border-bottom:1px solid rgba(255,255,255,0.1);">AB COT (Â°C)</th>
+                <th style="padding:9px 10px;text-align:center;border-bottom:1px solid rgba(255,255,255,0.1);">CD COT (Â°C)</th>
+                <th style="padding:9px 10px;text-align:center;border-bottom:1px solid rgba(255,255,255,0.1);">Flue Gas (Â°C)</th>
+                <th style="padding:9px 10px;text-align:center;border-bottom:1px solid rgba(255,255,255,0.1);">Oâ‚‚ (%Vol)</th>
+                <th style="padding:9px 10px;text-align:center;border-bottom:1px solid rgba(255,255,255,0.1);">Pre-ref Max (Â°C)</th>
+                <th style="padding:9px 10px;text-align:center;border-bottom:1px solid rgba(255,255,255,0.1);">Pre-ref Min (Â°C)</th>
                 <th style="padding:9px 10px;text-align:center;border-bottom:1px solid rgba(255,255,255,0.1);">AB Bot PH 1-15</th>
                 <th style="padding:9px 10px;text-align:center;border-bottom:1px solid rgba(255,255,255,0.1);">CD Bot PH 1-15</th>
                 <th style="padding:9px 10px;text-align:center;border-bottom:1px solid rgba(255,255,255,0.1);">AB Top PH 1-15</th>
@@ -2701,12 +3115,12 @@ function renderHeatMap(){
     <div class="alarms-section">
       <div class="alarms-header">
         <div class="alarms-header-left">
-          <h2>🚨 Alarm Management Console</h2>
+          <h2>ðŸš¨ Alarm Management Console</h2>
           <span class="alarms-subtitle">Real-time monitoring of burner imbalance and cleaning frequency alarms</span>
         </div>
         <div class="alarms-header-right">
-          <button class="alarm-clear-all-btn" onclick="acknowledgeAllAlarms()">✔ Acknowledge All</button>
-          <button class="alarm-refresh-btn" onclick="refreshAlarmPanel()">↻ Refresh</button>
+          <button class="alarm-clear-all-btn" onclick="acknowledgeAllAlarms()">âœ” Acknowledge All</button>
+          <button class="alarm-refresh-btn" onclick="refreshAlarmPanel()">â†» Refresh</button>
         </div>
       </div>
 
@@ -2732,23 +3146,23 @@ function renderHeatMap(){
 ==================================================== -->
 <div class="bottom-tab-bar">
   <button class="btab btab-active" id="btab-heatmap" class="btab btab-active" onclick="switchTab('heatmap')">
-    <span class="btab-icon">🌡️</span>
+    <span class="btab-icon">ðŸŒ¡ï¸</span>
     <span class="btab-label">Reformer Heat Map</span>
   </button>
   <button class="btab" id="btab-burner" onclick="switchTab('burner')">
-    <span class="btab-icon">🔥</span>
+    <span class="btab-icon">ðŸ”¥</span>
     <span class="btab-label">Burner Data &amp; Analysis</span>
   </button>
   <button class="btab" id="btab-cleaning" onclick="switchTab('cleaning')">
-    <span class="btab-icon">🧹</span>
+    <span class="btab-icon">ðŸ§¹</span>
     <span class="btab-label">Cleaning Status</span>
   </button>
   <button class="btab" id="btab-tempdata" onclick="switchTab('tempdata')">
-    <span class="btab-icon">🌡️</span>
+    <span class="btab-icon">ðŸŒ¡ï¸</span>
     <span class="btab-label">Temp. Data</span>
   </button>
   <button class="btab btab-alarm" id="btab-alarms" onclick="switchTab('alarms')">
-    <span class="btab-icon">🚨</span>
+    <span class="btab-icon">ðŸš¨</span>
     <span class="btab-label">Alarms</span>
     <span class="btab-alarm-count" id="btab-alarm-count" style="display:none">0</span>
   </button>
@@ -2761,7 +3175,7 @@ var alarmLog = [];
 /* ==================================================
    CONSTANTS
 ================================================== */
-const SCADA_PASSWORD = "Dubey123";
+const SCADA_PASSWORD = "d06b2c4efe3519e98c052cced2f117599b7771edea220f6b45a4d7b63c8b9ca8"; /* SHA-256 */
 const WALL_NAMES     = ["A","B","C","D"];
 const ROWS           = 6;
 const BURNERS        = 15;
@@ -2789,7 +3203,7 @@ function handleAutoImport(event){
   _doImport(file, ()=>{
     event.target.value="";
     buildCleaningTable();
-    showToast("✅ "+file.name+" loaded successfully");
+    showToast("âœ… "+file.name+" loaded successfully");
   });
 }
 
@@ -2871,7 +3285,7 @@ function saveData(){localStorage.setItem("burnerData",JSON.stringify(data));}
 /* ==================================================
    PENDING BURNER CHANGES
 ================================================== */
-var burnerPending = {}; /* {wallName: {ri_ci: newValue}} — staged, not yet saved */
+var burnerPending = {}; /* {wallName: {ri_ci: newValue}} â€” staged, not yet saved */
 
 function markBurnerUnsaved(){
   var badge = document.getElementById("burnerUnsavedBadge");
@@ -2884,7 +3298,7 @@ function clearBurnerUnsaved(){
 }
 function commitBurnerPending(){
   if(!Object.keys(burnerPending).length) return;
-  /* data object is already updated in-place during staging — just persist */
+  /* data object is already updated in-place during staging â€” just persist */
   saveData();
   clearBurnerUnsaved();
 }
@@ -2922,7 +3336,7 @@ function render(){
     bar.className="wall-alarm severity-"+sev;
     if(sev!=="normal")bar.classList.add("blink-"+sev);
     bar.dataset.wall=wallName;
-    bar.innerText="Wall "+wallName+"  —  "+sev.toUpperCase();
+    bar.innerText="Wall "+wallName+"  â€”  "+sev.toUpperCase();
     wall.appendChild(bar);
     const tbl=document.createElement("table");
     const hr=document.createElement("tr");
@@ -2936,7 +3350,7 @@ function render(){
       row.forEach((cell,ci)=>{
         const td=document.createElement("td");
         td.className=cell;
-        td.setAttribute("data-tip","Wall "+wallName+" · R"+(ri+1)+" B"+(ci+1)+" · "+STATE_LABEL[cell]);
+        td.setAttribute("data-tip","Wall "+wallName+" Â· R"+(ri+1)+" B"+(ci+1)+" Â· "+STATE_LABEL[cell]);
         const sel=document.createElement("select");
         sel.style.color=TEXT_MAP[cell]||"#fff";
         ["B","N","O","C"].forEach(v=>{
@@ -2955,9 +3369,9 @@ function render(){
           data[wallName][ri][ci]=nv;
           td.className=nv;
           td.classList.add("burner-pending");
-          td.setAttribute("data-tip","Wall "+wallName+" · R"+(ri+1)+" B"+(ci+1)+" · "+STATE_LABEL[nv]+" (unsaved)");
+          td.setAttribute("data-tip","Wall "+wallName+" Â· R"+(ri+1)+" B"+(ci+1)+" Â· "+STATE_LABEL[nv]+" (unsaved)");
           sel.style.color=TEXT_MAP[nv]||"#fff";
-          /* Show unsaved badge — do NOT saveData() yet */
+          /* Show unsaved badge â€” do NOT saveData() yet */
           markBurnerUnsaved();
           generateAnalysis();
         });
@@ -3065,12 +3479,12 @@ function generateAnalysis(){
       </div>
       ${sev!=="normal"?`
       <div class="ab-alarm-box ab-alarm-${sev}">
-        <div class="ab-alarm-title">⚠ Alarm Description</div>
+        <div class="ab-alarm-title">âš  Alarm Description</div>
         <div class="ab-alarm-desc">${desc}</div>
-        <div class="ab-alarm-action"><b>▶ Recommended Action:</b> ${action}</div>
+        <div class="ab-alarm-action"><b>â–¶ Recommended Action:</b> ${action}</div>
       </div>`:`
       <div class="ab-alarm-box ab-alarm-normal">
-        <div class="ab-alarm-title">✅ Status</div>
+        <div class="ab-alarm-title">âœ… Status</div>
         <div class="ab-alarm-desc">${desc}</div>
       </div>`}
       <div class="chart-wrap"><canvas id="ch_${wallName.replace(/\s/g,'_')}"></canvas></div>`;
@@ -3090,7 +3504,7 @@ function generateAnalysis(){
     });
   });
 
-  /* ── Master alarm banner: auto-set AND auto-reset ── */
+  /* â”€â”€ Master alarm banner: auto-set AND auto-reset â”€â”€ */
   if(masterAlarm && !masterAlarmActive){
     masterAlarmActive=true;
     document.getElementById("masterAlarm").classList.add("alarm-active");
@@ -3103,7 +3517,7 @@ function generateAnalysis(){
   }
 
   /* Always re-render wall tables so severity bars are always rebuilt
-     from the freshly-computed wallSeverity — eliminates any possibility
+     from the freshly-computed wallSeverity â€” eliminates any possibility
      of stale blink-* / severity-* classes getting stuck in the DOM. */
   render();
   refreshAlarmPanel();
@@ -3121,12 +3535,12 @@ async function exportToExcel(){
   /* Commit pending burner changes */
   const hadBurnerPending = Object.keys(burnerPending).length > 0;
   commitBurnerPending();
-  if(hadBurnerPending){ render(); showToast("✅ Burner data saved successfully"); }
+  if(hadBurnerPending){ render(); showToast("âœ… Burner data saved successfully"); }
 
   /* Commit pending cleaning changes */
   const hadCleaningPending = Object.keys(cleaningPending).length > 0;
   commitCleaningPending();
-  if(hadCleaningPending){ buildCleaningTable(); showToast("✅ Cleaning dates saved successfully"); }
+  if(hadCleaningPending){ buildCleaningTable(); showToast("âœ… Cleaning dates saved successfully"); }
 
   const wb = XLSX.utils.book_new();
 
@@ -3147,7 +3561,7 @@ async function exportToExcel(){
       const row = ["R"+r];
       for(let b=1;b<=BURNERS;b++){
         const key="R"+r+"B"+b;
-        row.push((log[w]&&log[w][key])?log[w][key]:"—");
+        row.push((log[w]&&log[w][key])?log[w][key]:"â€”");
       }
       clRows.push(row);
     }
@@ -3170,8 +3584,8 @@ async function exportToExcel(){
   /* Sheet: Temp Data */
   var tdHeaders = [
     "Date/Time","Shift",
-    "AB Side COT (°C)","CD Side COT (°C)","Flue Gas (°C)","Excess O2 (%Vol)",
-    "Pre-ref Max (°C)","Pre-ref Min (°C)"
+    "AB Side COT (Â°C)","CD Side COT (Â°C)","Flue Gas (Â°C)","Excess O2 (%Vol)",
+    "Pre-ref Max (Â°C)","Pre-ref Min (Â°C)"
   ];
   var phRowKeys   = ["ab-bot","cd-bot","ab-top","cd-top"];
   var phRowLabels = {"ab-bot":"AB Bot","cd-bot":"CD Bot","ab-top":"AB Top","cd-top":"CD Top"};
@@ -3199,7 +3613,7 @@ async function exportToExcel(){
   /* Try folder auto-export first */
   if(scadaFolderHandle){
     const ok = await autoExportToFolder(wb, fname);
-    if(ok){ showToast("✅ Saved to folder \""+scadaFolderHandle.name+"\": "+fname); return; }
+    if(ok){ showToast("âœ… Saved to folder \""+scadaFolderHandle.name+"\": "+fname); return; }
   }
 
   /* Fallback: showSaveFilePicker or XLSX.writeFile */
@@ -3211,18 +3625,18 @@ async function exportToExcel(){
       types:[{description:"Excel Workbook", accept:{"application/vnd.openxmlformats-officedocument.spreadsheetml.sheet":[".xlsx"]}}]
     }).then(fh=>fh.createWritable())
       .then(w=>w.write(blob).then(()=>w.close()))
-      .then(()=>showToast("✅ Saved: "+fname))
+      .then(()=>showToast("âœ… Saved: "+fname))
       .catch(err=>{ if(err.name!=="AbortError") XLSX.writeFile(wb, fname); });
   } else {
     XLSX.writeFile(wb, fname);
-    showToast("✅ Exported: "+fname);
+    showToast("âœ… Exported: "+fname);
   }
 }
 
 /* ==================================================
    IMPORT
 ================================================== */
-/* Core import logic — accepts a File object directly */
+/* Core import logic â€” accepts a File object directly */
 function importFileObject(file, onDone){
   _doImport(file, onDone);
 }
@@ -3233,36 +3647,36 @@ function importFromExcel(event){
   _doImport(file, ()=>{ event.target.value=""; });
 }
 
-/* ── Smart Refresh: uses folder if set, else falls back to file picker ── */
+/* â”€â”€ Smart Refresh: uses folder if set, else falls back to file picker â”€â”€ */
 async function smartRefresh(){
   if(scadaFolderHandle){
-    /* Same logic as Save New Data — use the stored folder automatically */
+    /* Same logic as Save New Data â€” use the stored folder automatically */
     try{
       var perm = await scadaFolderHandle.queryPermission({mode:"readwrite"});
       if(perm !== "granted"){
         perm = await scadaFolderHandle.requestPermission({mode:"readwrite"});
       }
       if(perm !== "granted"){
-        showToast("⚠ Folder permission denied — please click 📁 Set Folder again.");
+        showToast("âš  Folder permission denied â€” please click ðŸ“ Set Folder again.");
         return;
       }
       var found = await findLatestXlsx(scadaFolderHandle);
       if(!found){
-        showToast("📁 No .xlsx file found in folder \"" + scadaFolderHandle.name + "\"");
+        showToast("ðŸ“ No .xlsx file found in folder \"" + scadaFolderHandle.name + "\"");
         return;
       }
       lastImportedFileName = found.file.name;
       _doImport(found.file, function(){
         buildCleaningTable();
-        showToast("🔄 Refreshed: " + found.file.name + " from folder \"" + scadaFolderHandle.name + "\"");
+        showToast("ðŸ”„ Refreshed: " + found.file.name + " from folder \"" + scadaFolderHandle.name + "\"");
       }, true /* silent */);
     } catch(err){
       console.warn("smartRefresh folder error:", err);
-      showToast("⚠ Could not read from folder. Falling back to file picker.");
+      showToast("âš  Could not read from folder. Falling back to file picker.");
       document.getElementById("excelFile").click();
     }
   } else {
-    /* No folder set — open file picker as before */
+    /* No folder set â€” open file picker as before */
     document.getElementById("excelFile").click();
   }
 }
@@ -3272,7 +3686,7 @@ function _doImport(file, onDone, silent){
 
   reader.onload=e=>{
     try{
-      /* FIX 1: use ArrayBuffer — readAsBinaryString is deprecated and fails silently
+      /* FIX 1: use ArrayBuffer â€” readAsBinaryString is deprecated and fails silently
          in modern Chrome/Edge, causing nd to stay empty so nothing updates */
       const wb=XLSX.read(new Uint8Array(e.target.result),{type:"array"});
       const ws=wb.Sheets[wb.SheetNames[0]];
@@ -3295,7 +3709,7 @@ function _doImport(file, onDone, silent){
           cells.push({w,ri,ci,v});
       });
 
-      /* Detect actual row/burner count from data — never hardcode and clip */
+      /* Detect actual row/burner count from data â€” never hardcode and clip */
       const maxRows    = cells.reduce((m,c)=>Math.max(m,c.ri+1), ROWS);
       const maxBurners = cells.reduce((m,c)=>Math.max(m,c.ci+1), BURNERS);
 
@@ -3308,7 +3722,7 @@ function _doImport(file, onDone, silent){
       });
 
       if(!Object.keys(nd).length||parsedCount===0){
-        alert("No valid burner data found.\n\nExpected columns: Wall | Row (R1…) | Burner (B1…) | Value (B/N/O/C)");
+        alert("No valid burner data found.\n\nExpected columns: Wall | Row (R1â€¦) | Burner (B1â€¦) | Value (B/N/O/C)");
         return;
       }
 
@@ -3321,7 +3735,7 @@ function _doImport(file, onDone, silent){
       render();                 /* explicit second call ensures selects are fresh */
       buildCleaningTable(); /* rebuild cleaning log after import */
 
-      /* ── Import Temp Data sheet if present ── */
+      /* â”€â”€ Import Temp Data sheet if present â”€â”€ */
       try{
         var tdSheetName = wb.SheetNames.find(function(n){ return n.trim().toLowerCase()==="temp data"; });
         if(tdSheetName){
@@ -3363,7 +3777,7 @@ function _doImport(file, onDone, silent){
       }
 
       setTimeout(()=>{
-        if(!silent) alert("✅ Import successful!\n"+Object.keys(nd).length+" wall(s) loaded, "+parsedCount+" cells updated.");
+        if(!silent) alert("âœ… Import successful!\n"+Object.keys(nd).length+" wall(s) loaded, "+parsedCount+" cells updated.");
       },50);
 
     }catch(err){
@@ -3383,7 +3797,7 @@ const CLEANING_KEY    = "burnerCleaningLog";
 const CLEANING_HIST   = "burnerCleaningHistory";
 const TIP_DAMAGE_KEY  = "burnerTipDamageLog";
 
-/* ── Tip Damage helpers ── */
+/* â”€â”€ Tip Damage helpers â”€â”€ */
 function loadTipData(){
   try{ var r=localStorage.getItem(TIP_DAMAGE_KEY); return r?JSON.parse(r):[]; }catch(e){ return []; }
 }
@@ -3432,7 +3846,7 @@ function saveTipData(){
   collectTipFromDOM();
   saveTipDataStore(tipRows);
   clearTipUnsaved();
-  showToast("✅ Burner tip data saved successfully!");
+  showToast("âœ… Burner tip data saved successfully!");
 }
 
 function collectTipFromDOM(){
@@ -3473,11 +3887,11 @@ function renderTipTable(){
     var repColor  = row.replaced === "Yes" ? "#4ade80" : (row.damaged === "Yes" ? "#fb923c" : "#64748b");
 
     /* Damage select options */
-    var dmgOpts = ['<option value="No"'+(row.damaged==="No"?" selected":"")+'>✅ No Damage</option>',
-                   '<option value="Yes"'+(row.damaged==="Yes"?" selected":"")+'>⚠️ Damaged</option>'].join("");
+    var dmgOpts = ['<option value="No"'+(row.damaged==="No"?" selected":"")+'>âœ… No Damage</option>',
+                   '<option value="Yes"'+(row.damaged==="Yes"?" selected":"")+'>âš ï¸ Damaged</option>'].join("");
     /* Replaced select */
-    var repOpts = ['<option value="No"'+(row.replaced==="No"?" selected":"")+'>❌ Not Replaced</option>',
-                   '<option value="Yes"'+(row.replaced==="Yes"?" selected":"")+'>✅ Replaced</option>'].join("");
+    var repOpts = ['<option value="No"'+(row.replaced==="No"?" selected":"")+'>âŒ Not Replaced</option>',
+                   '<option value="Yes"'+(row.replaced==="Yes"?" selected":"")+'>âœ… Replaced</option>'].join("");
 
     /* Set wall/row/burner selected */
     var wOpts = ["A","B","C","D"].map(function(w){ return '<option value="'+w+'"'+(row.wall===w?" selected":"")+'>'+w+'</option>'; }).join("");
@@ -3514,13 +3928,13 @@ function renderTipTable(){
 
     /* Delete */
     html += '<td style="'+cellStyle+'text-align:center;">'
-          + '<button onclick="deleteTipRow('+i+')" style="background:rgba(239,68,68,0.15);border:1px solid rgba(239,68,68,0.35);color:#f87171;padding:4px 10px;border-radius:4px;font-size:12px;font-weight:700;font-family:Rajdhani,sans-serif;cursor:pointer;" title="Delete this row">🗑</button>'
+          + '<button onclick="deleteTipRow('+i+')" style="background:rgba(239,68,68,0.15);border:1px solid rgba(239,68,68,0.35);color:#f87171;padding:4px 10px;border-radius:4px;font-size:12px;font-weight:700;font-family:Rajdhani,sans-serif;cursor:pointer;" title="Delete this row">ðŸ—‘</button>'
           + '</td>';
 
     html += '</tr>';
   });
 
-  if(!html) html = '<tr><td colspan="10" style="text-align:center;color:#475569;padding:20px;">No records. Click ＋ Add Row to begin.</td></tr>';
+  if(!html) html = '<tr><td colspan="10" style="text-align:center;color:#475569;padding:20px;">No records. Click ï¼‹ Add Row to begin.</td></tr>';
   tbody.innerHTML = html;
 }
 
@@ -3786,7 +4200,7 @@ function buildCleaningTable(){
 
         const alarmBadge = document.createElement("span");
         alarmBadge.className = "ct-alarm-badge";
-        alarmBadge.textContent = "⚠ " + histCnt + "x";
+        alarmBadge.textContent = "âš  " + histCnt + "x";
 
         cellWrap.appendChild(dateLabel);
         cellWrap.appendChild(input);
@@ -3797,7 +4211,7 @@ function buildCleaningTable(){
 
         input.addEventListener("change", e => {
           const v = e.target.value;
-          /* Stage change in pending — do NOT write to localStorage yet */
+          /* Stage change in pending â€” do NOT write to localStorage yet */
           if(!cleaningPending[w]) cleaningPending[w] = {};
           if(v){
             cleaningPending[w][key] = v;
@@ -3807,7 +4221,7 @@ function buildCleaningTable(){
             const monthStr = v.slice(0,7);
             const histCnt2 = countCleaningsInMonth(w, key, monthStr);
             const previewCnt = histCnt2 + 1; /* +1 for this pending entry */
-            alarmBadge.textContent = "⚠ " + previewCnt + "x";
+            alarmBadge.textContent = "âš  " + previewCnt + "x";
             if(previewCnt > FREQ_ALARM_MAX){
               td.classList.add("freq-alarm");
             } else {
@@ -3950,7 +4364,7 @@ function updateCleaningStatus(log){
 function showFreqAlarmBanner(wall, row, burner, cnt, monthStr){
   const months = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
   const mLabel = months[parseInt(monthStr.slice(5))-1] + " " + monthStr.slice(0,4);
-  showToast("🚨 ALARM: Wall "+wall+" R"+row+" B"+burner+" cleaned "+cnt+" times in "+mLabel+"!");
+  showToast("ðŸš¨ ALARM: Wall "+wall+" R"+row+" B"+burner+" cleaned "+cnt+" times in "+mLabel+"!");
 }
 
 function renderFreqAlarmPanel(){
@@ -3989,10 +4403,10 @@ function renderFreqAlarmPanel(){
     card.className = "freq-alarm-card";
     card.innerHTML =
       "<div class='fac-top'>"
-        +"<span class='fac-badge'>Wall "+a.wall+" &nbsp;·&nbsp; R"+a.row+" &nbsp;·&nbsp; B"+a.burner+"</span>"
+        +"<span class='fac-badge'>Wall "+a.wall+" &nbsp;Â·&nbsp; R"+a.row+" &nbsp;Â·&nbsp; B"+a.burner+"</span>"
         +"<span class='fac-count'>"+a.count+"x in "+mLabel+"</span>"
       +"</div>"
-      +"<div class='fac-dates'>Cleaned on: "+thisDates.map(fmtD).join(" &nbsp;·&nbsp; ")+"</div>"
+      +"<div class='fac-dates'>Cleaned on: "+thisDates.map(fmtD).join(" &nbsp;Â·&nbsp; ")+"</div>"
       +"<div class='fac-hist'>All history ("+allDates.length+" total): "+allDates.map(fmtD).join(", ")+"</div>";
     list.appendChild(card);
   });
@@ -4013,7 +4427,7 @@ function exportCleaningLog(){
       const row = ["R"+r];
       for(let b = 1; b <= BURNERS; b++){
         const key = "R"+r+"B"+b;
-        row.push((log[w] && log[w][key]) ? log[w][key] : "—");
+        row.push((log[w] && log[w][key]) ? log[w][key] : "â€”");
       }
       rows.push(row);
     }
@@ -4101,7 +4515,7 @@ function pushAlarm(type, sev, wall, title, desc, action){
   alarmLog.unshift({id:id, type:type, sev:sev, wall:wall, title:title, desc:desc, action:action, ts:ts, acked:false});
   /* keep last 200 */
   if(alarmLog.length > 200) alarmLog.pop();
-  /* NOTE: do NOT call refreshAlarmPanel() here — callers do it after all pushes */
+  /* NOTE: do NOT call refreshAlarmPanel() here â€” callers do it after all pushes */
 }
 
 function acknowledgeAlarmById(id){
@@ -4169,7 +4583,7 @@ function refreshAlarmPanel(){
   });
 
   if(alarmLog.length === 0){
-    list.innerHTML = "<div class='alarm-empty'>✅ No active alarms. All walls are within normal parameters.</div>";
+    list.innerHTML = "<div class='alarm-empty'>âœ… No active alarms. All walls are within normal parameters.</div>";
     return;
   }
 
@@ -4186,8 +4600,8 @@ function refreshAlarmPanel(){
     var dateStr = ts.getDate()+" "+months[ts.getMonth()]+" "+ts.getFullYear();
 
     var sevLabel = a.type==="freq" ? "FREQ CLEAN" : a.sev.toUpperCase();
-    var sevIcon  = {critical:"🔴",major:"🟠",warning:"🟡",normal:"🟢"}[a.sev] || "🔵";
-    if(a.type==="freq") sevIcon = "⚠";
+    var sevIcon  = {critical:"ðŸ”´",major:"ðŸŸ ",warning:"ðŸŸ¡",normal:"ðŸŸ¢"}[a.sev] || "ðŸ”µ";
+    if(a.type==="freq") sevIcon = "âš ";
 
     card.innerHTML =
       "<div class='alc-header'>"
@@ -4198,15 +4612,15 @@ function refreshAlarmPanel(){
             +"<div class='alc-meta'>"
               +"<span class='alc-sev-badge alc-sev-"+a.sev+"'>"+sevLabel+"</span>"
               +(a.wall?"<span class='alc-wall'>"+a.wall+"</span>":"")
-              +"<span class='alc-time'>"+timeStr+" &nbsp;·&nbsp; "+dateStr+"</span>"
-              +(a.acked?"<span class='alc-acked'>✔ Acknowledged</span>":"")
+              +"<span class='alc-time'>"+timeStr+" &nbsp;Â·&nbsp; "+dateStr+"</span>"
+              +(a.acked?"<span class='alc-acked'>âœ” Acknowledged</span>":"")
             +"</div>"
           +"</div>"
         +"</div>"
         +(!a.acked?"<button class='alc-ack-btn' onclick='acknowledgeAlarmById("+a.id+")'>Acknowledge</button>":"")
       +"</div>"
       +"<div class='alc-desc'>"+a.desc+"</div>"
-      +"<div class='alc-action'><b>▶ Recommended Action:</b> "+a.action+"</div>";
+      +"<div class='alc-action'><b>â–¶ Recommended Action:</b> "+a.action+"</div>";
     list.appendChild(card);
   }
 
@@ -4214,14 +4628,14 @@ function refreshAlarmPanel(){
   if(active.length > 0){
     var ah = document.createElement("div");
     ah.className = "alarm-group-header alarm-group-active";
-    ah.textContent = "🔴 Active Alarms ("+active.length+")";
+    ah.textContent = "ðŸ”´ Active Alarms ("+active.length+")";
     list.appendChild(ah);
     active.forEach(renderCard);
   }
   if(acked.length > 0){
     var ah2 = document.createElement("div");
     ah2.className = "alarm-group-header alarm-group-acked";
-    ah2.textContent = "✔ Acknowledged ("+acked.length+")";
+    ah2.textContent = "âœ” Acknowledged ("+acked.length+")";
     list.appendChild(ah2);
     acked.forEach(renderCard);
   }
@@ -4251,7 +4665,7 @@ function rebuildWallAlarms(){
     var domCnt   = N>O?N:O;
     var defCnt   = N>O?O:N;
 
-    var title = "Wall "+wallName+" — Burner Imbalance Alarm";
+    var title = "Wall "+wallName+" â€” Burner Imbalance Alarm";
     var desc, action;
     if(sev==="warning"){
       desc   = "Wall "+wallName+" has a minor imbalance of "+imb+" burner(s). "+dominant+" burners ("+domCnt+") exceed "+deficient+" burners ("+defCnt+"). Combustion efficiency may be slightly affected.";
@@ -4275,7 +4689,7 @@ function rebuildFreqAlarms(){
   var months = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
   freqList.forEach(function(a){
     var mLabel = months[parseInt(a.monthStr.slice(5))-1]+" "+a.monthStr.slice(0,4);
-    var title  = "Wall "+a.wall+" R"+a.row+" B"+a.burner+" — High Frequency Cleaning";
+    var title  = "Wall "+a.wall+" R"+a.row+" B"+a.burner+" â€” High Frequency Cleaning";
     var desc   = "Burner B"+a.burner+" on Wall "+a.wall+", Row "+a.row+" has been cleaned "+a.count+" times this month, exceeding the threshold. Frequent cleaning may indicate a blocked tip or fuel issue.";
     var action = "Inspect and clean the burner tip. Check fuel supply pressure and filter. If problem persists, replace burner nozzle.";
     pushAlarm("freq", "warning", "Wall "+a.wall, title, desc, action);
@@ -4288,7 +4702,7 @@ function rebuildFreqAlarms(){
                  SOUTH BLOCK DOCUMENTATION FOLDER\HGU III\SCADA
 ================================================== */
 
-/* ── IndexedDB helpers to persist the directory handle ── */
+/* â”€â”€ IndexedDB helpers to persist the directory handle â”€â”€ */
 const DB_NAME    = "ScadaFolderDB";
 const DB_STORE   = "handles";
 const DB_KEY     = "scadaFolderHandle";
@@ -4333,10 +4747,10 @@ function clearFolderHandle(){
   });
 }
 
-/* ── Global folder handle ── */
+/* â”€â”€ Global folder handle â”€â”€ */
 var scadaFolderHandle = null;
 
-/* ── Restore folder handle from IndexedDB on page load ── */
+/* â”€â”€ Restore folder handle from IndexedDB on page load â”€â”€ */
 (async function restoreFolderOnLoad(){
   try{
     var handle = await loadFolderHandle();
@@ -4350,23 +4764,23 @@ var scadaFolderHandle = null;
   }
 })();
 
-/* ── UI helpers ── */
+/* â”€â”€ UI helpers â”€â”€ */
 function updateFolderUI(){
   var bar  = document.getElementById("folderStatusBar");
   var txt  = document.getElementById("folderStatusText");
   var btn  = document.getElementById("folderBtn");
   if(scadaFolderHandle){
     if(bar){ bar.style.display="flex"; }
-    if(txt){ txt.textContent = "Auto folder active: \"" + scadaFolderHandle.name + "\"  —  Import & Export will use this folder automatically"; }
-    if(btn){ btn.textContent="📁 Change Folder"; btn.style.color="#4ade80"; }
+    if(txt){ txt.textContent = "Auto folder active: \"" + scadaFolderHandle.name + "\"  â€”  Import & Export will use this folder automatically"; }
+    if(btn){ btn.textContent="ðŸ“ Change Folder"; btn.style.color="#4ade80"; }
   } else {
     if(bar){ bar.style.display="none"; }
     if(txt){ txt.textContent="No auto-folder set"; }
-    if(btn){ btn.textContent="📁 Set Folder"; btn.style.color=""; }
+    if(btn){ btn.textContent="ðŸ“ Set Folder"; btn.style.color=""; }
   }
 }
 
-/* ── Pick folder ── */
+/* â”€â”€ Pick folder â”€â”€ */
 async function pickFolder(){
   if(!window.showDirectoryPicker){
     alert("Your browser does not support the File System Access API.\n\n"
@@ -4381,29 +4795,29 @@ async function pickFolder(){
     await saveFolderHandle(handle);
     scadaFolderHandle = handle;
     updateFolderUI();
-    showToast("✅ Folder set: " + handle.name + " — future saves will auto-write here");
+    showToast("âœ… Folder set: " + handle.name + " â€” future saves will auto-write here");
     /* Try to auto-import the most recent xlsx from the folder immediately */
     await autoImportFromFolder(true);
   } catch(err){
-    if(err.name === "AbortError") return; /* user cancelled — silent */
+    if(err.name === "AbortError") return; /* user cancelled â€” silent */
     if(err.name === "SecurityError"){
-      showToast("⚠ Folder picker blocked: please open this file directly in Chrome/Edge (not inside a preview frame).");
+      showToast("âš  Folder picker blocked: please open this file directly in Chrome/Edge (not inside a preview frame).");
       return;
     }
     console.error("Folder pick error:", err);
-    showToast("⚠ Could not open folder: " + err.message);
+    showToast("âš  Could not open folder: " + err.message);
   }
 }
 
-/* ── Clear folder ── */
+/* â”€â”€ Clear folder â”€â”€ */
 async function clearFolder(){
   await clearFolderHandle();
   scadaFolderHandle = null;
   updateFolderUI();
-  showToast("📁 Auto-folder cleared. Manual import/export still works.");
+  showToast("ðŸ“ Auto-folder cleared. Manual import/export still works.");
 }
 
-/* ── Find the most recently modified .xlsx in the folder ── */
+/* â”€â”€ Find the most recently modified .xlsx in the folder â”€â”€ */
 async function findLatestXlsx(dirHandle){
   var best = null, bestMod = 0;
   for await(var entry of dirHandle.values()){
@@ -4417,7 +4831,7 @@ async function findLatestXlsx(dirHandle){
   return best;
 }
 
-/* ── Auto-import from folder (called on login if folder set) ── */
+/* â”€â”€ Auto-import from folder (called on login if folder set) â”€â”€ */
 async function autoImportFromFolder(showMsg){
   if(!scadaFolderHandle) return false;
   try{
@@ -4426,20 +4840,20 @@ async function autoImportFromFolder(showMsg){
     if(perm !== "granted"){
       perm = await scadaFolderHandle.requestPermission({mode:"readwrite"});
     }
-    if(perm !== "granted"){ showToast("⚠ Folder permission denied — please click Set Folder again."); return false; }
+    if(perm !== "granted"){ showToast("âš  Folder permission denied â€” please click Set Folder again."); return false; }
 
     var found = await findLatestXlsx(scadaFolderHandle);
     if(!found){
-      if(showMsg) showToast("📁 Folder set but no .xlsx file found yet — waiting for data.");
+      if(showMsg) showToast("ðŸ“ Folder set but no .xlsx file found yet â€” waiting for data.");
       return false;
     }
     lastImportedFileName = found.file.name;
     return new Promise(function(res){
       _doImport(found.file, function(){
         buildCleaningTable();
-        if(showMsg) showToast("✅ Auto-loaded: " + found.file.name + " from folder \"" + scadaFolderHandle.name + "\"");
+        if(showMsg) showToast("âœ… Auto-loaded: " + found.file.name + " from folder \"" + scadaFolderHandle.name + "\"");
         res(true);
-      }, true /* silent — no alert popup on auto-load */);
+      }, true /* silent â€” no alert popup on auto-load */);
     });
   } catch(err){
     console.warn("autoImportFromFolder error:", err);
@@ -4447,7 +4861,7 @@ async function autoImportFromFolder(showMsg){
   }
 }
 
-/* ── Auto-export to folder ── */
+/* â”€â”€ Auto-export to folder â”€â”€ */
 async function autoExportToFolder(wb, filename){
   if(!scadaFolderHandle) return false;
   try{
@@ -4467,11 +4881,14 @@ async function autoExportToFolder(wb, filename){
   }
 }
 
-/* ── Full login with folder auto-import support ── */
+/* â”€â”€ Full login with folder auto-import support â”€â”€ */
 async function loginWithFolderSupport(){
   var pw  = document.getElementById("passwordInput").value;
   var err = document.getElementById("ls-error");
-  if(pw === SCADA_PASSWORD){
+  /* SHA-256 verify â€” plaintext never compared directly */
+  async function _sha256(s){const b=new TextEncoder().encode(s);const d=await crypto.subtle.digest("SHA-256",b);return Array.from(new Uint8Array(d)).map(x=>x.toString(16).padStart(2,"0")).join("");}
+  const pwHash = await _sha256(pw);
+  if(pwHash === SCADA_PASSWORD){
     sessionStorage.setItem("scadaLoggedIn","true");
     document.getElementById("loginScreen").style.display="none";
     err.style.display="none";
@@ -4480,18 +4897,18 @@ async function loginWithFolderSupport(){
     init();
 
     if(scadaFolderHandle){
-      /* Folder was previously set — silently try to auto-import.
+      /* Folder was previously set â€” silently try to auto-import.
          requestPermission() is allowed here because we are inside a
-         user-gesture (button click → loginWithFolderSupport). */
+         user-gesture (button click â†’ loginWithFolderSupport). */
       var ok = await autoImportFromFolder(true);
       if(!ok){
-        /* Permission was denied or folder has no xlsx yet —
+        /* Permission was denied or folder has no xlsx yet â€”
            show a toast, do NOT open a file picker automatically */
-        showToast("⚠ Could not auto-load from saved folder. Use 🔄 Refresh Data or 📁 Set Folder to retry.");
+        showToast("âš  Could not auto-load from saved folder. Use ðŸ”„ Refresh Data or ðŸ“ Set Folder to retry.");
       }
     } else {
-      /* No folder set yet — just show a hint toast, no file picker popup */
-      showToast("💡 Tip: click 📁 Set Folder to enable automatic file loading on every login.");
+      /* No folder set yet â€” just show a hint toast, no file picker popup */
+      showToast("ðŸ’¡ Tip: click ðŸ“ Set Folder to enable automatic file loading on every login.");
     }
   } else {
     err.style.display = "block";
@@ -4500,7 +4917,7 @@ async function loginWithFolderSupport(){
 }
 
 /* ==================================================
-   TEMP DATA TAB — JavaScript
+   TEMP DATA TAB â€” JavaScript
 ================================================== */
 var tempDataEntries = [];
 
@@ -4552,7 +4969,7 @@ function saveTempData(){
   tempDataEntries.unshift(entry);
   try{ localStorage.setItem("tempDataEntries", JSON.stringify(tempDataEntries)); } catch(e){}
   renderTempDataTable();
-  showToast("✅ Temperature entry saved successfully!");
+  showToast("âœ… Temperature entry saved successfully!");
 }
 
 function deleteTempEntry(idx){
@@ -4582,10 +4999,10 @@ function clearTempData(){
 function phMinMax(entry, rk){
   var rawVals = (entry.peepHoles && entry.peepHoles[rk]) ? entry.peepHoles[rk] : [];
   var nums = rawVals.filter(function(v){ return v !== "" && !isNaN(Number(v)); }).map(Number);
-  if(!nums.length) return "—";
+  if(!nums.length) return "â€”";
   var mn = Math.min.apply(null, nums);
   var mx = Math.max.apply(null, nums);
-  return mn === mx ? mn + "°C" : mn + "°C / " + mx + "°C";
+  return mn === mx ? mn + "Â°C" : mn + "Â°C / " + mx + "Â°C";
 }
 
 function renderTempDataTable(){
@@ -4604,17 +5021,17 @@ function renderTempDataTable(){
     rows += '<tr style="border-bottom:1px solid rgba(255,255,255,0.05);">'
       + '<td style="font-size:11px;white-space:nowrap;">' + ent.dt + '</td>'
       + '<td style="text-align:center;"><span style="color:'+sc+';font-weight:700;font-size:11px;background:rgba(0,0,0,0.25);padding:2px 8px;border-radius:10px;border:1px solid '+sc+'44;">' + ent.shift + '</span></td>'
-      + '<td style="text-align:center;">' + (ent.abCot  || "—") + '</td>'
-      + '<td style="text-align:center;">' + (ent.cdCot  || "—") + '</td>'
-      + '<td style="text-align:center;">' + (ent.flueGas|| "—") + '</td>'
-      + '<td style="text-align:center;">' + (ent.excessO2||"—") + '</td>'
-      + '<td style="text-align:center;">' + (ent.preRefMax||"—") + '</td>'
-      + '<td style="text-align:center;">' + (ent.preRefMin||"—") + '</td>'
+      + '<td style="text-align:center;">' + (ent.abCot  || "â€”") + '</td>'
+      + '<td style="text-align:center;">' + (ent.cdCot  || "â€”") + '</td>'
+      + '<td style="text-align:center;">' + (ent.flueGas|| "â€”") + '</td>'
+      + '<td style="text-align:center;">' + (ent.excessO2||"â€”") + '</td>'
+      + '<td style="text-align:center;">' + (ent.preRefMax||"â€”") + '</td>'
+      + '<td style="text-align:center;">' + (ent.preRefMin||"â€”") + '</td>'
       + '<td style="text-align:center;font-size:11px;">' + phMinMax(ent,"ab-bot") + '</td>'
       + '<td style="text-align:center;font-size:11px;">' + phMinMax(ent,"cd-bot") + '</td>'
       + '<td style="text-align:center;font-size:11px;">' + phMinMax(ent,"ab-top") + '</td>'
       + '<td style="text-align:center;font-size:11px;">' + phMinMax(ent,"cd-top") + '</td>'
-      + '<td style="text-align:center;"><button onclick="deleteTempEntry(' + i + ')" style="background:rgba(192,57,43,0.2);color:#f87171;border:1px solid rgba(192,57,43,0.4);border-radius:4px;font-size:11px;padding:4px 10px;cursor:pointer;font-family:Rajdhani,sans-serif;" title="Delete entry">🗑 Del</button></td>'
+      + '<td style="text-align:center;"><button onclick="deleteTempEntry(' + i + ')" style="background:rgba(192,57,43,0.2);color:#f87171;border:1px solid rgba(192,57,43,0.4);border-radius:4px;font-size:11px;padding:4px 10px;cursor:pointer;font-family:Rajdhani,sans-serif;" title="Delete entry">ðŸ—‘ Del</button></td>'
       + '</tr>';
   }
   tbody.innerHTML = rows || '<tr><td colspan="13" style="text-align:center;color:#475569;padding:20px;">No entries saved yet.</td></tr>';
@@ -4659,9 +5076,9 @@ function renderAllPHData(){
     html += '<div style="background:linear-gradient(90deg,#0f2744,#152d52);padding:10px 16px;display:flex;align-items:center;gap:14px;border-bottom:1px solid #1e3a5e;">';
     html += '<span style="font-size:12px;font-weight:700;color:#e2e8f0;">'+ent.dt+'</span>';
     html += '<span style="font-size:11px;font-weight:700;color:'+sc+';background:rgba(0,0,0,0.3);padding:3px 10px;border-radius:20px;border:1px solid '+sc+'55;">'+ent.shift+'</span>';
-    if(ent.abCot) html += '<span style="font-size:11px;color:#94a3b8;">AB COT: <b style="color:#e2e8f0;">'+ent.abCot+'°C</b></span>';
-    if(ent.cdCot) html += '<span style="font-size:11px;color:#94a3b8;">CD COT: <b style="color:#e2e8f0;">'+ent.cdCot+'°C</b></span>';
-    if(ent.flueGas) html += '<span style="font-size:11px;color:#94a3b8;">Flue Gas: <b style="color:#e2e8f0;">'+ent.flueGas+'°C</b></span>';
+    if(ent.abCot) html += '<span style="font-size:11px;color:#94a3b8;">AB COT: <b style="color:#e2e8f0;">'+ent.abCot+'Â°C</b></span>';
+    if(ent.cdCot) html += '<span style="font-size:11px;color:#94a3b8;">CD COT: <b style="color:#e2e8f0;">'+ent.cdCot+'Â°C</b></span>';
+    if(ent.flueGas) html += '<span style="font-size:11px;color:#94a3b8;">Flue Gas: <b style="color:#e2e8f0;">'+ent.flueGas+'Â°C</b></span>';
     html += '</div>';
 
     // Peep hole data
@@ -4689,9 +5106,9 @@ function renderAllPHData(){
         var numVal = (val!=='' && val!==null && val!==undefined && !isNaN(Number(val))) ? Number(val) : null;
         var cellBg = (numVal!==null && minT!==null && maxT!==null) ? tempToColorInline(numVal, minT, maxT) : "#1e293b";
         var textColor = (numVal!==null) ? "#fff" : "#334155";
-        var dispVal = (numVal!==null) ? numVal+'°' : '—';
+        var dispVal = (numVal!==null) ? numVal+'Â°' : 'â€”';
         var glowStyle = (numVal!==null) ? 'box-shadow:0 0 6px 1px '+cellBg+'99;' : '';
-        html += '<div title="PH'+(ph+1)+': '+(numVal!==null?numVal+'°C':'No data')+'" style="text-align:center;font-size:10px;font-weight:700;color:'+textColor+';background:'+cellBg+';border-radius:4px;padding:4px 1px;'+glowStyle+'border:1px solid rgba(255,255,255,0.08);">'+dispVal+'</div>';
+        html += '<div title="PH'+(ph+1)+': '+(numVal!==null?numVal+'Â°C':'No data')+'" style="text-align:center;font-size:10px;font-weight:700;color:'+textColor+';background:'+cellBg+';border-radius:4px;padding:4px 1px;'+glowStyle+'border:1px solid rgba(255,255,255,0.08);">'+dispVal+'</div>';
       }
       html += '</div>';
     });
@@ -4723,20 +5140,20 @@ function tempToColorInline(val, minT, maxT){
     <!-- Modal Header -->
     <div style="background:linear-gradient(90deg,#0f2744,#1e3a6a);padding:14px 22px;display:flex;align-items:center;justify-content:space-between;border-bottom:2px solid #F37022;">
       <div>
-        <div style="font-size:17px;font-weight:700;color:#F37022;letter-spacing:1.5px;">👁️ ALL PEEP HOLE TST DATA</div>
-        <div style="font-size:11px;color:#7ec8f0;margin-top:2px;">All saved temperature readings by shift · AB Bot · CD Bot · AB Top · CD Top</div>
+        <div style="font-size:17px;font-weight:700;color:#F37022;letter-spacing:1.5px;">ðŸ‘ï¸ ALL PEEP HOLE TST DATA</div>
+        <div style="font-size:11px;color:#7ec8f0;margin-top:2px;">All saved temperature readings by shift Â· AB Bot Â· CD Bot Â· AB Top Â· CD Top</div>
       </div>
       <div style="display:flex;align-items:center;gap:12px;">
         <div style="display:flex;align-items:center;gap:8px;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.15);border-radius:7px;padding:5px 12px;">
           <span style="font-size:11px;font-weight:700;color:#7ec8f0;">Filter Shift:</span>
           <select id="all-ph-shift-filter" onchange="renderAllPHData()" style="background:#0f1f38;border:1px solid #334155;border-radius:5px;color:#e2e8f0;font-family:'Rajdhani',sans-serif;font-size:13px;font-weight:700;outline:none;cursor:pointer;padding:3px 8px;">
-            <option value="All">🔁 All Shifts</option>
-            <option value="Morning" style="color:#34d399;">🌅 Morning</option>
-            <option value="Evening" style="color:#fb923c;">🌆 Evening</option>
-            <option value="Night" style="color:#818cf8;">🌙 Night</option>
+            <option value="All">ðŸ” All Shifts</option>
+            <option value="Morning" style="color:#34d399;">ðŸŒ… Morning</option>
+            <option value="Evening" style="color:#fb923c;">ðŸŒ† Evening</option>
+            <option value="Night" style="color:#818cf8;">ðŸŒ™ Night</option>
           </select>
         </div>
-        <button onclick="closeAllPHModal()" style="background:rgba(239,68,68,0.15);border:1px solid rgba(239,68,68,0.4);color:#f87171;padding:7px 16px;border-radius:6px;font-size:13px;font-weight:700;font-family:'Rajdhani',sans-serif;cursor:pointer;">✕ Close</button>
+        <button onclick="closeAllPHModal()" style="background:rgba(239,68,68,0.15);border:1px solid rgba(239,68,68,0.4);color:#f87171;padding:7px 16px;border-radius:6px;font-size:13px;font-weight:700;font-family:'Rajdhani',sans-serif;cursor:pointer;">âœ• Close</button>
       </div>
     </div>
     <!-- Modal Body -->

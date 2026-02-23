@@ -1626,7 +1626,7 @@ body.light-theme .hm-wall-btn-active{background:rgba(243,112,34,0.12)!important;
 .hm-peep-gradient-wrap{display:flex;align-items:center;gap:8px;padding:6px 0;margin:4px 0;}
 .hm-peep-gradient-bar-wrap{flex:1;position:relative;height:22px;border-radius:6px;overflow:visible;cursor:crosshair;}
 .hm-peep-gradient-bar{width:100%;height:100%;border-radius:6px;border:1px solid rgba(255,255,255,0.15);box-shadow:0 0 10px rgba(0,0,0,0.4),inset 0 1px 0 rgba(255,255,255,0.08);}
-.hm-peep-marker{position:absolute;top:-2px;width:2px;height:26px;background:rgba(255,255,255,0.7);border-radius:1px;pointer-events:none;z-index:2;}
+.hm-peep-marker{position:absolute;top:-6px;width:2px;height:34px;background:rgba(255,255,255,0.85);border-radius:1px;pointer-events:none;z-index:2;box-shadow:0 0 3px rgba(255,255,255,0.4);}
 .hm-peep-temp-label{position:absolute;top:-14px;font-size:7px;font-weight:700;color:#e2e8f0;white-space:nowrap;transform:translateX(-50%);text-shadow:0 1px 3px rgba(0,0,0,0.8);z-index:3;}
 .hm-peep-dot{position:absolute;top:50%;width:8px;height:8px;border-radius:50%;border:1.5px solid rgba(255,255,255,0.85);transform:translate(-50%,-50%);z-index:4;cursor:pointer;transition:transform 0.15s,box-shadow 0.15s;}
 .hm-peep-dot:hover{transform:translate(-50%,-50%) scale(1.6);box-shadow:0 0 8px rgba(255,255,255,0.5);}
@@ -1635,7 +1635,7 @@ body.light-theme .hm-wall-btn-active{background:rgba(243,112,34,0.12)!important;
 .hm-row-data-badge{font-size:8px;font-weight:800;padding:2px 5px;border-radius:3px;letter-spacing:0.3px;line-height:1;white-space:nowrap;border:1px solid transparent;}
 .hm-row-data-badge-O{background:rgba(22,163,74,0.2);color:#4ade80;border-color:rgba(22,163,74,0.4);}
 .hm-row-data-badge-N{background:rgba(217,119,6,0.2);color:#fbbf24;border-color:rgba(217,119,6,0.4);}
-.hm-row-data-badge-B{background:rgba(20,184,166,0.15);color:#14b8a6;border-color:rgba(20,184,166,0.35);}
+.hm-row-data-badge-B{background:rgba(37,99,235,0.15);color:#3b82f6;border-color:rgba(37,99,235,0.35);}
 .hm-row-data-badge-C{background:rgba(100,116,139,0.15);color:#64748b;border-color:rgba(100,116,139,0.3);}
 .hm-side-label{font-size:11px;color:#F37022;font-weight:700;letter-spacing:2px;margin-bottom:12px;padding:6px 12px;background:rgba(243,112,34,0.08);border-left:3px solid #F37022;border-radius:0 6px 6px 0;display:inline-block;}
 body.light-theme .hm-wall-card{background:#e8f0fa;border-color:#b8cde8;}
@@ -1650,7 +1650,7 @@ body.light-theme .hm-bnum{color:#6a8aaa;}
 body.light-theme .hm-peep-gradient-bar{border-color:rgba(0,0,0,0.2);}
 body.light-theme .hm-peep-temp-label{color:#1e293b;text-shadow:0 1px 2px rgba(255,255,255,0.8);}
 body.light-theme .hm-peep-dot{border-color:rgba(0,0,0,0.6);}
-body.light-theme .hm-peep-marker{background:rgba(0,0,0,0.4);}
+body.light-theme .hm-peep-marker{background:rgba(0,0,0,0.6);box-shadow:0 0 3px rgba(0,0,0,0.3);}
 body.light-theme .hm-row-data-badge-O{background:rgba(22,163,74,0.15);color:#15803d;}
 body.light-theme .hm-row-data-badge-N{background:rgba(217,119,6,0.2);color:#92400e;}
 body.light-theme .hm-row-data-badge-B{background:rgba(20,184,166,0.15);color:#0f766e;}
@@ -1977,7 +1977,41 @@ function renderHeatMap(){
 
   var shiftSel = document.getElementById("hm-shift-select");
   var selectedShift = shiftSel ? shiftSel.value : "All";
-  var entry = getTempEntryByShift(selectedShift);
+
+  /* ── Populate date dropdown based on shift ── */
+  var allEntries = getAllTempEntries();
+  var filteredEntries = allEntries;
+  if(selectedShift && selectedShift !== "All"){
+    filteredEntries = allEntries.filter(function(e){ return e.shift === selectedShift; });
+  }
+
+  var dateSel = document.getElementById("hm-date-select");
+  var prevDateVal = dateSel ? dateSel.value : "latest";
+  if(dateSel){
+    var dateHTML = '<option value="latest" style="background:#0f1f38;">📅 Latest</option>';
+    for(var di=0; di<filteredEntries.length; di++){
+      var fe = filteredEntries[di];
+      var shiftEmoji = {Morning:"🌅",Evening:"🌆",Night:"🌙"}[fe.shift] || "📋";
+      dateHTML += '<option value="'+di+'" style="background:#0f1f38;">'+shiftEmoji+' '+fe.dt+' — '+fe.shift+'</option>';
+    }
+    dateSel.innerHTML = dateHTML;
+    /* Restore previous selection if still valid */
+    var found = false;
+    for(var oi=0; oi<dateSel.options.length; oi++){
+      if(dateSel.options[oi].value === prevDateVal){ found = true; break; }
+    }
+    dateSel.value = found ? prevDateVal : "latest";
+  }
+
+  /* ── Pick entry by date selection ── */
+  var entry = null;
+  var dateVal = dateSel ? dateSel.value : "latest";
+  if(dateVal === "latest"){
+    entry = filteredEntries.length ? filteredEntries[0] : null;
+  } else {
+    var idx = parseInt(dateVal);
+    entry = (!isNaN(idx) && filteredEntries[idx]) ? filteredEntries[idx] : (filteredEntries[0] || null);
+  }
 
   function getPH(e, key){
     if(!e || !e.peepHoles || !e.peepHoles[key]) return Array(15).fill("");
@@ -2352,15 +2386,21 @@ function renderHeatMap(){
         <div style="display:flex;align-items:center;gap:10px;margin-left:auto;flex-wrap:wrap;">
           <div style="display:flex;align-items:center;gap:8px;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.15);border-radius:7px;padding:6px 12px;">
             <span style="font-size:11px;font-weight:700;color:#7ec8f0;letter-spacing:0.8px;text-transform:uppercase;">Shift:</span>
-            <select id="hm-shift-select" onchange="renderHeatMap()" style="background:#0f1f38;border:1px solid #334155;border-radius:5px;color:#e2e8f0;font-family:'Rajdhani',sans-serif;font-size:13px;font-weight:700;outline:none;cursor:pointer;padding:3px 8px;">
+            <select id="hm-shift-select" onchange="var ds=document.getElementById('hm-date-select');if(ds)ds.value='latest';renderHeatMap()" style="background:#0f1f38;border:1px solid #334155;border-radius:5px;color:#e2e8f0;font-family:'Rajdhani',sans-serif;font-size:13px;font-weight:700;outline:none;cursor:pointer;padding:3px 8px;">
               <option value="All" style="background:#0f1f38;">🔁 All Shifts</option>
               <option value="Morning" style="background:#0f1f38;color:#34d399;">🌅 Morning</option>
               <option value="Evening" style="background:#0f1f38;color:#fb923c;">🌆 Evening</option>
               <option value="Night" style="background:#0f1f38;color:#818cf8;">🌙 Night</option>
             </select>
           </div>
-          <span id="hm-ts-badge" style="font-size:10px;color:#94a3b8;background:#0f1f38;border:1px solid #1e3a5e;padding:4px 12px;border-radius:4px;"></span>
-          <button onclick="renderHeatMap()" style="background:#F37022;color:#fff;border:none;padding:7px 18px;border-radius:6px;font-size:12px;font-weight:700;cursor:pointer;font-family:'Rajdhani',sans-serif;letter-spacing:0.5px;box-shadow:0 0 12px rgba(243,112,34,0.35);">🔄 Refresh</button>
+          <div style="display:flex;align-items:center;gap:8px;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.15);border-radius:7px;padding:6px 12px;">
+            <span style="font-size:11px;font-weight:700;color:#7ec8f0;letter-spacing:0.8px;text-transform:uppercase;">Date:</span>
+            <select id="hm-date-select" onchange="renderHeatMap()" style="background:#0f1f38;border:1px solid #334155;border-radius:5px;color:#e2e8f0;font-family:'Rajdhani',sans-serif;font-size:13px;font-weight:700;outline:none;cursor:pointer;padding:3px 8px;max-width:220px;">
+              <option value="latest" style="background:#0f1f38;">📅 Latest</option>
+            </select>
+          </div>
+          <span id="hm-ts-badge" style="display:none;"></span>
+
         </div>
       </div>
 
@@ -2388,14 +2428,14 @@ function renderHeatMap(){
           <span style="font-size:10px;color:#fbbf24;font-weight:700;">NG ONLY (N)</span>
         </div>
         <div style="display:flex;align-items:center;gap:5px;">
-          <svg width="18" height="28" viewBox="0 0 20 30" xmlns="http://www.w3.org/2000/svg" style="filter:drop-shadow(0 0 3px #14b8a688);">
-            <defs><radialGradient id="lgB" cx="50%" cy="80%" r="60%"><stop offset="0%" stop-color="#a7f3d0"/><stop offset="100%" stop-color="#14b8a6" stop-opacity="0.7"/></radialGradient></defs>
+          <svg width="18" height="28" viewBox="0 0 20 30" xmlns="http://www.w3.org/2000/svg" style="filter:drop-shadow(0 0 3px #2563eb88);">
+            <defs><radialGradient id="lgB" cx="50%" cy="80%" r="60%"><stop offset="0%" stop-color="#93c5fd"/><stop offset="100%" stop-color="#2563eb" stop-opacity="0.7"/></radialGradient></defs>
             <path d="M10 2 C6 6 4 10 5 14 C6 17 10 18 10 18 C10 18 14 17 15 14 C16 10 14 6 10 2Z" fill="url(#lgB)"/>
-            <ellipse cx="10" cy="13" rx="3" ry="4" fill="#a7f3d0" opacity="0.9"/>
-            <rect x="8" y="17" width="4" height="8" rx="1.5" fill="#14b8a6" opacity="0.7"/>
+            <ellipse cx="10" cy="13" rx="3" ry="4" fill="#93c5fd" opacity="0.9"/>
+            <rect x="8" y="17" width="4" height="8" rx="1.5" fill="#2563eb" opacity="0.7"/>
             <rect x="4" y="24" width="12" height="3" rx="1.5" fill="#1e293b"/>
           </svg>
-          <span style="font-size:10px;color:#14b8a6;font-weight:700;">BOTH (B)</span>
+          <span style="font-size:10px;color:#3b82f6;font-weight:700;">BOTH (B)</span>
         </div>
         <div style="display:flex;align-items:center;gap:5px;">
           <svg width="18" height="28" viewBox="0 0 20 30" xmlns="http://www.w3.org/2000/svg">
@@ -2408,7 +2448,7 @@ function renderHeatMap(){
         </div>
         <span style="font-size:10px;color:#f0c060;font-weight:700;letter-spacing:1px;margin-left:12px;">PEEP HOLES</span>
         <div style="display:flex;align-items:center;gap:5px;">
-          <div style="width:50px;height:10px;background:linear-gradient(to right,#1e40af,#3b82f6,#22c55e,#eab308,#ef4444);border-radius:3px;border:1px solid #334155;"></div>
+          <div style="width:120px;height:14px;background:linear-gradient(to right,#1e40af,#3b82f6,#22c55e,#eab308,#ef4444);border-radius:4px;border:1px solid #334155;box-shadow:0 0 6px rgba(0,0,0,0.3);"></div>
           <span style="font-size:10px;color:#94a3b8;">Cool → Hot gradient</span>
         </div>
       </div>
@@ -2978,7 +3018,21 @@ function renderHeatMap(){
           /* Peep hole data */
           var shiftSel = document.getElementById("hm-shift-select");
           var shift = shiftSel ? shiftSel.value : "All";
-          var entry = (typeof getTempEntryByShift === 'function') ? getTempEntryByShift(shift) : null;
+          /* Use date selector if available, same logic as renderHeatMap */
+          var _allEnt = (typeof getAllTempEntries === 'function') ? getAllTempEntries() : [];
+          var _filtEnt = _allEnt;
+          if(shift && shift !== "All"){
+            _filtEnt = _allEnt.filter(function(e){ return e.shift === shift; });
+          }
+          var _dateSel = document.getElementById("hm-date-select");
+          var _dateVal = _dateSel ? _dateSel.value : "latest";
+          var entry = null;
+          if(_dateVal === "latest"){
+            entry = _filtEnt.length ? _filtEnt[0] : null;
+          } else {
+            var _di = parseInt(_dateVal);
+            entry = (!isNaN(_di) && _filtEnt[_di]) ? _filtEnt[_di] : (_filtEnt[0] || null);
+          }
           function getPH(e,k){ return (e&&e.peepHoles&&e.peepHoles[k]) ? e.peepHoles[k] : Array(15).fill(""); }
           var abBot=getPH(entry,"ab-bot"), abTop=getPH(entry,"ab-top");
           var cdBot=getPH(entry,"cd-bot"), cdTop=getPH(entry,"cd-top");
@@ -3949,7 +4003,7 @@ function generateAnalysis(){
       data:{
         labels:["Both","NG","Off Gas","Cold"],
         datasets:[{data:[B,N,O,C],
-          backgroundColor:["#14b8a6","#fde047","#fb923c","#64748b"],
+          backgroundColor:["#2563eb","#fde047","#fb923c","#64748b"],
           borderColor:"#0f172a",borderWidth:2}]
       },
       options:{responsive:true,maintainAspectRatio:false,
@@ -5486,7 +5540,7 @@ function renderTempDataTable(){
     tbody.innerHTML = '<tr><td colspan="13" style="text-align:center;color:#475569;padding:20px;">No entries saved yet.</td></tr>';
     return;
   }
-  var display = tempDataEntries.slice(0, 3);
+  var display = tempDataEntries.slice(0, 15);
   var shiftColors = {Morning:"#34d399",Evening:"#fb923c",Night:"#818cf8"};
   var rows = "";
   for(var i = 0; i < display.length; i++){

@@ -713,9 +713,10 @@ body.light-theme .theme-toggle input:checked + .theme-slider{background:#94b4d8;
 ==================================================== */
 .alarm-banner{
   background:#dc2626;color:#fff;
-  text-align:center;padding:11px;
-  font-weight:800;font-size:17px;
+  text-align:center;padding:6px 11px;
+  font-weight:800;font-size:15px;
   display:none;align-items:center;justify-content:center;gap:14px;
+  position:fixed;bottom:68px;left:0;right:0;z-index:9999;
 }
 .alarm-active{display:flex;animation:alarmFlash .6s infinite;}
 @keyframes alarmFlash{0%{background:#dc2626;}50%{background:#7f1d1d;}100%{background:#dc2626;}}
@@ -1549,6 +1550,63 @@ td.burner-pending.C{ box-shadow:0 0 8px 2px rgba(253,224,71,0.4) !important; }
 /* ====================================================
    REFORMER HEAT MAP STYLES
 ==================================================== */
+/* Wall selector buttons */
+.hm-wall-btn-bar{display:flex;gap:6px;justify-content:center;margin-bottom:14px;flex-wrap:wrap;}
+.hm-wall-btn{
+  background:rgba(255,255,255,0.04);border:1px solid #334155;color:#94a3b8;
+  padding:7px 22px;border-radius:7px;font-size:12px;font-weight:700;
+  font-family:'Rajdhani',sans-serif;cursor:pointer;letter-spacing:1px;
+  transition:all .2s;
+}
+.hm-wall-btn:hover{background:rgba(243,112,34,0.1);border-color:#F37022;color:#F37022;}
+.hm-wall-btn-active{
+  background:rgba(243,112,34,0.15)!important;border-color:#F37022!important;
+  color:#F37022!important;box-shadow:0 0 12px rgba(243,112,34,0.25);
+}
+body.light-theme .hm-wall-btn{background:rgba(0,0,0,0.04);border-color:#b8cde8;color:#4a6a8a;}
+body.light-theme .hm-wall-btn:hover{background:rgba(243,112,34,0.1);color:#F37022;border-color:#F37022;}
+body.light-theme .hm-wall-btn-active{background:rgba(243,112,34,0.12)!important;border-color:#F37022!important;color:#F37022!important;}
+
+/* ── Individual wall panels: spread burners to fill full width ── */
+#hm-wall-panel-A .hm-burners-line,
+#hm-wall-panel-B .hm-burners-line,
+#hm-wall-panel-C .hm-burners-line,
+#hm-wall-panel-D .hm-burners-line{
+  justify-content:space-evenly;gap:0;
+}
+#hm-wall-panel-A .hm-burner-nums,
+#hm-wall-panel-B .hm-burner-nums,
+#hm-wall-panel-C .hm-burner-nums,
+#hm-wall-panel-D .hm-burner-nums{
+  justify-content:space-evenly;gap:0;
+}
+#hm-wall-panel-A .hm-bnum,
+#hm-wall-panel-B .hm-bnum,
+#hm-wall-panel-C .hm-bnum,
+#hm-wall-panel-D .hm-bnum{
+  width:auto;flex:1;text-align:center;
+}
+#hm-wall-panel-A .hm-burner-wrap,
+#hm-wall-panel-B .hm-burner-wrap,
+#hm-wall-panel-C .hm-burner-wrap,
+#hm-wall-panel-D .hm-burner-wrap{
+  flex:1;display:flex;justify-content:center;
+}
+/* Scale up flame SVGs in individual panels for better visual fill */
+#hm-wall-panel-A .hm-burner-wrap svg,
+#hm-wall-panel-B .hm-burner-wrap svg,
+#hm-wall-panel-C .hm-burner-wrap svg,
+#hm-wall-panel-D .hm-burner-wrap svg{
+  width:26px;height:36px;
+}
+/* Peep-hole gradient bar stretches naturally via flex:1, but ensure full width */
+#hm-wall-panel-A .hm-peep-gradient-bar-wrap,
+#hm-wall-panel-B .hm-peep-gradient-bar-wrap,
+#hm-wall-panel-C .hm-peep-gradient-bar-wrap,
+#hm-wall-panel-D .hm-peep-gradient-bar-wrap{
+  flex:1;
+}
+
 .hm-wall-card{background:#0a1628;border:1px solid #1e3a5e;border-radius:12px;overflow:hidden;margin-bottom:18px;}
 .hm-wall-header{background:linear-gradient(90deg,#0f2744,#1e3a6a);padding:8px 16px;display:flex;align-items:center;gap:10px;border-bottom:2px solid #F37022;}
 .hm-wall-title{font-size:15px;font-weight:700;color:#F37022;letter-spacing:2px;}
@@ -1989,6 +2047,17 @@ function renderHeatMap(){
   }
 
   /* ── Render wall cards ── */
+  /* Individual wall panels */
+  var wallPanelA = document.getElementById("hm-wall-panel-A");
+  var wallPanelB = document.getElementById("hm-wall-panel-B");
+  var wallPanelC = document.getElementById("hm-wall-panel-C");
+  var wallPanelD = document.getElementById("hm-wall-panel-D");
+  if(wallPanelA) wallPanelA.innerHTML = buildWallHTML("A", abBot, abTop, hmData["A"]);
+  if(wallPanelB) wallPanelB.innerHTML = buildWallHTML("B", abBot, abTop, hmData["B"]);
+  if(wallPanelC) wallPanelC.innerHTML = buildWallHTML("C", cdBot, cdTop, hmData["C"]);
+  if(wallPanelD) wallPanelD.innerHTML = buildWallHTML("D", cdBot, cdTop, hmData["D"]);
+
+  /* "Every Wall" combined view (AB side + CD side) */
   var abSideDiv = document.getElementById("hm-side-ab");
   if(abSideDiv){
     abSideDiv.innerHTML = buildWallHTML("A", abBot, abTop, hmData["A"])
@@ -2254,7 +2323,10 @@ function renderHeatMap(){
 </div>
 
 <div id="masterAlarm" class="alarm-banner">
-  🚨 MASTER IMBALANCE ALARM
+  <span style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;justify-content:center;">
+    <span>🚨 BURNER IMBALANCE</span>
+    <span id="alarmDetail" style="font-size:12px;font-weight:600;opacity:0.92;letter-spacing:0.3px;"></span>
+  </span>
   <button onclick="acknowledgeAlarm()">Acknowledge</button>
 </div>
 
@@ -2466,6 +2538,97 @@ function renderHeatMap(){
 
         /* Wall card fills face edge-to-edge */
         .cb-face .hm-wall-card { margin-bottom: 0 !important; border-radius: 0 !important; }
+
+        /* ═══════════════════════════════════════════════════
+           SIDE FACE  ·  PEEP-HOLE WINDOWS
+           Two square openings cut through the narrow side cap.
+           Each viewport owns its own CSS 3D perspective so the
+           injected wall content appears to recede at 90° into
+           the cuboid interior — parallel to the side face wall.
+        ═══════════════════════════════════════════════════ */
+        .cb-peephole-face {
+          width:100%; height:100%;
+          background: linear-gradient(180deg,#08192c,#050e1a);
+          display:flex; flex-direction:column;
+          align-items:center; justify-content:space-evenly;
+          padding:22px 0; box-sizing:border-box;
+        }
+        .cb-peephole-frame {
+          display:flex; flex-direction:column;
+          align-items:center; gap:3px;
+        }
+        /* The outer ring — heavy cast-iron mount */
+        .cb-peephole {
+          width:68px; height:68px;
+          border-radius:6px;
+          position:relative;
+          /* thick layered mount ring */
+          box-shadow:
+            0 0 0 3px #0b1826,
+            0 0 0 6px #192d42,
+            0 0 0 8px #0a141f,
+            0 0 18px 5px rgba(243,112,34,0.22),
+            inset 0 0 0 2px rgba(255,255,255,0.06);
+          overflow:hidden;
+        }
+        /*
+          The viewport: owns its OWN perspective so the content
+          inside appears to rotate in 3D space independent of the
+          outer cuboid's preserve-3d context.
+          perspective-origin: left centre → vanishing point at the
+          opening so the wall sweeps straight back into depth.
+        */
+        .cb-peephole-viewport {
+          position:absolute; inset:0;
+          overflow:hidden;
+          background:#0d2035;
+          /* 3-D perspective for the content inside */
+          perspective: 55px;
+          perspective-origin: 0% 50%;
+        }
+        /*
+          The actual wall-card content:
+          - transform-origin at left centre  →  left edge stays at
+            the mouth of the hole, right edge sweeps away from viewer
+          - rotateY(-78deg) makes it nearly perpendicular to us,
+            i.e. parallel to the side face  →  "going into the screen"
+          - width/translateY set inline per peephole by JS
+        */
+        .cb-peephole-content {
+          position:absolute;
+          transform-origin: 0% 50%;   /* anchor: left edge of hole */
+          pointer-events:none;
+        }
+        /* vignette — darkens the left/right edges where wall strips sit,
+           keeping the centre of the viewport clear for the main depth view */
+        .cb-peephole-vignette {
+          position:absolute; inset:0; pointer-events:none; z-index:5;
+          background:
+            linear-gradient(90deg,
+              rgba(0,0,0,0.25) 0%,
+              transparent 22%,
+              transparent 78%,
+              rgba(0,0,0,0.32) 100%
+            ),
+            radial-gradient(ellipse 85% 85% at 50% 50%,
+              transparent 55%,
+              rgba(0,0,0,0.28) 100%
+            );
+        }
+        /* glass-pane glint */
+        .cb-peephole-glint {
+          position:absolute; inset:0; pointer-events:none; z-index:4;
+          background: linear-gradient(
+            135deg,
+            rgba(255,255,255,0.08) 0%,
+            transparent 55%
+          );
+          border-radius:5px;
+        }
+        .cb-peephole-tag {
+          font-size:7px; font-weight:700; letter-spacing:1.5px;
+          color:rgba(255,255,255,0.25); text-align:center;
+        }
       </style>
 
       <!-- html2canvas removed — faces render via direct HTML injection -->
@@ -2478,7 +2641,7 @@ function renderHeatMap(){
           <div class="cb-subtitle">Outer face = <span style="color:#F37022;font-weight:700;">Wall A</span> &nbsp;·&nbsp; Inner face = <span style="color:#fb923c;font-weight:700;">Wall B</span></div>
 
           <div class="cb-scene cb-float" id="ab-scene">
-            <div class="cb-group" id="ab-cube" style="transform:rotateX(-8deg) rotateY(30deg);">
+            <div class="cb-group" id="ab-cube" style="transform:rotateX(-8deg) rotateY(-90deg);">
 
               <!-- FRONT = Wall A -->
               <div class="cb-face cb-fb" id="face-ab-front" style="transform:translateZ(60px);border:2px solid rgba(243,112,34,0.75);background:#0a1628;">
@@ -2490,14 +2653,48 @@ function renderHeatMap(){
                 <div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;color:#fb923c;font-size:11px;font-weight:700;letter-spacing:2px;" id="face-ab-back-loading">⏳ RENDERING WALL B…</div>
               </div>
 
-              <!-- LEFT side cap -->
-              <div class="cb-face cb-lr" style="transform:rotateY(-90deg) translateZ(280px);background:linear-gradient(180deg,#0d1f38,#0a1628);border:1.5px solid rgba(243,112,34,0.3);">
-                <div style="writing-mode:vertical-rl;transform:rotate(180deg);font-size:9px;font-weight:700;color:rgba(243,112,34,0.5);letter-spacing:3px;">AB SIDE</div>
+              <!-- LEFT side cap — peep holes into cuboid interior -->
+              <div class="cb-face cb-lr" style="transform:rotateY(-90deg) translateZ(280px);border:1.5px solid rgba(243,112,34,0.35);">
+                <div class="cb-peephole-face">
+                  <div class="cb-peephole-frame">
+                    <div class="cb-peephole">
+                      <div class="cb-peephole-viewport" id="ph-ab-L-top"></div>
+                      <div class="cb-peephole-vignette"></div>
+                      <div class="cb-peephole-glint"></div>
+                    </div>
+                    <div class="cb-peephole-tag">TOP</div>
+                  </div>
+                  <div class="cb-peephole-frame">
+                    <div class="cb-peephole">
+                      <div class="cb-peephole-viewport" id="ph-ab-L-bot"></div>
+                      <div class="cb-peephole-vignette"></div>
+                      <div class="cb-peephole-glint"></div>
+                    </div>
+                    <div class="cb-peephole-tag">BOT</div>
+                  </div>
+                </div>
               </div>
 
-              <!-- RIGHT side cap -->
-              <div class="cb-face cb-lr" style="transform:rotateY(90deg) translateZ(280px);background:linear-gradient(180deg,#0d1f38,#0a1628);border:1.5px solid rgba(251,146,60,0.3);">
-                <div style="writing-mode:vertical-rl;font-size:9px;font-weight:700;color:rgba(251,146,60,0.5);letter-spacing:3px;">AB SIDE</div>
+              <!-- RIGHT side cap — peep holes into cuboid interior -->
+              <div class="cb-face cb-lr" style="transform:rotateY(90deg) translateZ(280px);border:1.5px solid rgba(251,146,60,0.35);">
+                <div class="cb-peephole-face">
+                  <div class="cb-peephole-frame">
+                    <div class="cb-peephole">
+                      <div class="cb-peephole-viewport" id="ph-ab-R-top"></div>
+                      <div class="cb-peephole-vignette"></div>
+                      <div class="cb-peephole-glint"></div>
+                    </div>
+                    <div class="cb-peephole-tag">TOP</div>
+                  </div>
+                  <div class="cb-peephole-frame">
+                    <div class="cb-peephole">
+                      <div class="cb-peephole-viewport" id="ph-ab-R-bot"></div>
+                      <div class="cb-peephole-vignette"></div>
+                      <div class="cb-peephole-glint"></div>
+                    </div>
+                    <div class="cb-peephole-tag">BOT</div>
+                  </div>
+                </div>
               </div>
 
               <!-- TOP cap -->
@@ -2525,7 +2722,7 @@ function renderHeatMap(){
           <div class="cb-subtitle">Outer face = <span style="color:#7ec8f0;font-weight:700;">Wall D</span> &nbsp;·&nbsp; Inner face = <span style="color:#60c8ff;font-weight:700;">Wall C</span></div>
 
           <div class="cb-scene cb-float" id="cd-scene">
-            <div class="cb-group" id="cd-cube" style="transform:rotateX(-8deg) rotateY(-30deg);">
+            <div class="cb-group" id="cd-cube" style="transform:rotateX(-8deg) rotateY(90deg);">
 
               <!-- FRONT = Wall D -->
               <div class="cb-face cb-fb" id="face-cd-front" style="transform:translateZ(60px);border:2px solid rgba(126,200,240,0.75);background:#0a1628;">
@@ -2537,14 +2734,48 @@ function renderHeatMap(){
                 <div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;color:#60c8ff;font-size:11px;font-weight:700;letter-spacing:2px;" id="face-cd-back-loading">⏳ RENDERING WALL C…</div>
               </div>
 
-              <!-- LEFT side cap -->
-              <div class="cb-face cb-lr" style="transform:rotateY(-90deg) translateZ(280px);background:linear-gradient(180deg,#0d1f38,#0a1628);border:1.5px solid rgba(126,200,240,0.3);">
-                <div style="writing-mode:vertical-rl;transform:rotate(180deg);font-size:9px;font-weight:700;color:rgba(126,200,240,0.5);letter-spacing:3px;">CD SIDE</div>
+              <!-- LEFT side cap — peep holes into cuboid interior -->
+              <div class="cb-face cb-lr" style="transform:rotateY(-90deg) translateZ(280px);border:1.5px solid rgba(126,200,240,0.35);">
+                <div class="cb-peephole-face">
+                  <div class="cb-peephole-frame">
+                    <div class="cb-peephole">
+                      <div class="cb-peephole-viewport" id="ph-cd-L-top"></div>
+                      <div class="cb-peephole-vignette"></div>
+                      <div class="cb-peephole-glint"></div>
+                    </div>
+                    <div class="cb-peephole-tag">TOP</div>
+                  </div>
+                  <div class="cb-peephole-frame">
+                    <div class="cb-peephole">
+                      <div class="cb-peephole-viewport" id="ph-cd-L-bot"></div>
+                      <div class="cb-peephole-vignette"></div>
+                      <div class="cb-peephole-glint"></div>
+                    </div>
+                    <div class="cb-peephole-tag">BOT</div>
+                  </div>
+                </div>
               </div>
 
-              <!-- RIGHT side cap -->
-              <div class="cb-face cb-lr" style="transform:rotateY(90deg) translateZ(280px);background:linear-gradient(180deg,#0d1f38,#0a1628);border:1.5px solid rgba(96,200,255,0.3);">
-                <div style="writing-mode:vertical-rl;font-size:9px;font-weight:700;color:rgba(96,200,255,0.5);letter-spacing:3px;">CD SIDE</div>
+              <!-- RIGHT side cap — peep holes into cuboid interior -->
+              <div class="cb-face cb-lr" style="transform:rotateY(90deg) translateZ(280px);border:1.5px solid rgba(96,200,255,0.35);">
+                <div class="cb-peephole-face">
+                  <div class="cb-peephole-frame">
+                    <div class="cb-peephole">
+                      <div class="cb-peephole-viewport" id="ph-cd-R-top"></div>
+                      <div class="cb-peephole-vignette"></div>
+                      <div class="cb-peephole-glint"></div>
+                    </div>
+                    <div class="cb-peephole-tag">TOP</div>
+                  </div>
+                  <div class="cb-peephole-frame">
+                    <div class="cb-peephole">
+                      <div class="cb-peephole-viewport" id="ph-cd-R-bot"></div>
+                      <div class="cb-peephole-vignette"></div>
+                      <div class="cb-peephole-glint"></div>
+                    </div>
+                    <div class="cb-peephole-tag">BOT</div>
+                  </div>
+                </div>
               </div>
 
               <!-- TOP cap -->
@@ -2574,21 +2805,96 @@ function renderHeatMap(){
       ────────────────────────────────────────────────────────────── */
       (function(){
 
-        /* ── 1. Drag interaction (identical for both cuboids) ── */
-        function makeDraggable(sceneId, cubeId, initY, initX){
-          var scene = document.getElementById(sceneId);
-          var cube  = document.getElementById(cubeId);
-          var rY = initY, rX = initX, dragging = false, lastX = 0;
-          function apply(){ cube.style.transform = 'rotateX('+rX+'deg) rotateY('+rY+'deg)'; }
-          scene.addEventListener('mousedown', function(e){ dragging=true; lastX=e.clientX; scene.classList.remove('cb-float'); e.preventDefault(); });
-          window.addEventListener('mousemove', function(e){ if(!dragging) return; rY+=(e.clientX-lastX)*0.45; lastX=e.clientX; apply(); });
-          window.addEventListener('mouseup',   function(){ if(dragging){ dragging=false; scene.classList.add('cb-float'); } });
-          scene.addEventListener('touchstart', function(e){ dragging=true; lastX=e.touches[0].clientX; scene.classList.remove('cb-float'); e.preventDefault(); },{passive:false});
-          window.addEventListener('touchmove', function(e){ if(!dragging) return; rY+=(e.touches[0].clientX-lastX)*0.45; lastX=e.touches[0].clientX; apply(); });
-          window.addEventListener('touchend',  function(){ if(dragging){ dragging=false; scene.classList.add('cb-float'); } });
+        /* ── 1. Drag interaction — smooth momentum, hard clamp, no bounce ──
+           DRAG    : direct 1:1 follow
+           RELEASE : velocity coasts with friction until it stops
+           LIMITS  : hard clamp — motion simply stops at 0° / 180°
+        ── */
+        function makeDraggable(sceneId, cubeId, initY, initX, minY, maxY){
+          var scene    = document.getElementById(sceneId);
+          var cube     = document.getElementById(cubeId);
+          var rY       = initY;
+          var rX       = initX;
+          var velY     = 0;
+          var dragging = false;
+          var lastX    = 0;
+          var lastTime = 0;
+          var rafId    = null;
+
+          var FRICTION  = 0.88;   /* per-frame speed decay (0–1) */
+          var DRAG_SENS = 0.48;   /* px → deg during drag        */
+          var MIN_VEL   = 0.05;   /* threshold to stop coasting  */
+
+          function clamp(v,lo,hi){ return v<lo?lo:v>hi?hi:v; }
+
+          function applyTransform(){
+            cube.style.transform = 'rotateX('+rX+'deg) rotateY('+rY+'deg)';
+          }
+
+          function stopRAF(){ if(rafId){ cancelAnimationFrame(rafId); rafId=null; } }
+
+          function coastLoop(){
+            velY *= FRICTION;
+            rY   += velY;
+            /* hard clamp — kill velocity the instant we hit a wall */
+            if(rY <= minY){ rY = minY; velY = 0; }
+            if(rY >= maxY){ rY = maxY; velY = 0; }
+            applyTransform();
+            if(Math.abs(velY) < MIN_VEL){
+              rY = clamp(rY, minY, maxY);
+              applyTransform();
+              rafId = null;
+              scene.classList.add('cb-float');
+              return;
+            }
+            rafId = requestAnimationFrame(coastLoop);
+          }
+
+          function onDown(clientX){
+            stopRAF();
+            dragging = true;
+            lastX    = clientX;
+            lastTime = performance.now();
+            velY     = 0;
+            scene.classList.remove('cb-float');
+          }
+
+          function onMove(clientX){
+            if(!dragging) return;
+            var dx  = clientX - lastX;
+            var now = performance.now();
+            var dt  = Math.max(1, now - lastTime);
+            velY    = (dx * DRAG_SENS / dt) * 16;
+            rY      = clamp(rY + dx * DRAG_SENS, minY, maxY);
+            lastX   = clientX;
+            lastTime = now;
+            applyTransform();
+          }
+
+          function onUp(){
+            if(!dragging) return;
+            dragging = false;
+            if(Math.abs(velY) > MIN_VEL){
+              rafId = requestAnimationFrame(coastLoop);
+            } else {
+              rY = clamp(rY, minY, maxY);
+              applyTransform();
+              scene.classList.add('cb-float');
+            }
+          }
+
+          scene.addEventListener('mousedown',  function(e){ onDown(e.clientX); e.preventDefault(); });
+          window.addEventListener('mousemove', function(e){ onMove(e.clientX); });
+          window.addEventListener('mouseup',   onUp);
+          scene.addEventListener('touchstart', function(e){ onDown(e.touches[0].clientX); e.preventDefault(); },{passive:false});
+          window.addEventListener('touchmove', function(e){ if(dragging) onMove(e.touches[0].clientX); });
+          window.addEventListener('touchend',  onUp);
+
+          applyTransform();
         }
-        makeDraggable('ab-scene','ab-cube', 30,-8);
-        makeDraggable('cd-scene','cd-cube',-30,-8);
+
+        makeDraggable('ab-scene','ab-cube', -90, -8, -180,   0);
+        makeDraggable('cd-scene','cd-cube',  90, -8,    0, 180);
 
         /* ── 2. Wall face renderer — direct HTML injection (no html2canvas) ──
            The wall card is built at NATURAL_W=900px (same as before) and
@@ -2689,9 +2995,127 @@ function renderHeatMap(){
 
           renderWallFace("C", cdBot, cdTop, hmData["C"],
             document.getElementById('face-cd-back'),  document.getElementById('face-cd-back-loading'),  '#60c8ff');
+
+          /* ── Fill peep-hole viewports with depth-rotated wall content ── */
+          fillPeepholes(hmData, abBot, abTop, cdBot, cdTop);
         }
 
-        /* ── 4. Auto-trigger once DOM is ready ── */
+        /* ═══════════════════════════════════════════════════════════
+           PEEP-HOLE FILL ENGINE
+           Injects the real buildWallHTML() output into each 68×68px
+           viewport, then applies:
+             perspective (on the viewport)  +  rotateY (on content)
+           …so the burner wall appears to recede at ~90° into the
+           cuboid interior — exactly what you'd see looking through a
+           hole cut in the side wall.
+
+           Geometry:
+             NATURAL_W = 900px  (unscaled wall card width)
+             PH_SCALE  = 0.075  (fits ~900px into the 68px slot depth)
+             rotateY(-78deg)    (nearly perpendicular — "going into screen")
+             perspective: 55px  (strong foreshortening)
+             transform-origin: 0% 50%  (left edge is the hole mouth)
+
+           Y-offset pans the content so TOP porthole shows rows 5-6
+           and BOT porthole shows rows 1-2.
+        ═══════════════════════════════════════════════════════════ */
+        function fillPeepholes(hmData, abBot, abTop, cdBot, cdTop){
+          var PH_SCALE   = 0.075;
+          var PH_ROT     = -78;
+          var NATURAL_W  = 900;
+          var PH_TY_TOP  = -20;
+          var PH_TY_BOT  = -260;
+          var PH_TX      = -320;
+
+          /*
+            STRIP SCALE for near/far wall glimpse panels.
+            Natural wall card height ≈ 460px.  Viewport is 68px tall.
+            68 / 460 = 0.1478 → wall card fills the strip height exactly.
+            Width at that scale: 900 × 0.1478 = 133px — so the parent's
+            overflow:hidden clips it to a 13px (near) or 9px (far) strip,
+            revealing a thin cross-section of the interior wall.
+          */
+          var STRIP_SCALE = 68 / 460;
+          /* Horizontal offset so the strip shows the centre burners */
+          var STRIP_TX    = -280;  /* px in unscaled space */
+
+          /*
+            fillOne now renders THREE layers inside each viewport:
+              1. Near-wall strip  — left edge, 13px wide, opacity 0.30
+                 Wall A (AB) / Wall D (CD) — the wall closest to the viewer
+              2. Main rotated content — opacity 0.76 (slightly see-through)
+                 Gives the depth illusion while letting the far wall bleed through
+              3. Far-wall strip   — right edge, 9px wide, opacity 0.18
+                 Wall B (AB) / Wall C (CD) — the wall deeper in the interior
+              4. Fade gradients on each strip blend into the dark interior
+          */
+          function fillOne(elId, wallHTMLMain, wallHTMLNear, wallHTMLFar, tyUnscaled){
+            var el = document.getElementById(elId);
+            if(!el) return;
+
+            var ty = tyUnscaled;
+
+            /* ── Near-wall strip (left edge) ── */
+            var nearStrip =
+              '<div style="position:absolute;left:0;top:0;width:13px;height:100%;'
+              +   'overflow:hidden;opacity:0.65;z-index:1;pointer-events:none;">'
+              +   '<div style="position:absolute;left:0;top:0;width:'+NATURAL_W+'px;'
+              +     'transform-origin:left top;'
+              +     'transform:scale('+STRIP_SCALE.toFixed(5)+') translateX('+STRIP_TX+'px) translateY('+ty+'px);'
+              +   '">'
+              +   wallHTMLNear
+              +   '</div>'
+              +   '<div style="position:absolute;inset:0;background:linear-gradient(90deg,transparent 0%,rgba(2,8,18,0.35) 100%);pointer-events:none;"></div>'
+              + '</div>';
+
+            /* ── Main rotated content ── */
+            var mainLayer =
+              '<div class="cb-peephole-content" style="'
+              +   'width:'+NATURAL_W+'px;top:50%;z-index:2;'
+              +   'opacity:0.92;'
+              +   'transform:'
+              +     'rotateY('+PH_ROT+'deg) '
+              +     'translateX('+PH_TX+'px) '
+              +     'translateY('+ty+'px) '
+              +     'scale('+PH_SCALE+');'
+              + '">'
+              + wallHTMLMain
+              + '</div>';
+
+            /* ── Far-wall strip (right edge) ── */
+            var farStrip =
+              '<div style="position:absolute;right:0;top:0;width:9px;height:100%;'
+              +   'overflow:hidden;opacity:0.42;z-index:3;pointer-events:none;">'
+              +   '<div style="position:absolute;right:0;top:0;width:'+NATURAL_W+'px;'
+              +     'transform-origin:right top;'
+              +     'transform:scale('+STRIP_SCALE.toFixed(5)+') translateX('+(-STRIP_TX)+'px) translateY('+ty+'px);'
+              +   '">'
+              +   wallHTMLFar
+              +   '</div>'
+              +   '<div style="position:absolute;inset:0;background:linear-gradient(90deg,rgba(2,8,18,0.35) 0%,transparent 100%);pointer-events:none;"></div>'
+              + '</div>';
+
+            el.innerHTML = nearStrip + mainLayer + farStrip;
+          }
+
+          /* Build all four wall HTMLs */
+          var htmlA = buildWallHTML("A", abBot, abTop, hmData["A"]);
+          var htmlB = buildWallHTML("B", abBot, abTop, hmData["B"]);
+          var htmlD = buildWallHTML("D", cdBot, cdTop, hmData["D"]);
+          var htmlC = buildWallHTML("C", cdBot, cdTop, hmData["C"]);
+
+          /* AB: near = Wall A (outer), far = Wall B (inner) */
+          fillOne("ph-ab-L-top", htmlA, htmlA, htmlB, PH_TY_TOP);
+          fillOne("ph-ab-L-bot", htmlA, htmlA, htmlB, PH_TY_BOT);
+          fillOne("ph-ab-R-top", htmlA, htmlA, htmlB, PH_TY_TOP);
+          fillOne("ph-ab-R-bot", htmlA, htmlA, htmlB, PH_TY_BOT);
+
+          /* CD: near = Wall D (outer), far = Wall C (inner) */
+          fillOne("ph-cd-L-top", htmlD, htmlD, htmlC, PH_TY_TOP);
+          fillOne("ph-cd-L-bot", htmlD, htmlD, htmlC, PH_TY_BOT);
+          fillOne("ph-cd-R-top", htmlD, htmlD, htmlC, PH_TY_TOP);
+          fillOne("ph-cd-R-bot", htmlD, htmlD, htmlC, PH_TY_BOT);
+        }
         if(document.readyState === 'loading'){
           document.addEventListener('DOMContentLoaded', scheduleCuboidTextures);
         } else {
@@ -2709,17 +3133,46 @@ function renderHeatMap(){
       })();
       </script>
 
-      <!-- 4-wall grid: AB left, CD right -->
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
-        <div>
-          <div style="font-size:10px;color:#F37022;font-weight:700;letter-spacing:3px;margin-bottom:8px;text-align:center;border-bottom:1px solid #1e3a5e;padding-bottom:6px;">◀ AB SIDE</div>
-          <div style="display:flex;flex-direction:column;gap:10px;" id="hm-side-ab"></div>
-        </div>
-        <div>
-          <div style="font-size:10px;color:#F37022;font-weight:700;letter-spacing:3px;margin-bottom:8px;text-align:center;border-bottom:1px solid #1e3a5e;padding-bottom:6px;">CD SIDE ▶</div>
-          <div style="display:flex;flex-direction:column;gap:10px;" id="hm-side-cd"></div>
+      <!-- Wall selector buttons + individual wall containers -->
+      <div class="hm-wall-btn-bar" id="hm-wall-btn-bar">
+        <button class="hm-wall-btn hm-wall-btn-active" id="hm-wbtn-A" onclick="switchHeatMapWall('A')">🔥 Wall A</button>
+        <button class="hm-wall-btn" id="hm-wbtn-B" onclick="switchHeatMapWall('B')">🔥 Wall B</button>
+        <button class="hm-wall-btn" id="hm-wbtn-C" onclick="switchHeatMapWall('C')">🔥 Wall C</button>
+        <button class="hm-wall-btn" id="hm-wbtn-D" onclick="switchHeatMapWall('D')">🔥 Wall D</button>
+        <button class="hm-wall-btn" id="hm-wbtn-ALL" onclick="switchHeatMapWall('ALL')">📋 Every Wall</button>
+      </div>
+
+      <!-- Individual wall panels (only one visible at a time, except "ALL") -->
+      <div id="hm-wall-panel-A" style="display:block;"></div>
+      <div id="hm-wall-panel-B" style="display:none;"></div>
+      <div id="hm-wall-panel-C" style="display:none;"></div>
+      <div id="hm-wall-panel-D" style="display:none;"></div>
+      <div id="hm-wall-panel-ALL" style="display:none;">
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
+          <div>
+            <div style="font-size:10px;color:#F37022;font-weight:700;letter-spacing:3px;margin-bottom:8px;text-align:center;border-bottom:1px solid #1e3a5e;padding-bottom:6px;">◀ AB SIDE</div>
+            <div style="display:flex;flex-direction:column;gap:10px;" id="hm-side-ab"></div>
+          </div>
+          <div>
+            <div style="font-size:10px;color:#F37022;font-weight:700;letter-spacing:3px;margin-bottom:8px;text-align:center;border-bottom:1px solid #1e3a5e;padding-bottom:6px;">CD SIDE ▶</div>
+            <div style="display:flex;flex-direction:column;gap:10px;" id="hm-side-cd"></div>
+          </div>
         </div>
       </div>
+
+      <script>
+      var _activeHeatMapWall = 'A';
+      function switchHeatMapWall(wall){
+        _activeHeatMapWall = wall;
+        var walls = ['A','B','C','D','ALL'];
+        for(var i=0;i<walls.length;i++){
+          var panel = document.getElementById('hm-wall-panel-'+walls[i]);
+          var btn   = document.getElementById('hm-wbtn-'+walls[i]);
+          if(panel) panel.style.display = (walls[i]===wall) ? 'block' : 'none';
+          if(btn) btn.classList.toggle('hm-wall-btn-active', walls[i]===wall);
+        }
+      }
+      </script>
 
     </div>
   </div>
@@ -3505,6 +3958,27 @@ function generateAnalysis(){
   });
 
   /* ── Master alarm banner: auto-set AND auto-reset ── */
+  /* Build short wall+row detail for the banner */
+  var alarmDetails = [];
+  Object.entries(data).forEach(([wallName,rows])=>{
+    var sev = wallSeverity[wallName];
+    if(sev && sev !== "normal"){
+      var badRows = [];
+      rows.forEach(function(row, ri){
+        var rn=0, ro=0;
+        row.forEach(function(c){ if(c==="N") rn++; else if(c==="O") ro++; });
+        var rimb = Math.abs(rn - ro);
+        if(rimb > 3) badRows.push("R"+(ri+1));
+      });
+      var tag = sev === "critical" ? "🔴" : sev === "major" ? "🟠" : "🟡";
+      var detail = tag + " Wall " + wallName;
+      if(badRows.length) detail += " (" + badRows.join(",") + ")";
+      alarmDetails.push(detail);
+    }
+  });
+  var detailEl = document.getElementById("alarmDetail");
+  if(detailEl) detailEl.textContent = alarmDetails.length ? "│ " + alarmDetails.join("  ") : "";
+
   if(masterAlarm && !masterAlarmActive){
     masterAlarmActive=true;
     document.getElementById("masterAlarm").classList.add("alarm-active");

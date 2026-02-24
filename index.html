@@ -1730,7 +1730,7 @@ function openChangePasswordFromForgot(){
 }
 async function login(){
   /* Delegate to loginWithFolderSupport() in the main script.
-     It auto-loads from the saved folder — never opens a file picker. */
+     It auto-loads from the Supabase server backend. */
   if(typeof loginWithFolderSupport === "function"){
     await loginWithFolderSupport();
   } else {
@@ -2422,7 +2422,6 @@ function renderHeatMap(){
       </div>
       <input type="file" id="excelFile" accept=".xlsx,.xls" onchange="importFromExcel(event)">
       <input type="file" id="autoImportInput" accept=".xlsx,.xls" style="display:none" onchange="handleAutoImport(event)">
-      <button class="hd-btn hd-btn-secondary" id="folderBtn" onclick="pickFolder()" title="Set auto import/export folder">📁 Set Folder</button>
       <button class="hd-btn hd-btn-secondary" onclick="smartRefresh()">🔄 Refresh Data</button>
       <button class="hd-btn hd-btn-primary" onclick="exportToExcel()">💾 Save New Data</button>
       <button class="hd-btn hd-btn-secondary" onclick="showChangePasswordModal()">🔑 Change Password</button>
@@ -2441,102 +2440,6 @@ function renderHeatMap(){
       <div class="app-meta-item"><b>Last Sync:</b> <span id="lastSync">—</span></div>
     </div>
     <span id="clock"></span>
-  </div>
-</div>
-
-<!-- Folder Setup Banner (shown when NO folder is set) -->
-<div id="folderSetupBanner" style="display:flex;background:linear-gradient(90deg,#1e3a5a,#0f2744);border-bottom:2px solid #F37022;padding:12px 28px;align-items:center;gap:16px;flex-wrap:wrap;">
-  <div style="display:flex;align-items:center;gap:10px;">
-    <span style="font-size:24px;">⚠️</span>
-    <div>
-      <div style="font-size:13px;font-weight:700;color:#F37022;letter-spacing:0.5px;">ONE-TIME SETUP REQUIRED (THIS COMPUTER)</div>
-      <div style="font-size:11px;color:#a0bcd8;margin-top:2px;">Browser security requires folder access permission on each computer. Set up once below — then data auto-loads forever!</div>
-    </div>
-  </div>
-  <div style="display:flex;align-items:center;gap:8px;background:rgba(0,0,0,0.3);border:1px solid rgba(255,255,255,0.15);border-radius:6px;padding:8px 14px;flex:1;min-width:300px;">
-    <span style="font-size:10px;color:#7ec8f0;font-weight:700;white-space:nowrap;">SHARED FOLDER PATH:</span>
-    <code id="networkPathDisplay" style="font-size:11px;color:#4ade80;background:rgba(0,0,0,0.4);padding:4px 10px;border-radius:4px;flex:1;overflow-x:auto;white-space:nowrap;font-family:monospace;">\\10.138.128.112\pn_dept\SOUTH BLOCK DOCUMENTS\SOUTH BLOCK DOCUMENTATION FOLDER\HGU III\SCADA</code>
-    <button onclick="copyNetworkPath()" style="background:#1e40af;color:#fff;border:none;border-radius:4px;padding:5px 12px;font-size:11px;font-weight:700;cursor:pointer;white-space:nowrap;font-family:'Rajdhani',sans-serif;" title="Copy path to clipboard">📋 Copy Path</button>
-  </div>
-  <div style="display:flex;gap:8px;align-items:center;">
-    <button onclick="pickFolder()" style="background:linear-gradient(90deg,#d95008,#F37022);color:#fff;border:none;border-radius:5px;padding:8px 18px;font-size:13px;font-weight:700;cursor:pointer;font-family:'Rajdhani',sans-serif;box-shadow:0 2px 12px rgba(243,112,34,0.4);">📁 Select SCADA Folder</button>
-    <button onclick="showSetupHelp()" style="background:rgba(255,255,255,0.1);color:#7ec8f0;border:1px solid rgba(126,200,240,0.3);border-radius:5px;padding:8px 14px;font-size:12px;font-weight:700;cursor:pointer;font-family:'Rajdhani',sans-serif;">❓ Help</button>
-  </div>
-</div>
-
-<!-- Folder Active Banner (shown when folder IS set) -->
-<div id="folderStatusBar" style="display:none;background:#0f2d1a;border-bottom:1px solid rgba(74,222,128,0.25);padding:6px 28px;font-size:11px;color:#4ade80;align-items:center;gap:10px;flex-wrap:wrap;">
-  <span>✅</span>
-  <span id="folderStatusText">No auto-folder set</span>
-  <span style="color:#334155;">|</span>
-  <span style="color:#64748b;">Data auto-syncs from: <code style="color:#4ade80;background:rgba(0,0,0,0.3);padding:2px 8px;border-radius:3px;font-size:10px;">\\10.138.128.112\...\SCADA</code></span>
-  <div style="margin-left:auto;display:flex;gap:8px;">
-    <button onclick="copyNetworkPath()" style="background:rgba(255,255,255,0.08);color:#a0bcd8;border:1px solid rgba(255,255,255,0.15);border-radius:4px;padding:2px 10px;font-size:10px;cursor:pointer;font-family:'Rajdhani',sans-serif;">📋 Copy Path</button>
-    <button onclick="clearFolder()" style="background:rgba(220,38,38,0.15);color:#fca5a5;border:1px solid rgba(220,38,38,0.35);border-radius:4px;padding:2px 10px;font-size:10px;cursor:pointer;font-family:'Rajdhani',sans-serif;">✕ Clear</button>
-  </div>
-</div>
-
-<!-- Setup Help Modal (Simplified — Copy Path + Paste in Taskbar) -->
-<div id="setupHelpModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.85);z-index:99999;align-items:center;justify-content:center;padding:20px;">
-  <div style="background:linear-gradient(175deg,#071e54,#030f3a);border:2px solid #F37022;border-radius:12px;max-width:520px;width:100%;max-height:90vh;overflow:auto;box-shadow:0 8px 48px rgba(0,0,0,0.8);">
-    <div style="background:linear-gradient(90deg,#0f2744,#1e3a6a);padding:14px 24px;border-bottom:1px solid rgba(255,255,255,0.1);display:flex;justify-content:space-between;align-items:center;">
-      <div style="font-size:17px;font-weight:700;color:#F37022;">📁 One-Time Folder Setup</div>
-      <button onclick="closeSetupHelp()" style="background:none;border:none;color:#a0bcd8;font-size:24px;cursor:pointer;line-height:1;">&times;</button>
-    </div>
-    <div style="padding:20px 24px;color:#e2e8f0;font-size:13px;line-height:1.7;">
-
-      <!-- STEP 1: Copy Path -->
-      <div style="display:flex;gap:12px;margin-bottom:18px;align-items:flex-start;">
-        <div style="background:#F37022;color:#fff;width:30px;height:30px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:700;flex-shrink:0;font-size:15px;">1</div>
-        <div style="flex:1;">
-          <div style="font-weight:700;color:#fff;font-size:14px;margin-bottom:4px;">Copy the default folder path</div>
-          <div style="background:rgba(0,0,0,0.4);border:1px solid #334155;border-radius:6px;padding:8px 12px;display:flex;align-items:center;gap:8px;margin-top:6px;">
-            <code style="font-size:11px;color:#4ade80;flex:1;word-break:break-all;line-height:1.5;font-family:monospace;">\\10.138.128.112\pn_dept\SOUTH BLOCK DOCUMENTS\SOUTH BLOCK DOCUMENTATION FOLDER\HGU III\SCADA</code>
-            <button onclick="copyNetworkPath()" style="background:#1e40af;color:#fff;border:none;border-radius:5px;padding:7px 14px;font-size:12px;font-weight:700;cursor:pointer;font-family:'Rajdhani',sans-serif;white-space:nowrap;">📋 Copy</button>
-          </div>
-        </div>
-      </div>
-
-      <!-- STEP 2: Paste in Windows Taskbar Search -->
-      <div style="display:flex;gap:12px;margin-bottom:18px;align-items:flex-start;">
-        <div style="background:#F37022;color:#fff;width:30px;height:30px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:700;flex-shrink:0;font-size:15px;">2</div>
-        <div style="flex:1;">
-          <div style="font-weight:700;color:#fff;font-size:14px;margin-bottom:4px;">Paste in Windows Taskbar Search Bar</div>
-          <div style="color:#a0bcd8;font-size:12px;margin-bottom:8px;">Click the <b style="color:#7ec8f0;">Search bar</b> on your Windows Taskbar (bottom of screen), paste the copied path (<kbd style="background:#1e293b;border:1px solid #475569;border-radius:3px;padding:1px 6px;font-size:11px;color:#e2e8f0;">Ctrl+V</kbd>), and press <kbd style="background:#1e293b;border:1px solid #475569;border-radius:3px;padding:1px 6px;font-size:11px;color:#e2e8f0;">Enter</kbd>. The SCADA folder will open directly.</div>
-          <!-- Visual guide: Windows Taskbar mockup -->
-          <div style="background:#0c1a2e;border:1px solid #1e3a5e;border-radius:8px;overflow:hidden;margin-top:4px;">
-            <div style="padding:5px 10px;font-size:10px;font-weight:700;color:#7ec8f0;background:rgba(126,200,240,0.08);border-bottom:1px solid #1e3a5e;letter-spacing:0.5px;">WHERE TO PASTE — Windows Taskbar (bottom of your screen)</div>
-            <div style="padding:10px 14px;font-family:'Courier New',monospace;font-size:11px;color:#94a3b8;">
-              <div style="background:#111827;border:1px solid #374151;border-radius:4px;padding:8px 10px;display:flex;align-items:center;gap:12px;">
-                <span style="font-size:14px;">🪟</span>
-                <div style="flex:1;background:#1e293b;border:2px dashed #F37022;border-radius:4px;padding:6px 10px;display:flex;align-items:center;gap:6px;">
-                  <span style="font-size:12px;">🔍</span>
-                  <span style="color:#F37022;font-weight:700;font-size:11px;">⬅ Paste the copied path here &amp; press Enter</span>
-                </div>
-                <span style="color:#64748b;font-size:10px;">🔊 📡 🔋</span>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- STEP 3: Come back & select folder in browser -->
-      <div style="display:flex;gap:12px;margin-bottom:18px;align-items:flex-start;">
-        <div style="background:#F37022;color:#fff;width:30px;height:30px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:700;flex-shrink:0;font-size:15px;">3</div>
-        <div style="flex:1;">
-          <div style="font-weight:700;color:#fff;font-size:14px;margin-bottom:4px;">Come back here &amp; select the folder</div>
-          <div style="color:#a0bcd8;font-size:12px;margin-bottom:8px;">Click the button below, then navigate to the <b style="color:#4ade80;">SCADA</b> folder in the picker and select it.</div>
-          <button onclick="closeSetupHelp();pickFolder();" style="background:linear-gradient(90deg,#d95008,#F37022);color:#fff;border:none;border-radius:6px;padding:10px 22px;font-size:13px;font-weight:700;cursor:pointer;font-family:'Rajdhani',sans-serif;box-shadow:0 2px 12px rgba(243,112,34,0.4);letter-spacing:0.5px;">📁 Select SCADA Folder</button>
-        </div>
-      </div>
-
-      <!-- Done -->
-      <div style="display:flex;gap:12px;align-items:center;background:rgba(22,163,74,0.12);border:1px solid rgba(22,163,74,0.3);border-radius:8px;padding:10px 14px;">
-        <div style="background:#16a34a;color:#fff;width:26px;height:26px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:700;flex-shrink:0;font-size:13px;">✓</div>
-        <div style="font-size:12px;color:#4ade80;font-weight:600;">Done! Data will auto-load every time. No need to repeat on this PC.</div>
-      </div>
-
-    </div>
   </div>
 </div>
 
@@ -4511,28 +4414,7 @@ async function exportToExcel(){
     showToast("✅ Saved to central SCADA server");
     return;
   }
-
-  /* Try folder auto-export first */
-  if(scadaFolderHandle){
-    const ok = await autoExportToFolder(wb, fname);
-    if(ok){ showToast("✅ Saved to folder \""+scadaFolderHandle.name+"\": "+fname); return; }
-  }
-
-  /* Fallback: showSaveFilePicker or XLSX.writeFile */
-  const wbOut = XLSX.write(wb, {bookType:"xlsx", type:"array"});
-  const blob  = new Blob([wbOut], {type:"application/octet-stream"});
-  if(window.showSaveFilePicker){
-    window.showSaveFilePicker({
-      suggestedName: fname,
-      types:[{description:"Excel Workbook", accept:{"application/vnd.openxmlformats-officedocument.spreadsheetml.sheet":[".xlsx"]}}]
-    }).then(fh=>fh.createWritable())
-      .then(w=>w.write(blob).then(()=>w.close()))
-      .then(()=>showToast("✅ Saved: "+fname))
-      .catch(err=>{ if(err.name!=="AbortError") XLSX.writeFile(wb, fname); });
-  } else {
-    XLSX.writeFile(wb, fname);
-    showToast("✅ Exported: "+fname);
-  }
+  showToast("❌ Save failed: Supabase server is unreachable");
 }
 
 /* ==================================================
@@ -4549,43 +4431,10 @@ function importFromExcel(event){
   _doImport(file, ()=>{ event.target.value=""; });
 }
 
-/* ── Smart Refresh: uses folder if set, else falls back to file picker ── */
+/* ── Smart Refresh: server sync only ── */
 async function smartRefresh(){
-  if(SERVER_SYNC_ENABLED){
-    var okServer = await autoImportFromServer(true);
-    if(okServer) return;
-  }
-
-  if(scadaFolderHandle){
-    /* Same logic as Save New Data — use the stored folder automatically */
-    try{
-      var perm = await scadaFolderHandle.queryPermission({mode:"readwrite"});
-      if(perm !== "granted"){
-        perm = await scadaFolderHandle.requestPermission({mode:"readwrite"});
-      }
-      if(perm !== "granted"){
-        showToast("⚠ Folder permission denied — please click 📁 Set Folder again.");
-        return;
-      }
-      var found = await findLatestXlsx(scadaFolderHandle);
-      if(!found){
-        showToast("📁 No .xlsx file found in folder \"" + scadaFolderHandle.name + "\"");
-        return;
-      }
-      lastImportedFileName = found.file.name;
-      _doImport(found.file, function(){
-        buildCleaningTable();
-        showToast("🔄 Refreshed: " + found.file.name + " from folder \"" + scadaFolderHandle.name + "\"");
-      }, true /* silent */);
-    } catch(err){
-      console.warn("smartRefresh folder error:", err);
-      showToast("⚠ Could not read from folder. Falling back to file picker.");
-      document.getElementById("excelFile").click();
-    }
-  } else {
-    /* No folder set — open file picker as before */
-    document.getElementById("excelFile").click();
-  }
+  var okServer = await autoImportFromServer(true);
+  if(!okServer) showToast("⚠ Could not refresh from Supabase server");
 }
 
 function _doImport(file, onDone, silent){
@@ -5735,8 +5584,6 @@ function init(){
   initTipTable();
   /* Render heatmap on load since it is the first visible tab */
   setTimeout(renderHeatMap, 0);
-  /* Ensure folder UI shows correct state (setup banner or status bar) */
-  setTimeout(updateFolderUI, 100);
 }
 
 /* auto-init if session already active */
@@ -5977,266 +5824,18 @@ function rebuildFreqAlarms(){
 }
 
 /* ==================================================
-   PREDEFINED FOLDER AUTO-IMPORT / AUTO-EXPORT
-   Network path: \\10.138.128.112\pn_dept\SOUTH BLOCK DOCUMENTS\
-                 SOUTH BLOCK DOCUMENTATION FOLDER\HGU III\SCADA
+   SERVER SYNC (SUPABASE BACKEND)
 ================================================== */
+var SERVER_SYNC_ENABLED = true;
+var SERVER_IMPORT_URL   = "http://localhost:8765/latest";
+var SERVER_EXPORT_URL   = "http://localhost:8765/save";
 
-/* ── IndexedDB helpers to persist the directory handle ── */
-const DB_NAME    = "ScadaFolderDB";
-const DB_STORE   = "handles";
-const DB_KEY     = "scadaFolderHandle";
-
-function openFolderDB(){ 
-  return new Promise(function(res,rej){
-    var req = indexedDB.open(DB_NAME, 1);
-    req.onupgradeneeded = function(e){ e.target.result.createObjectStore(DB_STORE); };
-    req.onsuccess = function(e){ res(e.target.result); };
-    req.onerror   = function(){ rej("IDB open failed"); };
-  });
-}
-
-function saveFolderHandle(handle){
-  return openFolderDB().then(function(db){
-    return new Promise(function(res,rej){
-      var tx  = db.transaction(DB_STORE,"readwrite");
-      var req = tx.objectStore(DB_STORE).put(handle, DB_KEY);
-      req.onsuccess = res; req.onerror = rej;
-    });
-  });
-}
-
-function loadFolderHandle(){
-  return openFolderDB().then(function(db){
-    return new Promise(function(res,rej){
-      var tx  = db.transaction(DB_STORE,"readonly");
-      var req = tx.objectStore(DB_STORE).get(DB_KEY);
-      req.onsuccess = function(e){ res(e.target.result||null); };
-      req.onerror   = function(){ res(null); };
-    });
-  });
-}
-
-function clearFolderHandle(){
-  return openFolderDB().then(function(db){
-    return new Promise(function(res,rej){
-      var tx  = db.transaction(DB_STORE,"readwrite");
-      var req = tx.objectStore(DB_STORE).delete(DB_KEY);
-      req.onsuccess = res; req.onerror = rej;
-    });
-  });
-}
-
-/* ── Global folder handle ── */
-var scadaFolderHandle = null;
-
-/* ── Restore folder handle from IndexedDB on page load ── */
-(async function restoreFolderOnLoad(){
-  try{
-    var handle = await loadFolderHandle();
-    if(handle){
-      scadaFolderHandle = handle;
-      updateFolderUI();
-      console.log("Folder handle restored from storage:", handle.name);
-      
-      /* AUTO-IMPORT FIX: If user is already logged in (session active),
-         automatically fetch data from the saved folder */
-      if(sessionStorage.getItem("scadaLoggedIn")==="true"){
-        console.log("Session active — attempting server auto-import...");
-        var okServer = await autoImportFromServer(true);
-        if(!okServer){
-          console.log("Server unavailable; trying saved folder...");
-          var ok = await autoImportFromFolder(true);
-          if(!ok){
-            showToast("⚠ Could not auto-load from server/folder. Use 🔄 Refresh Data.");
-          }
-        }
-      }
-    } else {
-      /* No folder saved — update UI to show setup banner */
-      updateFolderUI();
-      if(sessionStorage.getItem("scadaLoggedIn")==="true"){
-        await autoImportFromServer(false);
-      }
-    }
-  } catch(e){
-    console.warn("Could not restore folder handle:", e);
-    updateFolderUI(); /* Still update UI to show setup banner */
+/* Auto import once when already logged in */
+(async function restoreServerSyncOnLoad(){
+  if(sessionStorage.getItem("scadaLoggedIn")==="true"){
+    await autoImportFromServer(false);
   }
 })();
-
-/* ── Network path constant ── */
-var DEFAULT_NETWORK_PATH = "\\\\10.138.128.112\\pn_dept\\SOUTH BLOCK DOCUMENTS\\SOUTH BLOCK DOCUMENTATION FOLDER\\HGU III\\SCADA";
-
-/* ── Server sync (Option 1: central API for all PCs) ── */
-var SERVER_SYNC_ENABLED = true;
-var SERVER_IMPORT_URL   = "/api/scada/latest";
-var SERVER_EXPORT_URL   = "/api/scada/save";
-
-/* ── UI helpers ── */
-function updateFolderUI(){
-  var setupBanner = document.getElementById("folderSetupBanner");
-  var statusBar   = document.getElementById("folderStatusBar");
-  var txt         = document.getElementById("folderStatusText");
-  var btn         = document.getElementById("folderBtn");
-
-  if(SERVER_SYNC_ENABLED){
-    if(setupBanner){ setupBanner.style.display = "none"; }
-    if(statusBar){ statusBar.style.display = "flex"; }
-    if(txt){ txt.textContent = "Central server sync active — data auto-loads/saves on every PC"; }
-    if(btn){ btn.textContent = "📁 Change Folder (Fallback)"; btn.style.color = ""; }
-    return;
-  }
-  
-  if(scadaFolderHandle){
-    /* Folder is set — hide setup banner, show status bar */
-    if(setupBanner){ setupBanner.style.display = "none"; }
-    if(statusBar){ statusBar.style.display = "flex"; }
-    if(txt){ txt.textContent = "Auto-folder active: \"" + scadaFolderHandle.name + "\" — Data syncs automatically on every login"; }
-    if(btn){ btn.textContent = "📁 Change Folder"; btn.style.color = "#4ade80"; }
-  } else {
-    /* No folder — show setup banner, hide status bar */
-    if(setupBanner){ setupBanner.style.display = "flex"; }
-    if(statusBar){ statusBar.style.display = "none"; }
-    if(txt){ txt.textContent = "No auto-folder set"; }
-    if(btn){ btn.textContent = "📁 Set Folder"; btn.style.color = ""; }
-    
-    /* AUTO-SHOW SETUP GUIDE: If user is logged in but no folder is set,
-       automatically show the setup help modal (first-time users on this computer) */
-    if(sessionStorage.getItem("scadaLoggedIn")==="true"){
-      var shownKey = "scadaSetupHelpShown";
-      if(!sessionStorage.getItem(shownKey)){
-        sessionStorage.setItem(shownKey, "true");
-        setTimeout(function(){
-          showSetupHelp();
-          showToast("👋 First time on this computer? Follow the quick setup guide to enable auto-loading!");
-        }, 500);
-      }
-    }
-  }
-}
-
-/* ── Copy network path to clipboard ── */
-function copyNetworkPath(){
-  var path = DEFAULT_NETWORK_PATH;
-  if(navigator.clipboard && navigator.clipboard.writeText){
-    navigator.clipboard.writeText(path).then(function(){
-      showToast("✅ Network path copied! Paste it in Windows Explorer (Win+E) to navigate there.");
-    }).catch(function(){
-      fallbackCopyPath(path);
-    });
-  } else {
-    fallbackCopyPath(path);
-  }
-}
-
-function fallbackCopyPath(path){
-  var ta = document.createElement("textarea");
-  ta.value = path;
-  ta.style.position = "fixed";
-  ta.style.left = "-9999px";
-  document.body.appendChild(ta);
-  ta.select();
-  try{
-    document.execCommand("copy");
-    showToast("✅ Network path copied! Paste it in Windows Explorer (Win+E) to navigate there.");
-  } catch(e){
-    showToast("⚠ Could not copy. Please manually copy: " + path);
-  }
-  document.body.removeChild(ta);
-}
-
-/* ── Setup help modal ── */
-function showSetupHelp(){
-  var modal = document.getElementById("setupHelpModal");
-  if(modal) modal.style.display = "flex";
-}
-
-function closeSetupHelp(){
-  var modal = document.getElementById("setupHelpModal");
-  if(modal) modal.style.display = "none";
-}
-
-/* ── Pick folder ── */
-async function pickFolder(){
-  if(!window.showDirectoryPicker){
-    alert("Your browser does not support the File System Access API.\n\n"
-        + "Please use Chrome or Edge (v86+) for automatic folder sync.\n\n"
-        + "Tip: Map the network path as a network drive first:\n"
-        + "  \\\\10.138.128.112\\pn_dept\\SOUTH BLOCK DOCUMENTS\\SOUTH BLOCK DOCUMENTATION FOLDER\\HGU III\\SCADA\n"
-        + "Then browse to it via the folder picker.");
-    return;
-  }
-  try{
-    var handle = await window.showDirectoryPicker({mode:"readwrite", startIn:"documents"});
-    await saveFolderHandle(handle);
-    scadaFolderHandle = handle;
-    updateFolderUI();
-    showToast("✅ Folder set: " + handle.name + " — future saves will auto-write here");
-    /* Try to auto-import the most recent xlsx from the folder immediately */
-    await autoImportFromFolder(true);
-  } catch(err){
-    if(err.name === "AbortError") return; /* user cancelled — silent */
-    if(err.name === "SecurityError"){
-      showToast("⚠ Folder picker blocked: please open this file directly in Chrome/Edge (not inside a preview frame).");
-      return;
-    }
-    console.error("Folder pick error:", err);
-    showToast("⚠ Could not open folder: " + err.message);
-  }
-}
-
-/* ── Clear folder ── */
-async function clearFolder(){
-  await clearFolderHandle();
-  scadaFolderHandle = null;
-  updateFolderUI();
-  showToast("📁 Auto-folder cleared. Manual import/export still works.");
-}
-
-/* ── Find the most recently modified .xlsx in the folder ── */
-async function findLatestXlsx(dirHandle){
-  var best = null, bestMod = 0;
-  for await(var entry of dirHandle.values()){
-    if(entry.kind === "file" && /\.(xlsx|xls)$/i.test(entry.name)){
-      try{
-        var f = await entry.getFile();
-        if(f.lastModified > bestMod){ bestMod = f.lastModified; best = {entry, file:f}; }
-      } catch(e){}
-    }
-  }
-  return best;
-}
-
-/* ── Auto-import from folder (called on login if folder set) ── */
-async function autoImportFromFolder(showMsg){
-  if(!scadaFolderHandle) return false;
-  try{
-    /* Re-request permission if needed */
-    var perm = await scadaFolderHandle.queryPermission({mode:"readwrite"});
-    if(perm !== "granted"){
-      perm = await scadaFolderHandle.requestPermission({mode:"readwrite"});
-    }
-    if(perm !== "granted"){ showToast("⚠ Folder permission denied — please click Set Folder again."); return false; }
-
-    var found = await findLatestXlsx(scadaFolderHandle);
-    if(!found){
-      if(showMsg) showToast("📁 Folder set but no .xlsx file found yet — waiting for data.");
-      return false;
-    }
-    lastImportedFileName = found.file.name;
-    return new Promise(function(res){
-      _doImport(found.file, function(){
-        buildCleaningTable();
-        if(showMsg) showToast("✅ Auto-loaded: " + found.file.name + " from folder \"" + scadaFolderHandle.name + "\"");
-        res(true);
-      }, true /* silent — no alert popup on auto-load */);
-    });
-  } catch(err){
-    console.warn("autoImportFromFolder error:", err);
-    return false;
-  }
-}
 
 function base64ToFile(base64, filename){
   var bin = atob(base64);
@@ -6316,27 +5915,7 @@ async function autoExportToServer(wb, filename){
   }
 }
 
-/* ── Auto-export to folder ── */
-async function autoExportToFolder(wb, filename){
-  if(!scadaFolderHandle) return false;
-  try{
-    var perm = await scadaFolderHandle.queryPermission({mode:"readwrite"});
-    if(perm !== "granted") perm = await scadaFolderHandle.requestPermission({mode:"readwrite"});
-    if(perm !== "granted") return false;
-
-    var fileHandle = await scadaFolderHandle.getFileHandle(filename, {create:true});
-    var writable   = await fileHandle.createWritable();
-    var wbOut      = XLSX.write(wb, {bookType:"xlsx", type:"array"});
-    await writable.write(new Blob([wbOut], {type:"application/octet-stream"}));
-    await writable.close();
-    return true;
-  } catch(err){
-    console.warn("autoExportToFolder error:", err);
-    return false;
-  }
-}
-
-/* ── Full login with folder auto-import support ── */
+/* ── Full login with server auto-import support ── */
 async function loginWithFolderSupport(){
   var empId = document.getElementById("employeeIdInput").value.trim();
   var pw  = document.getElementById("passwordInput").value;
@@ -6360,28 +5939,9 @@ async function loginWithFolderSupport(){
     /* Always init the UI first so the app is usable */
     init();
     
-    /* Update folder UI to show appropriate banner (setup or active) */
-    updateFolderUI();
-
     /* Primary: central server sync for all PCs */
     var serverOk = await autoImportFromServer(true);
-    if(serverOk) return;
-
-    /* Fallback: local folder handle sync */
-    if(scadaFolderHandle){
-      /* Folder was previously set — silently try to auto-import.
-         requestPermission() is allowed here because we are inside a
-         user-gesture (button click → loginWithFolderSupport). */
-      var ok = await autoImportFromFolder(true);
-      if(!ok){
-        /* Permission was denied or folder has no xlsx yet —
-           show a toast, do NOT open a file picker automatically */
-        showToast("⚠ Could not auto-load from server/folder. Configure server API or use 📁 Change Folder.");
-      }
-    } else if(SERVER_SYNC_ENABLED){
-      showToast("⚠ Server sync unavailable. Use 📁 Set Folder as fallback.");
-    }
-    /* If no folder set, the setup banner is already visible — no toast needed */
+    if(!serverOk) showToast("⚠ Could not auto-load from Supabase server");
   } else {
     err.style.display = "block";
     err.textContent   = "Incorrect password. Please try again.";

@@ -2155,29 +2155,56 @@ function renderHeatMap(){
     }
   }
 
-  /* ── Render wall cards ── */
+  /* ── Render wall cards on demand (lighter initial load) ── */
+  var activeWall = (typeof _activeHeatMapWall !== "undefined" && _activeHeatMapWall) ? _activeHeatMapWall : null;
+  var hintEl = document.getElementById("hm-wall-hint");
+  if(hintEl){
+    hintEl.style.display = activeWall ? "none" : "block";
+  }
+
   /* Individual wall panels */
   var wallPanelA = document.getElementById("hm-wall-panel-A");
   var wallPanelB = document.getElementById("hm-wall-panel-B");
   var wallPanelC = document.getElementById("hm-wall-panel-C");
   var wallPanelD = document.getElementById("hm-wall-panel-D");
-  if(wallPanelA) wallPanelA.innerHTML = buildWallHTML("A", abBot, abTop, hmData["A"]);
-  if(wallPanelB) wallPanelB.innerHTML = buildWallHTML("B", abBot, abTop, hmData["B"]);
-  if(wallPanelC) wallPanelC.innerHTML = buildWallHTML("C", cdBot, cdTop, hmData["C"]);
-  if(wallPanelD) wallPanelD.innerHTML = buildWallHTML("D", cdBot, cdTop, hmData["D"]);
+  if(wallPanelA) wallPanelA.innerHTML = "";
+  if(wallPanelB) wallPanelB.innerHTML = "";
+  if(wallPanelC) wallPanelC.innerHTML = "";
+  if(wallPanelD) wallPanelD.innerHTML = "";
 
   /* "Every Wall" combined view (AB side + CD side) */
   var abSideDiv = document.getElementById("hm-side-ab");
-  if(abSideDiv){
-    abSideDiv.innerHTML = buildWallHTML("A", abBot, abTop, hmData["A"])
-      + buildWallHTML("B", abBot, abTop, hmData["B"]);
-  }
+  if(abSideDiv) abSideDiv.innerHTML = "";
   var cdSideDiv = document.getElementById("hm-side-cd");
-  if(cdSideDiv){
-    cdSideDiv.innerHTML = buildWallHTML("C", cdBot, cdTop, hmData["C"])
-      + buildWallHTML("D", cdBot, cdTop, hmData["D"]);
+  if(cdSideDiv) cdSideDiv.innerHTML = "";
+
+  if(activeWall === "A" && wallPanelA) wallPanelA.innerHTML = buildWallHTML("A", abBot, abTop, hmData["A"]);
+  else if(activeWall === "B" && wallPanelB) wallPanelB.innerHTML = buildWallHTML("B", abBot, abTop, hmData["B"]);
+  else if(activeWall === "C" && wallPanelC) wallPanelC.innerHTML = buildWallHTML("C", cdBot, cdTop, hmData["C"]);
+  else if(activeWall === "D" && wallPanelD) wallPanelD.innerHTML = buildWallHTML("D", cdBot, cdTop, hmData["D"]);
+  else if(activeWall === "ALL"){
+    if(abSideDiv){
+      abSideDiv.innerHTML = buildWallHTML("A", abBot, abTop, hmData["A"])
+        + buildWallHTML("B", abBot, abTop, hmData["B"]);
+    }
+    if(cdSideDiv){
+      cdSideDiv.innerHTML = buildWallHTML("C", cdBot, cdTop, hmData["C"])
+        + buildWallHTML("D", cdBot, cdTop, hmData["D"]);
+    }
   }
-}</script>
+}
+
+/* Coalesce burst updates from dropdown/tab/button events */
+var _heatMapRenderTimer = null;
+function requestHeatMapRender(delayMs){
+  var wait = (typeof delayMs === "number" && delayMs >= 0) ? delayMs : 120;
+  if(_heatMapRenderTimer) clearTimeout(_heatMapRenderTimer);
+  _heatMapRenderTimer = setTimeout(function(){
+    _heatMapRenderTimer = null;
+    if(typeof renderHeatMap === "function") renderHeatMap();
+  }, wait);
+}
+</script>
 </head>
 <body>
 
@@ -2491,7 +2518,7 @@ function renderHeatMap(){
         <div style="display:flex;align-items:center;gap:10px;margin-left:auto;flex-wrap:wrap;">
           <div style="display:flex;align-items:center;gap:8px;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.15);border-radius:7px;padding:6px 12px;">
             <span style="font-size:11px;font-weight:700;color:#7ec8f0;letter-spacing:0.8px;text-transform:uppercase;">Shift:</span>
-            <select id="hm-shift-select" onchange="var ds=document.getElementById('hm-date-select');if(ds)ds.value='latest';renderHeatMap()" style="background:#0f1f38;border:1px solid #334155;border-radius:5px;color:#e2e8f0;font-family:'Rajdhani',sans-serif;font-size:13px;font-weight:700;outline:none;cursor:pointer;padding:3px 8px;">
+            <select id="hm-shift-select" onchange="var ds=document.getElementById('hm-date-select');if(ds)ds.value='latest';requestHeatMapRender(90)" style="background:#0f1f38;border:1px solid #334155;border-radius:5px;color:#e2e8f0;font-family:'Rajdhani',sans-serif;font-size:13px;font-weight:700;outline:none;cursor:pointer;padding:3px 8px;">
               <option value="All" style="background:#0f1f38;">🔁 All Shifts</option>
               <option value="Morning" style="background:#0f1f38;color:#34d399;">🌅 Morning</option>
               <option value="Evening" style="background:#0f1f38;color:#fb923c;">🌆 Evening</option>
@@ -2500,7 +2527,7 @@ function renderHeatMap(){
           </div>
           <div style="display:flex;align-items:center;gap:8px;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.15);border-radius:7px;padding:6px 12px;">
             <span style="font-size:11px;font-weight:700;color:#7ec8f0;letter-spacing:0.8px;text-transform:uppercase;">Date:</span>
-            <select id="hm-date-select" onchange="renderHeatMap()" style="background:#0f1f38;border:1px solid #334155;border-radius:5px;color:#e2e8f0;font-family:'Rajdhani',sans-serif;font-size:13px;font-weight:700;outline:none;cursor:pointer;padding:3px 8px;max-width:220px;">
+            <select id="hm-date-select" onchange="requestHeatMapRender(90)" style="background:#0f1f38;border:1px solid #334155;border-radius:5px;color:#e2e8f0;font-family:'Rajdhani',sans-serif;font-size:13px;font-weight:700;outline:none;cursor:pointer;padding:3px 8px;max-width:220px;">
               <option value="latest" style="background:#0f1f38;">📅 Latest</option>
             </select>
           </div>
@@ -3139,15 +3166,21 @@ function renderHeatMap(){
         };
 
         var _textureScheduled = false;
+        function isHeatMapVisibleNow(){
+          var hmTab = document.getElementById('tab-heatmap');
+          return !!(hmTab && hmTab.classList.contains('tab-active') && document.visibilityState === 'visible');
+        }
         function scheduleCuboidTextures(){
+          if(!isHeatMapVisibleNow()) return;
           if(_textureScheduled) return;
           _textureScheduled = true;
-          /* Short timeout: let renderHeatMap finish building data + DOM */
-          setTimeout(buildCuboidTextures, 350);
+          /* Throttled refresh: avoid over-rendering while user changes filters */
+          setTimeout(buildCuboidTextures, 650);
         }
 
         function buildCuboidTextures(){
           _textureScheduled = false;
+          if(!isHeatMapVisibleNow()) return;
 
           /* Get burner data same way renderHeatMap does */
           var hmData = null;
@@ -3338,6 +3371,14 @@ function renderHeatMap(){
           setTimeout(scheduleCuboidTextures, 600);
         }
 
+        document.addEventListener('visibilitychange', function(){
+          if(document.visibilityState === 'visible'){
+            scheduleCuboidTextures();
+          } else {
+            _textureScheduled = false;
+          }
+        });
+
         /* Re-render textures when tab becomes active */
         var _origSwitchTab = window.switchTab;
         window.switchTab = function(tab){
@@ -3350,15 +3391,18 @@ function renderHeatMap(){
 
       <!-- Wall selector buttons + individual wall containers -->
       <div class="hm-wall-btn-bar" id="hm-wall-btn-bar">
-        <button class="hm-wall-btn hm-wall-btn-active" id="hm-wbtn-A" onclick="switchHeatMapWall('A')">🔥 Wall A</button>
+        <button class="hm-wall-btn" id="hm-wbtn-A" onclick="switchHeatMapWall('A')">🔥 Wall A</button>
         <button class="hm-wall-btn" id="hm-wbtn-B" onclick="switchHeatMapWall('B')">🔥 Wall B</button>
         <button class="hm-wall-btn" id="hm-wbtn-C" onclick="switchHeatMapWall('C')">🔥 Wall C</button>
         <button class="hm-wall-btn" id="hm-wbtn-D" onclick="switchHeatMapWall('D')">🔥 Wall D</button>
         <button class="hm-wall-btn" id="hm-wbtn-ALL" onclick="switchHeatMapWall('ALL')">📋 Every Wall</button>
       </div>
+      <div id="hm-wall-hint" style="display:block;text-align:center;font-size:11px;color:#94a3b8;letter-spacing:0.6px;margin:-4px 0 10px 0;">
+        Select a wall button to load burner tables
+      </div>
 
       <!-- Individual wall panels (only one visible at a time, except "ALL") -->
-      <div id="hm-wall-panel-A" style="display:block;"></div>
+      <div id="hm-wall-panel-A" style="display:none;"></div>
       <div id="hm-wall-panel-B" style="display:none;"></div>
       <div id="hm-wall-panel-C" style="display:none;"></div>
       <div id="hm-wall-panel-D" style="display:none;"></div>
@@ -3376,16 +3420,19 @@ function renderHeatMap(){
       </div>
 
       <script>
-      var _activeHeatMapWall = 'A';
+      var _activeHeatMapWall = null;
       function switchHeatMapWall(wall){
-        _activeHeatMapWall = wall;
+        _activeHeatMapWall = (_activeHeatMapWall === wall) ? null : wall;
         var walls = ['A','B','C','D','ALL'];
         for(var i=0;i<walls.length;i++){
           var panel = document.getElementById('hm-wall-panel-'+walls[i]);
           var btn   = document.getElementById('hm-wbtn-'+walls[i]);
-          if(panel) panel.style.display = (walls[i]===wall) ? 'block' : 'none';
-          if(btn) btn.classList.toggle('hm-wall-btn-active', walls[i]===wall);
+          if(panel) panel.style.display = (walls[i]===_activeHeatMapWall) ? 'block' : 'none';
+          if(btn) btn.classList.toggle('hm-wall-btn-active', walls[i]===_activeHeatMapWall);
         }
+        var hintEl = document.getElementById("hm-wall-hint");
+        if(hintEl) hintEl.style.display = _activeHeatMapWall ? "none" : "block";
+        if(typeof requestHeatMapRender === "function") requestHeatMapRender(80);
       }
       </script>
 
@@ -5658,7 +5705,7 @@ function switchTab(tab){
   document.getElementById('tab-'+tab).classList.add('tab-active');
   document.getElementById('btab-'+tab).classList.add('btab-active');
   if(tab === 'alarms') refreshAlarmPanel();
-  if(tab === 'heatmap') renderHeatMap();
+  if(tab === 'heatmap' && typeof requestHeatMapRender === 'function') requestHeatMapRender(40);
 }
 
 /* ==================================================

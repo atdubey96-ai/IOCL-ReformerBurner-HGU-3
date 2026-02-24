@@ -1738,7 +1738,11 @@ function hideForgotModal(){
 }
 function openChangePasswordFromForgot(){
   hideForgotModal();
-  showChangePasswordModal();
+  if(typeof showToast === "function"){
+    showToast("🔒 Password is centrally managed. Contact admin.");
+  } else {
+    alert("Password is centrally managed. Contact admin.");
+  }
 }
 async function login(){
   /* Delegate to loginWithFolderSupport() in the main script.
@@ -2345,7 +2349,7 @@ function renderHeatMap(){
     </div>
     <div class="fm-note">Support available during office hours (Mon–Sat, 8 AM – 6 PM).<br>Please quote your Employee ID when contacting support.</div>
     <div style="display:flex;gap:10px;justify-content:center;flex-wrap:wrap;">
-      <button class="fm-btn" onclick="openChangePasswordFromForgot()">Change Password</button>
+      <button class="fm-btn" onclick="openChangePasswordFromForgot()">Password Managed by Admin</button>
       <button class="fm-btn" onclick="hideForgotModal()" style="background:linear-gradient(90deg,#334155,#475569);">Close</button>
     </div>
   </div>
@@ -2434,7 +2438,7 @@ function renderHeatMap(){
       <input type="file" id="autoImportInput" accept=".xlsx,.xls" style="display:none" onchange="handleAutoImport(event)">
       <button class="hd-btn hd-btn-secondary" onclick="smartRefresh()">🔄 Refresh Data</button>
       <button class="hd-btn hd-btn-primary" onclick="exportToExcel()">💾 Save New Data</button>
-      <button class="hd-btn hd-btn-secondary" onclick="showChangePasswordModal()">🔑 Change Password</button>
+      <button class="hd-btn hd-btn-secondary" onclick="if(typeof showToast==='function'){showToast('🔒 Password is centrally managed. Contact admin.');}">🔒 Password Managed</button>
       <button class="hd-btn hd-btn-danger" onclick="logout()">⏏ Logout</button>
     </div>
   </div>

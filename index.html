@@ -4506,6 +4506,12 @@ async function exportToExcel(){
 
   const fname = lastImportedFileName || "Burner_SCADA_Report.xlsx";
 
+  /* Primary: central server save (works on any PC) */
+  if(await autoExportToServer(wb, fname)){
+    showToast("✅ Saved to central SCADA server");
+    return;
+  }
+
   /* Try folder auto-export first */
   if(scadaFolderHandle){
     const ok = await autoExportToFolder(wb, fname);
@@ -4545,6 +4551,11 @@ function importFromExcel(event){
 
 /* ── Smart Refresh: uses folder if set, else falls back to file picker ── */
 async function smartRefresh(){
+  if(SERVER_SYNC_ENABLED){
+    var okServer = await autoImportFromServer(true);
+    if(okServer) return;
+  }
+
   if(scadaFolderHandle){
     /* Same logic as Save New Data — use the stored folder automatically */
     try{
@@ -6031,15 +6042,22 @@ var scadaFolderHandle = null;
       /* AUTO-IMPORT FIX: If user is already logged in (session active),
          automatically fetch data from the saved folder */
       if(sessionStorage.getItem("scadaLoggedIn")==="true"){
-        console.log("Session active + folder set — attempting auto-import...");
-        var ok = await autoImportFromFolder(true);
-        if(!ok){
-          showToast("⚠ Could not auto-load from saved folder. Use 🔄 Refresh Data or 📁 Change Folder to retry.");
+        console.log("Session active — attempting server auto-import...");
+        var okServer = await autoImportFromServer(true);
+        if(!okServer){
+          console.log("Server unavailable; trying saved folder...");
+          var ok = await autoImportFromFolder(true);
+          if(!ok){
+            showToast("⚠ Could not auto-load from server/folder. Use 🔄 Refresh Data.");
+          }
         }
       }
     } else {
       /* No folder saved — update UI to show setup banner */
       updateFolderUI();
+      if(sessionStorage.getItem("scadaLoggedIn")==="true"){
+        await autoImportFromServer(false);
+      }
     }
   } catch(e){
     console.warn("Could not restore folder handle:", e);
@@ -6050,12 +6068,25 @@ var scadaFolderHandle = null;
 /* ── Network path constant ── */
 var DEFAULT_NETWORK_PATH = "\\\\10.138.128.112\\pn_dept\\SOUTH BLOCK DOCUMENTS\\SOUTH BLOCK DOCUMENTATION FOLDER\\HGU III\\SCADA";
 
+/* ── Server sync (Option 1: central API for all PCs) ── */
+var SERVER_SYNC_ENABLED = true;
+var SERVER_IMPORT_URL   = "/api/scada/latest";
+var SERVER_EXPORT_URL   = "/api/scada/save";
+
 /* ── UI helpers ── */
 function updateFolderUI(){
   var setupBanner = document.getElementById("folderSetupBanner");
   var statusBar   = document.getElementById("folderStatusBar");
   var txt         = document.getElementById("folderStatusText");
   var btn         = document.getElementById("folderBtn");
+
+  if(SERVER_SYNC_ENABLED){
+    if(setupBanner){ setupBanner.style.display = "none"; }
+    if(statusBar){ statusBar.style.display = "flex"; }
+    if(txt){ txt.textContent = "Central server sync active — data auto-loads/saves on every PC"; }
+    if(btn){ btn.textContent = "📁 Change Folder (Fallback)"; btn.style.color = ""; }
+    return;
+  }
   
   if(scadaFolderHandle){
     /* Folder is set — hide setup banner, show status bar */
@@ -6207,6 +6238,84 @@ async function autoImportFromFolder(showMsg){
   }
 }
 
+function base64ToFile(base64, filename){
+  var bin = atob(base64);
+  var len = bin.length;
+  var arr = new Uint8Array(len);
+  for(var i=0;i<len;i++) arr[i] = bin.charCodeAt(i);
+  return new File([arr], filename || "Burner_SCADA_Report.xlsx", {
+    type:"application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+  });
+}
+
+/* ── Auto-import from server (works on any PC without folder picker) ── */
+async function autoImportFromServer(showMsg){
+  if(!SERVER_SYNC_ENABLED) return false;
+  try{
+    var resp = await fetch(SERVER_IMPORT_URL, {method:"GET", cache:"no-store"});
+    if(!resp.ok) return false;
+
+    var ctype = (resp.headers.get("content-type") || "").toLowerCase();
+    var file = null;
+    var fileName = "Burner_SCADA_Report.xlsx";
+
+    if(ctype.indexOf("application/json") >= 0){
+      var j = await resp.json();
+      if(!j || j.ok === false || !j.dataBase64) return false;
+      fileName = j.fileName || fileName;
+      file = base64ToFile(j.dataBase64, fileName);
+    } else {
+      var blob = await resp.blob();
+      if(!blob || !blob.size) return false;
+      var cd = resp.headers.get("content-disposition") || "";
+      var m = cd.match(/filename\*?=(?:UTF-8''|")?([^\";]+)/i);
+      if(m && m[1]) fileName = decodeURIComponent(m[1].replace(/\"/g,""));
+      file = new File([blob], fileName, {type: blob.type || "application/octet-stream"});
+    }
+
+    lastImportedFileName = file.name || fileName;
+    return new Promise(function(res){
+      _doImport(file, function(){
+        buildCleaningTable();
+        if(showMsg) showToast("✅ Auto-loaded from central SCADA server");
+        res(true);
+      }, true);
+    });
+  } catch(err){
+    console.warn("autoImportFromServer error:", err);
+    return false;
+  }
+}
+
+/* ── Auto-export to server (central save shared across PCs) ── */
+async function autoExportToServer(wb, filename){
+  if(!SERVER_SYNC_ENABLED) return false;
+  try{
+    var base64 = XLSX.write(wb, {bookType:"xlsx", type:"base64"});
+    var empId = sessionStorage.getItem("scadaEmpId") || "";
+    var resp = await fetch(SERVER_EXPORT_URL, {
+      method:"POST",
+      headers: {"Content-Type":"application/json"},
+      body: JSON.stringify({
+        fileName: filename || "Burner_SCADA_Report.xlsx",
+        dataBase64: base64,
+        empId: empId,
+        ts: new Date().toISOString()
+      })
+    });
+    if(!resp.ok) return false;
+    var ctype = (resp.headers.get("content-type") || "").toLowerCase();
+    if(ctype.indexOf("application/json") >= 0){
+      var j = await resp.json().catch(function(){ return {ok:true}; });
+      if(j && j.ok === false) return false;
+    }
+    return true;
+  } catch(err){
+    console.warn("autoExportToServer error:", err);
+    return false;
+  }
+}
+
 /* ── Auto-export to folder ── */
 async function autoExportToFolder(wb, filename){
   if(!scadaFolderHandle) return false;
@@ -6254,6 +6363,11 @@ async function loginWithFolderSupport(){
     /* Update folder UI to show appropriate banner (setup or active) */
     updateFolderUI();
 
+    /* Primary: central server sync for all PCs */
+    var serverOk = await autoImportFromServer(true);
+    if(serverOk) return;
+
+    /* Fallback: local folder handle sync */
     if(scadaFolderHandle){
       /* Folder was previously set — silently try to auto-import.
          requestPermission() is allowed here because we are inside a
@@ -6262,8 +6376,10 @@ async function loginWithFolderSupport(){
       if(!ok){
         /* Permission was denied or folder has no xlsx yet —
            show a toast, do NOT open a file picker automatically */
-        showToast("⚠ Could not auto-load from saved folder. Use 🔄 Refresh Data or 📁 Change Folder to retry.");
+        showToast("⚠ Could not auto-load from server/folder. Configure server API or use 📁 Change Folder.");
       }
+    } else if(SERVER_SYNC_ENABLED){
+      showToast("⚠ Server sync unavailable. Use 📁 Set Folder as fallback.");
     }
     /* If no folder set, the setup banner is already visible — no toast needed */
   } else {

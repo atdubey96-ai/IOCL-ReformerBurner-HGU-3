@@ -5827,8 +5827,21 @@ function rebuildFreqAlarms(){
    SERVER SYNC (SUPABASE BACKEND)
 ================================================== */
 var SERVER_SYNC_ENABLED = true;
-var SERVER_IMPORT_URL   = "http://localhost:8765/latest";
-var SERVER_EXPORT_URL   = "http://localhost:8765/save";
+function getApiBaseUrl(){
+  try{
+    if(window.SCADA_API_BASE && String(window.SCADA_API_BASE).trim()){
+      return String(window.SCADA_API_BASE).trim().replace(/\/+$/,"");
+    }
+    var stored = localStorage.getItem("scadaApiBase");
+    if(stored && String(stored).trim()){
+      return String(stored).trim().replace(/\/+$/,"");
+    }
+  }catch(e){}
+  return "http://192.168.1.10:8765";
+}
+var SERVER_API_BASE    = getApiBaseUrl();
+var SERVER_IMPORT_URL  = SERVER_API_BASE + "/latest";
+var SERVER_EXPORT_URL  = SERVER_API_BASE + "/save";
 
 /* Auto import once when already logged in */
 (async function restoreServerSyncOnLoad(){

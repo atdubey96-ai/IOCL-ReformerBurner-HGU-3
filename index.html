@@ -1704,16 +1704,24 @@ async function login(){
   if(typeof loginWithFolderSupport === "function"){
     await loginWithFolderSupport();
   } else {
+    var empId2 = document.getElementById("employeeIdInput").value.trim();
     var pw   = document.getElementById("passwordInput").value;
     var err  = document.getElementById("ls-error");
+    if(!empId2){ err.style.display="block"; err.textContent="Please enter your Employee ID."; return; }
     var _h = async function(s){const b=new TextEncoder().encode(s);const d=await crypto.subtle.digest("SHA-256",b);return Array.from(new Uint8Array(d)).map(x=>x.toString(16).padStart(2,"0")).join("");};
-    if((await _h(pw)) === "d06b2c4efe3519e98c052cced2f117599b7771edea220f6b45a4d7b63c8b9ca8"){
+    var storedH = localStorage.getItem("scadaPwHash");
+    var validH  = storedH || "d06b2c4efe3519e98c052cced2f117599b7771edea220f6b45a4d7b63c8b9ca8";
+    if((await _h(pw)) === validH){
       sessionStorage.setItem("scadaLoggedIn","true");
+      sessionStorage.setItem("scadaEmpId", empId2);
       document.getElementById("loginScreen").style.display="none";
       err.style.display="none";
+      var opEl2 = document.getElementById("operatorDisplay");
+      if(opEl2) opEl2.innerHTML = "<b>Operator:</b> EMP-" + empId2;
       if(typeof init === "function") init();
     } else {
       err.style.display="block";
+      err.textContent="Incorrect password. Please try again.";
       document.getElementById("passwordInput").value="";
       document.getElementById("passwordInput").focus();
     }
@@ -2077,22 +2085,17 @@ function renderHeatMap(){
       tsBadgeEl.style.borderColor = bdr;
     }
 
-    /* large prominent banner */
+    /* inline compact banner beside shift buttons */
     if(shiftBannerEl){
       shiftBannerEl.style.display = "flex";
       shiftBannerEl.style.background = bg;
       shiftBannerEl.style.borderColor = bdr;
       shiftBannerEl.innerHTML =
-        '<span style="font-size:18px;">'+icon+'</span>'
-        +'<div style="display:flex;flex-direction:column;gap:1px;">'
-        +'  <span style="font-size:11px;color:#94a3b8;letter-spacing:1px;text-transform:uppercase;">Currently Displaying</span>'
-        +'  <span style="font-size:16px;font-weight:800;color:'+sc+';letter-spacing:1.5px;">'+entry.shift.toUpperCase()+' SHIFT</span>'
-        +'</div>'
-        +'<div style="width:1px;height:36px;background:'+bdr+';margin:0 6px;"></div>'
-        +'<div style="display:flex;flex-direction:column;gap:1px;">'
-        +'  <span style="font-size:10px;color:#64748b;letter-spacing:0.5px;">Recorded</span>'
-        +'  <span style="font-size:12px;font-weight:700;color:#e2e8f0;">'+entry.dt+'</span>'
-        +'</div>';
+        '<span style="font-size:14px;">'+icon+'</span>'
+        +'<span style="font-size:11px;color:#94a3b8;letter-spacing:0.5px;">Displaying:</span>'
+        +'<span style="font-size:13px;font-weight:800;color:'+sc+';letter-spacing:1px;">'+entry.shift.toUpperCase()+' SHIFT</span>'
+        +'<div style="width:1px;height:22px;background:'+bdr+';margin:0 4px;"></div>'
+        +'<span style="font-size:11px;font-weight:700;color:#e2e8f0;">'+entry.dt+'</span>';
     }
   } else {
     if(tsBadgeEl){
@@ -2104,13 +2107,10 @@ function renderHeatMap(){
       shiftBannerEl.style.background = "rgba(248,113,113,0.08)";
       shiftBannerEl.style.borderColor = "rgba(248,113,113,0.25)";
       shiftBannerEl.innerHTML =
-        '<span style="font-size:18px;">⚠️</span>'
-        +'<div style="display:flex;flex-direction:column;gap:2px;">'
-        +'  <span style="font-size:13px;font-weight:700;color:#f87171;">'
-        +    (selectedShift === "All" ? "No temp data saved yet" : 'No '+selectedShift+' shift data found')
-        +'  </span>'
-        +'  <span style="font-size:11px;color:#64748b;">Go to Temp. Data tab and save an entry first</span>'
-        +'</div>';
+        '<span style="font-size:14px;">⚠️</span>'
+        +'<span style="font-size:12px;font-weight:700;color:#f87171;">'
+        +  (selectedShift === "All" ? "No temp data saved" : 'No '+selectedShift+' shift data')
+        +'</span>';
     }
   }
 
@@ -2236,7 +2236,7 @@ function renderHeatMap(){
         <label class="ls-label">Employee ID</label>
         <div class="ls-input-box">
           <span class="ls-input-icon">👤</span>
-          <input class="ls-input" type="text" value="00514267" readonly>
+          <input class="ls-input" type="text" id="employeeIdInput" placeholder="Enter your Employee ID" value="">
         </div>
       </div>
 
@@ -2273,7 +2273,7 @@ function renderHeatMap(){
 
       <div class="ls-helpdesk">
         <span>🛟 IT Helpdesk</span>
-        <span><b>8476056756</b>&nbsp;|&nbsp;<b><a href="/cdn-cgi/l/email-protection#503425323529316110393e3439313e3f393c7e393e" style="color:#fff;font-weight:700;text-decoration:none;"><span class="__cf_email__" data-cfemail="d5b1a0b7b0acb4e495bcbbb1bcb4bbbabcb9fbbcbb">[email&#160;protected]</span></a></b></span>
+        <span><b>8476056756</b>&nbsp;|&nbsp;<b><a href="mailto:dubeya1@indianoil.in" style="color:#fff;font-weight:700;text-decoration:none;">dubeya1@indianoil.in</a></b></span>
       </div>
     </div>
 
@@ -2301,14 +2301,43 @@ function renderHeatMap(){
     </div>
     <div class="fm-card">
       <div class="fm-label">✉️ Helpdesk Email</div>
-      <div class="fm-value"><a href="/cdn-cgi/l/email-protection#afcbdacdcad6ce9eefc6c1cbc6cec1c0c6c381c6c1" style="color:#F37022;text-decoration:none;"><span class="__cf_email__" data-cfemail="16726374736f7727567f78727f7778797f7a387f78">[email&#160;protected]</span></a></div>
+      <div class="fm-value"><a href="mailto:dubeya1@indianoil.in" style="color:#F37022;text-decoration:none;">dubeya1@indianoil.in</a></div>
     </div>
-    <div class="fm-note">Support available during office hours (Mon–Sat, 8 AM – 6 PM).<br>Please quote your Employee ID: <b style="color:#F37022;">00514267</b></div>
+    <div class="fm-note">Support available during office hours (Mon–Sat, 8 AM – 6 PM).<br>Please quote your Employee ID when contacting support.</div>
     <button class="fm-btn" onclick="hideForgotModal()">Close</button>
   </div>
 </div>
 </div><!-- /loginScreen -->
 
+<!-- Change Password Modal -->
+<div id="changePwModal" style="display:none;position:fixed;inset:0;z-index:99999;background:rgba(0,0,0,0.7);align-items:center;justify-content:center;">
+  <div class="fm-box" style="text-align:left;">
+    <button class="fm-close" onclick="hideChangePasswordModal()">&#10005;</button>
+    <div style="text-align:center;margin-bottom:18px;">
+      <div class="fm-icon">🔑</div>
+      <div class="fm-title">Change Password</div>
+      <div class="fm-sub" style="margin-bottom:8px;">Enter your current password and choose a new one.</div>
+    </div>
+    <div style="margin-bottom:14px;">
+      <label style="font-size:11px;font-weight:700;color:#7ec8f0;letter-spacing:1px;text-transform:uppercase;display:block;margin-bottom:6px;">Current Password</label>
+      <input type="password" id="cpw-current" placeholder="Enter current password" style="width:100%;box-sizing:border-box;background:#0a1a3a;border:1px solid #334155;border-radius:6px;color:#e2e8f0;font-family:'Rajdhani',sans-serif;font-size:14px;padding:10px 14px;outline:none;">
+    </div>
+    <div style="margin-bottom:14px;">
+      <label style="font-size:11px;font-weight:700;color:#7ec8f0;letter-spacing:1px;text-transform:uppercase;display:block;margin-bottom:6px;">New Password</label>
+      <input type="password" id="cpw-new" placeholder="Enter new password (min 4 characters)" style="width:100%;box-sizing:border-box;background:#0a1a3a;border:1px solid #334155;border-radius:6px;color:#e2e8f0;font-family:'Rajdhani',sans-serif;font-size:14px;padding:10px 14px;outline:none;">
+    </div>
+    <div style="margin-bottom:14px;">
+      <label style="font-size:11px;font-weight:700;color:#7ec8f0;letter-spacing:1px;text-transform:uppercase;display:block;margin-bottom:6px;">Confirm New Password</label>
+      <input type="password" id="cpw-confirm" placeholder="Re-enter new password" style="width:100%;box-sizing:border-box;background:#0a1a3a;border:1px solid #334155;border-radius:6px;color:#e2e8f0;font-family:'Rajdhani',sans-serif;font-size:14px;padding:10px 14px;outline:none;">
+    </div>
+    <div id="cpw-error" style="display:none;color:#f87171;font-size:12px;font-weight:600;margin-bottom:10px;text-align:center;"></div>
+    <div id="cpw-success" style="display:none;color:#4ade80;font-size:12px;font-weight:600;margin-bottom:10px;text-align:center;"></div>
+    <div style="display:flex;gap:10px;justify-content:center;margin-top:18px;">
+      <button class="fm-btn" onclick="doChangePassword()" style="margin-top:0;">Change Password</button>
+      <button class="fm-btn" onclick="hideChangePasswordModal()" style="margin-top:0;background:linear-gradient(90deg,#334155,#475569);">Cancel</button>
+    </div>
+  </div>
+</div>
 
 <!-- ====================================================
      MAIN APPLICATION
@@ -2363,6 +2392,7 @@ function renderHeatMap(){
       <button class="hd-btn hd-btn-secondary" id="folderBtn" onclick="pickFolder()" title="Set auto import/export folder">📁 Set Folder</button>
       <button class="hd-btn hd-btn-secondary" onclick="smartRefresh()">🔄 Refresh Data</button>
       <button class="hd-btn hd-btn-primary" onclick="exportToExcel()">💾 Save New Data</button>
+      <button class="hd-btn hd-btn-secondary" onclick="showChangePasswordModal()">🔑 Change Password</button>
       <button class="hd-btn hd-btn-danger" onclick="logout()">⏏ Logout</button>
     </div>
   </div>
@@ -2374,7 +2404,7 @@ function renderHeatMap(){
       <div class="app-meta-item"><b>Document:</b> SCADA-BCM-RPT-001</div>
       <div class="app-meta-item"><b>Walls:</b> A · B · C · D</div>
       <div class="app-meta-item"><b>Configuration:</b> 4 Walls × 6 Rows × 15 Burners = 360 Burners</div>
-      <div class="app-meta-item"><b>Operator:</b> EMP-00514267</div>
+      <div class="app-meta-item" id="operatorDisplay"><b>Operator:</b> <span id="operatorEmpId">—</span></div>
       <div class="app-meta-item"><b>Last Sync:</b> <span id="lastSync">—</span></div>
     </div>
     <span id="clock"></span>
@@ -2515,7 +2545,7 @@ function renderHeatMap(){
             </select>
           </div>
           <span id="hm-ts-badge" style="display:none;"></span>
-
+          <div id="hm-shift-banner" style="display:none;align-items:center;gap:10px;padding:6px 14px;border:1px solid transparent;border-radius:8px;flex-wrap:nowrap;transition:background 0.3s,border-color 0.3s;font-size:12px;"></div>
         </div>
       </div>
 
@@ -2568,8 +2598,7 @@ function renderHeatMap(){
         </div>
       </div>
 
-      <!-- Shift / data status banner -->
-      <div id="hm-shift-banner" style="display:none;align-items:center;gap:14px;margin-bottom:14px;padding:12px 18px;border:1px solid transparent;border-radius:9px;flex-wrap:wrap;transition:background 0.3s,border-color 0.3s;"></div>
+      <!-- Shift banner moved inline with shift buttons above -->
 
       <!-- hidden offscreen wall render containers -->
       <div id="wall-render-host" style="position:fixed;left:-9999px;top:0;z-index:-1;pointer-events:none;width:900px;"></div>
@@ -2999,7 +3028,7 @@ function renderHeatMap(){
 
       </div><!-- end dual cuboid row -->
 
-      <script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
+      <script>
       /* ──────────────────────────────────────────────────────────────
          CUBOID DRAG + WALL TEXTURE ENGINE
          Renders each wall as a scaled-down canvas snapshot and applies
@@ -3495,7 +3524,10 @@ function renderHeatMap(){
               <button class="cl-menu-item" onclick="openClearByDateRange()">📅 Clear by Date Range</button>
               <button class="cl-menu-item" onclick="openClearOlderThan()">🕐 Clear Older Than…</button>
               <div style="height:1px;background:#1e3a5e;margin:4px 0;"></div>
-              <button class="cl-menu-item cl-menu-danger" onclick="clearCleaningLog()">⚠️ Clear All Data</button>
+              <div style="padding:6px 14px 4px;font-size:10px;font-weight:700;color:#7ec8f0;letter-spacing:1px;">CLEAR ALL</div>
+              <button class="cl-menu-item cl-menu-danger" onclick="clearCurrentOnly()">🗓 Clear Current Data Only</button>
+              <button class="cl-menu-item cl-menu-danger" onclick="clearHistoryOnly()">📚 Clear History Only</button>
+              <button class="cl-menu-item cl-menu-danger" onclick="clearCleaningLog()">⚠️ Clear Everything</button>
             </div>
           </div>
         </div>
@@ -3848,7 +3880,7 @@ function renderHeatMap(){
   </button>
 </div>
 
-<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
+<script>
 var alarmLog = [];
 
 
@@ -3906,11 +3938,73 @@ function showToast(msg){
 
 function logout(){
   sessionStorage.removeItem("scadaLoggedIn");
+  sessionStorage.removeItem("scadaEmpId");
   location.reload();
 }
 
+/* ── Change Password ── */
+function showChangePasswordModal(){
+  var m = document.getElementById("changePwModal");
+  if(m){ m.style.display="flex"; }
+  /* Clear fields */
+  ["cpw-current","cpw-new","cpw-confirm"].forEach(function(id){ var el=document.getElementById(id); if(el) el.value=""; });
+  var e=document.getElementById("cpw-error"); if(e) e.style.display="none";
+  var s=document.getElementById("cpw-success"); if(s) s.style.display="none";
+}
+function hideChangePasswordModal(){
+  var m = document.getElementById("changePwModal");
+  if(m) m.style.display="none";
+}
+async function doChangePassword(){
+  var errEl  = document.getElementById("cpw-error");
+  var sucEl  = document.getElementById("cpw-success");
+  errEl.style.display="none"; sucEl.style.display="none";
+
+  var curPw  = document.getElementById("cpw-current").value;
+  var newPw  = document.getElementById("cpw-new").value;
+  var conPw  = document.getElementById("cpw-confirm").value;
+
+  if(!curPw){ errEl.textContent="Please enter your current password."; errEl.style.display="block"; return; }
+  if(!newPw || newPw.length < 4){ errEl.textContent="New password must be at least 4 characters."; errEl.style.display="block"; return; }
+  if(newPw !== conPw){ errEl.textContent="New passwords do not match."; errEl.style.display="block"; return; }
+
+  /* SHA-256 helper */
+  async function _sha(s){const b=new TextEncoder().encode(s);const d=await crypto.subtle.digest("SHA-256",b);return Array.from(new Uint8Array(d)).map(x=>x.toString(16).padStart(2,"0")).join("");}
+
+  var curHash = await _sha(curPw);
+  var storedHash = localStorage.getItem("scadaPwHash") || SCADA_PASSWORD;
+  if(curHash !== storedHash){
+    errEl.textContent="Current password is incorrect."; errEl.style.display="block"; return;
+  }
+
+  if(curPw === newPw){ errEl.textContent="New password must be different from the current one."; errEl.style.display="block"; return; }
+
+  /* Save new hash */
+  var newHash = await _sha(newPw);
+  localStorage.setItem("scadaPwHash", newHash);
+
+  sucEl.textContent="Password changed successfully! Use the new password from next login.";
+  sucEl.style.display="block";
+  errEl.style.display="none";
+  /* Clear inputs */
+  ["cpw-current","cpw-new","cpw-confirm"].forEach(function(id){ var el=document.getElementById(id); if(el) el.value=""; });
+  /* Auto-close after 2 seconds */
+  setTimeout(function(){ hideChangePasswordModal(); if(typeof showToast==="function") showToast("🔑 Password changed successfully"); }, 2000);
+}
+/* Click outside to close */
+document.addEventListener("DOMContentLoaded",function(){
+  var m=document.getElementById("changePwModal");
+  if(m) m.addEventListener("click",function(e){ if(e.target===this) hideChangePasswordModal(); });
+});
+
 if(sessionStorage.getItem("scadaLoggedIn")==="true"){
   document.getElementById("loginScreen").style.display="none";
+  /* Restore operator display from session */
+  var _empRestore = sessionStorage.getItem("scadaEmpId");
+  if(_empRestore){
+    var _opEl = document.getElementById("operatorDisplay");
+    if(_opEl) _opEl.innerHTML = "<b>Operator:</b> EMP-" + _empRestore;
+  }
 }
 
 /* ==================================================
@@ -5117,8 +5211,34 @@ function clearCleaningLog(){
   closeCleaningClearMenu();
   if(!confirm("⚠️ Clear ALL burner cleaning dates for all walls? This cannot be undone.")) return;
   localStorage.removeItem(CLEANING_KEY);
+  localStorage.removeItem(CLEANING_HIST);
+  cleaningPending = {};
+  clearCleaningUnsaved();
   buildCleaningTable();
+  refreshAlarmPanel();
   showToast("🗑 All cleaning data cleared");
+}
+
+/* Clear only the current log (last-saved date per burner) — keeps history intact */
+function clearCurrentOnly(){
+  closeCleaningClearMenu();
+  if(!confirm("Clear current cleaning dates for all burners?\n\nThis removes the last-saved date per burner but keeps the full cleaning history intact.")) return;
+  localStorage.removeItem(CLEANING_KEY);
+  cleaningPending = {};
+  clearCleaningUnsaved();
+  buildCleaningTable();
+  refreshAlarmPanel();
+  showToast("🗓 Current data cleared (history preserved)");
+}
+
+/* Clear only the history log — keeps the current date per burner */
+function clearHistoryOnly(){
+  closeCleaningClearMenu();
+  if(!confirm("Clear ALL cleaning history for all burners?\n\nThis removes the historical record but keeps current dates intact.\nHigh-frequency alarms will be reset.")) return;
+  localStorage.removeItem(CLEANING_HIST);
+  buildCleaningTable();
+  refreshAlarmPanel();
+  showToast("📚 Cleaning history cleared (current data preserved)");
 }
 
 /* ── Smart Delete Menu ── */
@@ -5153,9 +5273,12 @@ function openClearByWall(){
     var walls = Array.from(cbs).map(cb=>cb.value);
     if(!confirm("Clear all cleaning dates for Wall(s): " + walls.join(", ") + "?")) return;
     var log = loadCleaningLog();
-    walls.forEach(w=>{ delete log[w]; });
+    var hist = loadCleaningHistory();
+    walls.forEach(w=>{ delete log[w]; delete hist[w]; if(cleaningPending[w]) delete cleaningPending[w]; });
     saveCleaningLog(log);
+    saveCleaningHistory(hist);
     buildCleaningTable();
+    refreshAlarmPanel();
     closeSmartDeleteModal();
     showToast("🗑 Cleared data for Wall " + walls.join(", "));
   };
@@ -5186,16 +5309,21 @@ function openClearByRow(){
     var walls = wallSel === "ALL" ? ["A","B","C","D"] : [wallSel];
     if(!confirm("Clear Row(s) " + rows.join(",") + " across Wall(s) " + walls.join(",") + "?")) return;
     var log = loadCleaningLog();
+    var hist = loadCleaningHistory();
     walls.forEach(w=>{
-      if(!log[w]) return;
       rows.forEach(r=>{
         for(var b=1;b<=BURNERS;b++){
-          delete log[w]["R"+r+"B"+b];
+          var key = "R"+r+"B"+b;
+          if(log[w]) delete log[w][key];
+          if(hist[w]) delete hist[w][key];
+          if(cleaningPending[w]) delete cleaningPending[w][key];
         }
       });
     });
     saveCleaningLog(log);
+    saveCleaningHistory(hist);
     buildCleaningTable();
+    refreshAlarmPanel();
     closeSmartDeleteModal();
     showToast("🗑 Cleared Row(s) " + rows.join(",") + " for Wall(s) " + walls.join(","));
   };
@@ -5240,15 +5368,26 @@ function openClearByDateRange(){
     if(!from||!to||from>to){ showToast("⚠ Invalid date range"); return; }
     var wallSel = document.getElementById("sdm-dr-wall").value;
     var walls = wallSel === "ALL" ? ["A","B","C","D"] : [wallSel];
-    var log = loadCleaningLog(); var count=0;
+    var log = loadCleaningLog(); var hist = loadCleaningHistory(); var count=0;
     walls.forEach(w=>{
-      if(!log[w]) return;
-      Object.keys(log[w]).forEach(k=>{ if(log[w][k]>=from && log[w][k]<=to){ delete log[w][k]; count++; } });
+      if(log[w]){
+        Object.keys(log[w]).forEach(k=>{ if(log[w][k]>=from && log[w][k]<=to){ delete log[w][k]; count++; } });
+      }
+      if(hist[w]){
+        Object.keys(hist[w]).forEach(k=>{
+          if(Array.isArray(hist[w][k])){
+            hist[w][k] = hist[w][k].filter(d => !(d>=from && d<=to));
+            if(!hist[w][k].length) delete hist[w][k];
+          }
+        });
+      }
     });
     if(!count){ showToast("⚠ No dates found in that range"); return; }
     if(!confirm("Remove "+count+" cleaning date(s) in range "+from+" to "+to+"?")) return;
     saveCleaningLog(log);
+    saveCleaningHistory(hist);
     buildCleaningTable();
+    refreshAlarmPanel();
     closeSmartDeleteModal();
     showToast("🗑 Removed " + count + " cleaning date(s)");
   };
@@ -5302,15 +5441,26 @@ function openClearOlderThan(){
     var cutoff = getCutoff();
     var wallSel = document.getElementById("sdm-age-wall").value;
     var walls = wallSel === "ALL" ? ["A","B","C","D"] : [wallSel];
-    var log = loadCleaningLog(); var count=0;
+    var log = loadCleaningLog(); var hist = loadCleaningHistory(); var count=0;
     walls.forEach(w=>{
-      if(!log[w]) return;
-      Object.keys(log[w]).forEach(k=>{ if(log[w][k] && log[w][k]<cutoff){ delete log[w][k]; count++; } });
+      if(log[w]){
+        Object.keys(log[w]).forEach(k=>{ if(log[w][k] && log[w][k]<cutoff){ delete log[w][k]; count++; } });
+      }
+      if(hist[w]){
+        Object.keys(hist[w]).forEach(k=>{
+          if(Array.isArray(hist[w][k])){
+            hist[w][k] = hist[w][k].filter(d => !(d && d<cutoff));
+            if(!hist[w][k].length) delete hist[w][k];
+          }
+        });
+      }
     });
     if(!count){ showToast("⚠ No dates older than " + cutoff + " found"); return; }
     if(!confirm("Remove "+count+" cleaning date(s) older than "+cutoff+"?")) return;
     saveCleaningLog(log);
+    saveCleaningHistory(hist);
     buildCleaningTable();
+    refreshAlarmPanel();
     closeSmartDeleteModal();
     showToast("🗑 Removed " + count + " old cleaning date(s)");
   };
@@ -5868,15 +6018,24 @@ async function autoExportToFolder(wb, filename){
 
 /* ── Full login with folder auto-import support ── */
 async function loginWithFolderSupport(){
+  var empId = document.getElementById("employeeIdInput").value.trim();
   var pw  = document.getElementById("passwordInput").value;
   var err = document.getElementById("ls-error");
+  if(!empId){ err.style.display="block"; err.textContent="Please enter your Employee ID."; return; }
   /* SHA-256 verify — plaintext never compared directly */
   async function _sha256(s){const b=new TextEncoder().encode(s);const d=await crypto.subtle.digest("SHA-256",b);return Array.from(new Uint8Array(d)).map(x=>x.toString(16).padStart(2,"0")).join("");}
+  /* Check stored password first, fallback to default */
+  var storedHash = localStorage.getItem("scadaPwHash");
+  var validHash  = storedHash || SCADA_PASSWORD;
   const pwHash = await _sha256(pw);
-  if(pwHash === SCADA_PASSWORD){
+  if(pwHash === validHash){
     sessionStorage.setItem("scadaLoggedIn","true");
+    sessionStorage.setItem("scadaEmpId", empId);
     document.getElementById("loginScreen").style.display="none";
     err.style.display="none";
+    /* Update operator display */
+    var opEl = document.getElementById("operatorDisplay");
+    if(opEl) opEl.innerHTML = "<b>Operator:</b> EMP-" + empId;
 
     /* Always init the UI first so the app is usable */
     init();

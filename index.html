@@ -1738,11 +1738,7 @@ function hideForgotModal(){
 }
 function openChangePasswordFromForgot(){
   hideForgotModal();
-  if(typeof showToast === "function"){
-    showToast("🔒 Password is centrally managed. Contact admin.");
-  } else {
-    alert("Password is centrally managed. Contact admin.");
-  }
+  showChangePasswordModal();
 }
 async function login(){
   /* Delegate to loginWithFolderSupport() in the main script.
@@ -1755,7 +1751,8 @@ async function login(){
     var err  = document.getElementById("ls-error");
     if(!empId2){ err.style.display="block"; err.textContent="Please enter your Employee ID."; return; }
     var _h = async function(s){const b=new TextEncoder().encode(s);const d=await crypto.subtle.digest("SHA-256",b);return Array.from(new Uint8Array(d)).map(x=>x.toString(16).padStart(2,"0")).join("");};
-    if((await _h(pw)) === "d06b2c4efe3519e98c052cced2f117599b7771edea220f6b45a4d7b63c8b9ca8"){
+    var _valid = (typeof getEffectivePasswordHash === "function") ? await getEffectivePasswordHash() : SCADA_PASSWORD;
+    if((await _h(pw)) === _valid){
       sessionStorage.setItem("scadaLoggedIn","true");
       sessionStorage.setItem("scadaEmpId", empId2);
       document.getElementById("loginScreen").style.display="none";
@@ -2349,7 +2346,7 @@ function renderHeatMap(){
     </div>
     <div class="fm-note">Support available during office hours (Mon–Sat, 8 AM – 6 PM).<br>Please quote your Employee ID when contacting support.</div>
     <div style="display:flex;gap:10px;justify-content:center;flex-wrap:wrap;">
-      <button class="fm-btn" onclick="openChangePasswordFromForgot()">Password Managed by Admin</button>
+      <button class="fm-btn" onclick="openChangePasswordFromForgot()">Change Password</button>
       <button class="fm-btn" onclick="hideForgotModal()" style="background:linear-gradient(90deg,#334155,#475569);">Close</button>
     </div>
   </div>
@@ -2438,7 +2435,7 @@ function renderHeatMap(){
       <input type="file" id="autoImportInput" accept=".xlsx,.xls" style="display:none" onchange="handleAutoImport(event)">
       <button class="hd-btn hd-btn-secondary" onclick="smartRefresh()">🔄 Refresh Data</button>
       <button class="hd-btn hd-btn-primary" onclick="exportToExcel()">💾 Save New Data</button>
-      <button class="hd-btn hd-btn-secondary" onclick="if(typeof showToast==='function'){showToast('🔒 Password is centrally managed. Contact admin.');}">🔒 Password Managed</button>
+      <button class="hd-btn hd-btn-secondary" onclick="showChangePasswordModal()">🔑 Change Password</button>
       <button class="hd-btn hd-btn-danger" onclick="logout()">⏏ Logout</button>
     </div>
   </div>
@@ -3934,20 +3931,42 @@ async function doChangePassword(){
   if(!newPw || newPw.length < 4){ errEl.textContent="New password must be at least 4 characters."; errEl.style.display="block"; return; }
   if(newPw !== conPw){ errEl.textContent="New passwords do not match."; errEl.style.display="block"; return; }
 
-  /* SHA-256 helper */
-  async function _sha(s){const b=new TextEncoder().encode(s);const d=await crypto.subtle.digest("SHA-256",b);return Array.from(new Uint8Array(d)).map(x=>x.toString(16).padStart(2,"0")).join("");}
+  if(!supaClient){ errEl.textContent="Supabase connection unavailable."; errEl.style.display="block"; return; }
 
-  /* Fixed OTP provided by user */
-  var FIXED_CHANGE_PW_OTP = "15112019";
+  await fetchCentralAuthConfig();
+  if(!centralOtpHashCache){
+    errEl.textContent="Central OTP is not configured. Contact admin.";
+    errEl.style.display="block";
+    return;
+  }
+
   var enteredOtp = prompt("Enter OTP to confirm password change:");
   if(enteredOtp === null){ errEl.textContent="Password change cancelled. OTP not entered."; errEl.style.display="block"; return; }
-  if(String(enteredOtp).trim() !== FIXED_CHANGE_PW_OTP){ errEl.textContent="Invalid OTP. Password not changed."; errEl.style.display="block"; return; }
+  var enteredOtpHash = await sha256Hex(String(enteredOtp).trim());
+  if(enteredOtpHash !== centralOtpHashCache){
+    errEl.textContent="Invalid OTP. Password not changed.";
+    errEl.style.display="block";
+    return;
+  }
 
-  /* Password is now globally controlled (same on all PCs), so local changes are blocked. */
-  var _unusedHash = await _sha(newPw);
-  void _unusedHash;
+  var newHash = await sha256Hex(newPw);
+  var upd = await supaClient
+    .from(AUTH_TABLE)
+    .update({
+      password_hash: newHash,
+      updated_by: empId,
+      updated_at: new Date().toISOString()
+    })
+    .eq("id", AUTH_ROW_ID);
+  if(upd.error){
+    errEl.textContent="Central password update failed: " + upd.error.message;
+    errEl.style.display="block";
+    return;
+  }
+
+  centralPasswordHashCache = newHash;
   clearLegacyPasswordOverrides();
-  sucEl.textContent="Password change is disabled in this file to keep all PCs consistent. Ask admin to update shared password hash.";
+  sucEl.textContent="Password changed successfully for all PCs.";
   sucEl.style.display="block";
   errEl.style.display="none";
   /* Clear inputs */
@@ -5842,6 +5861,8 @@ function rebuildFreqAlarms(){
 var SERVER_SYNC_ENABLED = true;
 var SUPABASE_URL = "https://xqkbrlcdbgykmatzwvct.supabase.co";
 var SUPABASE_TABLE = "scada_reports";
+var AUTH_TABLE = "scada_auth";
+var AUTH_ROW_ID = 1;
 function getSupabaseAnonKey(){
   try{
     if(window.SCADA_SUPABASE_ANON_KEY && String(window.SCADA_SUPABASE_ANON_KEY).trim()){
@@ -5857,12 +5878,42 @@ function getSupabaseAnonKey(){
 }
 var SUPABASE_ANON_KEY = getSupabaseAnonKey();
 var supaClient = null;
+var centralPasswordHashCache = SCADA_PASSWORD;
+var centralOtpHashCache = null;
 try{
   if(window.supabase && SUPABASE_ANON_KEY){
     supaClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
   }
 }catch(e){
   console.warn("Supabase init failed:", e);
+}
+
+async function sha256Hex(s){
+  const b = new TextEncoder().encode(String(s||""));
+  const d = await crypto.subtle.digest("SHA-256", b);
+  return Array.from(new Uint8Array(d)).map(function(x){ return x.toString(16).padStart(2,"0"); }).join("");
+}
+
+async function fetchCentralAuthConfig(){
+  if(!supaClient) return false;
+  try{
+    var q = await supaClient
+      .from(AUTH_TABLE)
+      .select("password_hash,otp_hash")
+      .eq("id", AUTH_ROW_ID)
+      .single();
+    if(q.error || !q.data) return false;
+    if(q.data.password_hash) centralPasswordHashCache = q.data.password_hash;
+    if(q.data.otp_hash) centralOtpHashCache = q.data.otp_hash;
+    return true;
+  }catch(e){
+    return false;
+  }
+}
+
+async function getEffectivePasswordHash(){
+  await fetchCentralAuthConfig();
+  return centralPasswordHashCache || SCADA_PASSWORD;
 }
 
 /* Auto import once when already logged in */
@@ -5938,7 +5989,8 @@ async function loginWithFolderSupport(){
   /* SHA-256 verify — plaintext never compared directly */
   async function _sha256(s){const b=new TextEncoder().encode(s);const d=await crypto.subtle.digest("SHA-256",b);return Array.from(new Uint8Array(d)).map(x=>x.toString(16).padStart(2,"0")).join("");}
   const pwHash = await _sha256(pw);
-  if(pwHash === SCADA_PASSWORD){
+  var validHash = await getEffectivePasswordHash();
+  if(pwHash === validHash){
     sessionStorage.setItem("scadaLoggedIn","true");
     sessionStorage.setItem("scadaEmpId", empId);
     document.getElementById("loginScreen").style.display="none";

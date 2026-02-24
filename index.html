@@ -78,6 +78,7 @@
 <link href="https://fonts.googleapis.com/css2?family=EB+Garamond:wght@400;600&family=Rajdhani:wght@400;500;600;700&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
 <style>
 
@@ -1718,6 +1719,17 @@ body.light-theme .hm-row-data-badge-C{background:rgba(100,116,139,0.1);color:#47
 function getEmpPwKey(empId){
   return "scadaPwHash::" + String(empId || "").trim().toUpperCase();
 }
+function clearLegacyPasswordOverrides(){
+  try{
+    localStorage.removeItem("scadaPwHash");
+    var toRemove = [];
+    for(var i=0;i<localStorage.length;i++){
+      var k = localStorage.key(i);
+      if(k && k.indexOf("scadaPwHash::") === 0) toRemove.push(k);
+    }
+    toRemove.forEach(function(k){ localStorage.removeItem(k); });
+  }catch(e){}
+}
 function showForgotModal(){
   document.getElementById("forgotModal").classList.add("open");
 }
@@ -1739,9 +1751,7 @@ async function login(){
     var err  = document.getElementById("ls-error");
     if(!empId2){ err.style.display="block"; err.textContent="Please enter your Employee ID."; return; }
     var _h = async function(s){const b=new TextEncoder().encode(s);const d=await crypto.subtle.digest("SHA-256",b);return Array.from(new Uint8Array(d)).map(x=>x.toString(16).padStart(2,"0")).join("");};
-    var storedH = localStorage.getItem(getEmpPwKey(empId2)) || localStorage.getItem("scadaPwHash");
-    var validH  = storedH || "d06b2c4efe3519e98c052cced2f117599b7771edea220f6b45a4d7b63c8b9ca8";
-    if((await _h(pw)) === validH){
+    if((await _h(pw)) === "d06b2c4efe3519e98c052cced2f117599b7771edea220f6b45a4d7b63c8b9ca8"){
       sessionStorage.setItem("scadaLoggedIn","true");
       sessionStorage.setItem("scadaEmpId", empId2);
       document.getElementById("loginScreen").style.display="none";
@@ -3851,6 +3861,7 @@ const chartInstances = {};
 
 
 document.addEventListener("DOMContentLoaded",function(){
+  clearLegacyPasswordOverrides();
   var m=document.getElementById("forgotModal");
   if(m) m.addEventListener("click",function(e){ if(e.target===this) hideForgotModal(); });
 });
@@ -3928,13 +3939,11 @@ async function doChangePassword(){
   if(enteredOtp === null){ errEl.textContent="Password change cancelled. OTP not entered."; errEl.style.display="block"; return; }
   if(String(enteredOtp).trim() !== FIXED_CHANGE_PW_OTP){ errEl.textContent="Invalid OTP. Password not changed."; errEl.style.display="block"; return; }
 
-  /* Save new hash after OTP verification */
-  var newHash = await _sha(newPw);
-  localStorage.setItem(getEmpPwKey(empId), newHash);
-  /* Keep legacy key for backward compatibility */
-  localStorage.setItem("scadaPwHash", newHash);
-
-  sucEl.textContent="Password changed successfully! Use the new password from next login.";
+  /* Password is now globally controlled (same on all PCs), so local changes are blocked. */
+  var _unusedHash = await _sha(newPw);
+  void _unusedHash;
+  clearLegacyPasswordOverrides();
+  sucEl.textContent="Password change is disabled in this file to keep all PCs consistent. Ask admin to update shared password hash.";
   sucEl.style.display="block";
   errEl.style.display="none";
   /* Clear inputs */
@@ -5824,24 +5833,33 @@ function rebuildFreqAlarms(){
 }
 
 /* ==================================================
-   SERVER SYNC (SUPABASE BACKEND)
+   DIRECT SUPABASE SYNC (FREE MODE)
 ================================================== */
 var SERVER_SYNC_ENABLED = true;
-function getApiBaseUrl(){
+var SUPABASE_URL = "https://xqkbrlcdbgykmatzwvct.supabase.co";
+var SUPABASE_TABLE = "scada_reports";
+function getSupabaseAnonKey(){
   try{
-    if(window.SCADA_API_BASE && String(window.SCADA_API_BASE).trim()){
-      return String(window.SCADA_API_BASE).trim().replace(/\/+$/,"");
+    if(window.SCADA_SUPABASE_ANON_KEY && String(window.SCADA_SUPABASE_ANON_KEY).trim()){
+      return String(window.SCADA_SUPABASE_ANON_KEY).trim();
     }
-    var stored = localStorage.getItem("scadaApiBase");
+    var stored = localStorage.getItem("scadaSupabaseAnonKey");
     if(stored && String(stored).trim()){
-      return String(stored).trim().replace(/\/+$/,"");
+      return String(stored).trim();
     }
   }catch(e){}
-  return "http://192.168.1.10:8765";
+  /* Replace with your actual publishable key if needed */
+  return "sb_publishable_L99JfiV_68w79GJ10klTCg_R1H60L_D";
 }
-var SERVER_API_BASE    = getApiBaseUrl();
-var SERVER_IMPORT_URL  = SERVER_API_BASE + "/latest";
-var SERVER_EXPORT_URL  = SERVER_API_BASE + "/save";
+var SUPABASE_ANON_KEY = getSupabaseAnonKey();
+var supaClient = null;
+try{
+  if(window.supabase && SUPABASE_ANON_KEY){
+    supaClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+  }
+}catch(e){
+  console.warn("Supabase init failed:", e);
+}
 
 /* Auto import once when already logged in */
 (async function restoreServerSyncOnLoad(){
@@ -5862,34 +5880,23 @@ function base64ToFile(base64, filename){
 
 /* ── Auto-import from server (works on any PC without folder picker) ── */
 async function autoImportFromServer(showMsg){
-  if(!SERVER_SYNC_ENABLED) return false;
+  if(!SERVER_SYNC_ENABLED || !supaClient) return false;
   try{
-    var resp = await fetch(SERVER_IMPORT_URL, {method:"GET", cache:"no-store"});
-    if(!resp.ok) return false;
-
-    var ctype = (resp.headers.get("content-type") || "").toLowerCase();
-    var file = null;
-    var fileName = "Burner_SCADA_Report.xlsx";
-
-    if(ctype.indexOf("application/json") >= 0){
-      var j = await resp.json();
-      if(!j || j.ok === false || !j.dataBase64) return false;
-      fileName = j.fileName || fileName;
-      file = base64ToFile(j.dataBase64, fileName);
-    } else {
-      var blob = await resp.blob();
-      if(!blob || !blob.size) return false;
-      var cd = resp.headers.get("content-disposition") || "";
-      var m = cd.match(/filename\*?=(?:UTF-8''|")?([^\";]+)/i);
-      if(m && m[1]) fileName = decodeURIComponent(m[1].replace(/\"/g,""));
-      file = new File([blob], fileName, {type: blob.type || "application/octet-stream"});
-    }
-
-    lastImportedFileName = file.name || fileName;
+    var q = await supaClient
+      .from(SUPABASE_TABLE)
+      .select("file_name,data_base64,created_at")
+      .order("created_at", {ascending:false})
+      .limit(1);
+    if(q.error || !q.data || !q.data.length) return false;
+    var row = q.data[0];
+    if(!row.data_base64) return false;
+    var fileName = row.file_name || "Burner_SCADA_Report.xlsx";
+    var file = base64ToFile(row.data_base64, fileName);
+    lastImportedFileName = fileName;
     return new Promise(function(res){
       _doImport(file, function(){
         buildCleaningTable();
-        if(showMsg) showToast("✅ Auto-loaded from central SCADA server");
+        if(showMsg) showToast("✅ Auto-loaded from Supabase cloud");
         res(true);
       }, true);
     });
@@ -5901,26 +5908,16 @@ async function autoImportFromServer(showMsg){
 
 /* ── Auto-export to server (central save shared across PCs) ── */
 async function autoExportToServer(wb, filename){
-  if(!SERVER_SYNC_ENABLED) return false;
+  if(!SERVER_SYNC_ENABLED || !supaClient) return false;
   try{
     var base64 = XLSX.write(wb, {bookType:"xlsx", type:"base64"});
     var empId = sessionStorage.getItem("scadaEmpId") || "";
-    var resp = await fetch(SERVER_EXPORT_URL, {
-      method:"POST",
-      headers: {"Content-Type":"application/json"},
-      body: JSON.stringify({
-        fileName: filename || "Burner_SCADA_Report.xlsx",
-        dataBase64: base64,
-        empId: empId,
-        ts: new Date().toISOString()
-      })
+    var ins = await supaClient.from(SUPABASE_TABLE).insert({
+      file_name: filename || "Burner_SCADA_Report.xlsx",
+      data_base64: base64,
+      uploaded_by: empId || null
     });
-    if(!resp.ok) return false;
-    var ctype = (resp.headers.get("content-type") || "").toLowerCase();
-    if(ctype.indexOf("application/json") >= 0){
-      var j = await resp.json().catch(function(){ return {ok:true}; });
-      if(j && j.ok === false) return false;
-    }
+    if(ins.error) return false;
     return true;
   } catch(err){
     console.warn("autoExportToServer error:", err);
@@ -5936,11 +5933,8 @@ async function loginWithFolderSupport(){
   if(!empId){ err.style.display="block"; err.textContent="Please enter your Employee ID."; return; }
   /* SHA-256 verify — plaintext never compared directly */
   async function _sha256(s){const b=new TextEncoder().encode(s);const d=await crypto.subtle.digest("SHA-256",b);return Array.from(new Uint8Array(d)).map(x=>x.toString(16).padStart(2,"0")).join("");}
-  /* Check stored password first, fallback to default */
-  var storedHash = localStorage.getItem(getEmpPwKey(empId)) || localStorage.getItem("scadaPwHash");
-  var validHash  = storedHash || SCADA_PASSWORD;
   const pwHash = await _sha256(pw);
-  if(pwHash === validHash){
+  if(pwHash === SCADA_PASSWORD){
     sessionStorage.setItem("scadaLoggedIn","true");
     sessionStorage.setItem("scadaEmpId", empId);
     document.getElementById("loginScreen").style.display="none";

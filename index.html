@@ -713,16 +713,39 @@ body.light-theme .theme-toggle input:checked + .theme-slider{background:#94b4d8;
 ==================================================== */
 .alarm-banner{
   background:#dc2626;color:#fff;
-  text-align:center;padding:6px 11px;
-  font-weight:800;font-size:15px;
-  display:none;align-items:center;justify-content:center;gap:14px;
+  text-align:left;padding:8px 12px;
+  font-weight:800;font-size:13px;
+  display:none;align-items:stretch;justify-content:space-between;gap:12px;
   position:fixed;bottom:68px;left:0;right:0;z-index:9999;
 }
+.alarm-visible{display:flex;}
 .alarm-active{display:flex;animation:alarmFlash .6s infinite;}
 @keyframes alarmFlash{0%{background:#dc2626;}50%{background:#7f1d1d;}100%{background:#dc2626;}}
 .alarm-banner button{
   background:#fff;color:#dc2626;border:none;
   padding:5px 12px;border-radius:4px;cursor:pointer;font-weight:700;
+  align-self:center;white-space:nowrap;
+}
+.alarm-sections{
+  display:flex;align-items:stretch;gap:10px;flex:1;min-width:0;
+}
+.alarm-section{
+  flex:1;min-width:0;
+}
+.alarm-divider{
+  width:1px;background:rgba(255,255,255,0.6);flex-shrink:0;
+}
+.alarm-head{
+  font-size:13px;font-weight:800;letter-spacing:0.4px;margin-bottom:2px;
+}
+.alarm-desc{
+  font-size:11px;font-weight:600;line-height:1.25;opacity:0.95;white-space:normal;
+}
+@media(max-width:820px){
+  .alarm-banner{flex-direction:column;align-items:stretch;gap:8px;}
+  .alarm-sections{flex-direction:column;gap:8px;}
+  .alarm-divider{width:auto;height:1px;}
+  .alarm-banner button{align-self:flex-end;}
 }
 
 /* ====================================================
@@ -1692,11 +1715,18 @@ body.light-theme .hm-row-data-badge-C{background:rgba(100,116,139,0.1);color:#47
 
 </style>
 <script>
+function getEmpPwKey(empId){
+  return "scadaPwHash::" + String(empId || "").trim().toUpperCase();
+}
 function showForgotModal(){
   document.getElementById("forgotModal").classList.add("open");
 }
 function hideForgotModal(){
   document.getElementById("forgotModal").classList.remove("open");
+}
+function openChangePasswordFromForgot(){
+  hideForgotModal();
+  showChangePasswordModal();
 }
 async function login(){
   /* Delegate to loginWithFolderSupport() in the main script.
@@ -1709,7 +1739,7 @@ async function login(){
     var err  = document.getElementById("ls-error");
     if(!empId2){ err.style.display="block"; err.textContent="Please enter your Employee ID."; return; }
     var _h = async function(s){const b=new TextEncoder().encode(s);const d=await crypto.subtle.digest("SHA-256",b);return Array.from(new Uint8Array(d)).map(x=>x.toString(16).padStart(2,"0")).join("");};
-    var storedH = localStorage.getItem("scadaPwHash");
+    var storedH = localStorage.getItem(getEmpPwKey(empId2)) || localStorage.getItem("scadaPwHash");
     var validH  = storedH || "d06b2c4efe3519e98c052cced2f117599b7771edea220f6b45a4d7b63c8b9ca8";
     if((await _h(pw)) === validH){
       sessionStorage.setItem("scadaLoggedIn","true");
@@ -2304,7 +2334,10 @@ function renderHeatMap(){
       <div class="fm-value"><a href="mailto:dubeya1@indianoil.in" style="color:#F37022;text-decoration:none;">dubeya1@indianoil.in</a></div>
     </div>
     <div class="fm-note">Support available during office hours (Mon–Sat, 8 AM – 6 PM).<br>Please quote your Employee ID when contacting support.</div>
-    <button class="fm-btn" onclick="hideForgotModal()">Close</button>
+    <div style="display:flex;gap:10px;justify-content:center;flex-wrap:wrap;">
+      <button class="fm-btn" onclick="openChangePasswordFromForgot()">Change Password</button>
+      <button class="fm-btn" onclick="hideForgotModal()" style="background:linear-gradient(90deg,#334155,#475569);">Close</button>
+    </div>
   </div>
 </div>
 </div><!-- /loginScreen -->
@@ -2316,11 +2349,11 @@ function renderHeatMap(){
     <div style="text-align:center;margin-bottom:18px;">
       <div class="fm-icon">🔑</div>
       <div class="fm-title">Change Password</div>
-      <div class="fm-sub" style="margin-bottom:8px;">Enter your current password and choose a new one.</div>
+      <div class="fm-sub" style="margin-bottom:8px;">Enter OTP and choose a new password.</div>
     </div>
     <div style="margin-bottom:14px;">
-      <label style="font-size:11px;font-weight:700;color:#7ec8f0;letter-spacing:1px;text-transform:uppercase;display:block;margin-bottom:6px;">Current Password</label>
-      <input type="password" id="cpw-current" placeholder="Enter current password" style="width:100%;box-sizing:border-box;background:#0a1a3a;border:1px solid #334155;border-radius:6px;color:#e2e8f0;font-family:'Rajdhani',sans-serif;font-size:14px;padding:10px 14px;outline:none;">
+      <label style="font-size:11px;font-weight:700;color:#7ec8f0;letter-spacing:1px;text-transform:uppercase;display:block;margin-bottom:6px;">Employee ID</label>
+      <input type="text" id="cpw-empid" placeholder="Enter Employee ID" style="width:100%;box-sizing:border-box;background:#0a1a3a;border:1px solid #334155;border-radius:6px;color:#e2e8f0;font-family:'Rajdhani',sans-serif;font-size:14px;padding:10px 14px;outline:none;">
     </div>
     <div style="margin-bottom:14px;">
       <label style="font-size:11px;font-weight:700;color:#7ec8f0;letter-spacing:1px;text-transform:uppercase;display:block;margin-bottom:6px;">New Password</label>
@@ -2443,69 +2476,82 @@ function renderHeatMap(){
   </div>
 </div>
 
-<!-- Setup Help Modal -->
+<!-- Setup Help Modal (Simplified — Copy Path + Paste in Taskbar) -->
 <div id="setupHelpModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.85);z-index:99999;align-items:center;justify-content:center;padding:20px;">
-  <div style="background:linear-gradient(175deg,#071e54,#030f3a);border:2px solid #F37022;border-radius:12px;max-width:600px;width:100%;max-height:90vh;overflow:auto;box-shadow:0 8px 48px rgba(0,0,0,0.8);">
-    <div style="background:linear-gradient(90deg,#0f2744,#1e3a6a);padding:16px 24px;border-bottom:1px solid rgba(255,255,255,0.1);display:flex;justify-content:space-between;align-items:center;">
-      <div style="font-size:18px;font-weight:700;color:#F37022;">📁 One-Time Folder Setup (This Computer)</div>
+  <div style="background:linear-gradient(175deg,#071e54,#030f3a);border:2px solid #F37022;border-radius:12px;max-width:520px;width:100%;max-height:90vh;overflow:auto;box-shadow:0 8px 48px rgba(0,0,0,0.8);">
+    <div style="background:linear-gradient(90deg,#0f2744,#1e3a6a);padding:14px 24px;border-bottom:1px solid rgba(255,255,255,0.1);display:flex;justify-content:space-between;align-items:center;">
+      <div style="font-size:17px;font-weight:700;color:#F37022;">📁 One-Time Folder Setup</div>
       <button onclick="closeSetupHelp()" style="background:none;border:none;color:#a0bcd8;font-size:24px;cursor:pointer;line-height:1;">&times;</button>
     </div>
-    <div style="padding:24px;color:#e2e8f0;font-size:13px;line-height:1.8;">
-      <div style="background:rgba(243,112,34,0.15);border:1px solid rgba(243,112,34,0.4);border-radius:8px;padding:14px;margin-bottom:20px;">
-        <div style="font-weight:700;color:#F37022;margin-bottom:6px;">🔒 Why is this needed?</div>
-        <div style="color:#c8dff8;font-size:12px;">For security, browsers require <b>each computer</b> to grant folder access once. This is a <b style="color:#4ade80;">ONE-TIME setup</b> — after this, data auto-loads every time you open this page!</div>
-      </div>
-      
-      <div style="background:rgba(22,163,74,0.15);border:1px solid rgba(22,163,74,0.35);border-radius:8px;padding:14px;margin-bottom:20px;">
-        <div style="font-weight:700;color:#4ade80;margin-bottom:6px;">✅ Everyone uses the SAME shared network folder</div>
-        <div style="color:#c8dff8;font-size:12px;">All computers read from: <code style="background:rgba(0,0,0,0.4);padding:3px 8px;border-radius:4px;font-size:11px;color:#4ade80;display:block;margin-top:6px;word-break:break-all;">\\10.138.128.112\pn_dept\SOUTH BLOCK DOCUMENTS\SOUTH BLOCK DOCUMENTATION FOLDER\HGU III\SCADA</code></div>
-      </div>
-      
-      <div style="font-weight:700;color:#7ec8f0;margin-bottom:12px;font-size:15px;">⚡ Quick Setup Steps:</div>
-      
-      <div style="display:flex;gap:12px;margin-bottom:16px;align-items:flex-start;">
-        <div style="background:#F37022;color:#fff;width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:700;flex-shrink:0;">1</div>
-        <div>
-          <div style="font-weight:700;color:#fff;">Copy the network path</div>
-          <div style="color:#a0bcd8;font-size:12px;">Click the button below to copy the folder path to your clipboard</div>
-          <button onclick="copyNetworkPath()" style="margin-top:8px;background:#1e40af;color:#fff;border:none;border-radius:5px;padding:8px 16px;font-size:12px;font-weight:700;cursor:pointer;font-family:'Rajdhani',sans-serif;">📋 Copy Network Path</button>
+    <div style="padding:20px 24px;color:#e2e8f0;font-size:13px;line-height:1.7;">
+
+      <!-- STEP 1: Copy Path -->
+      <div style="display:flex;gap:12px;margin-bottom:18px;align-items:flex-start;">
+        <div style="background:#F37022;color:#fff;width:30px;height:30px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:700;flex-shrink:0;font-size:15px;">1</div>
+        <div style="flex:1;">
+          <div style="font-weight:700;color:#fff;font-size:14px;margin-bottom:4px;">Copy the default folder path</div>
+          <div style="background:rgba(0,0,0,0.4);border:1px solid #334155;border-radius:6px;padding:8px 12px;display:flex;align-items:center;gap:8px;margin-top:6px;">
+            <code style="font-size:11px;color:#4ade80;flex:1;word-break:break-all;line-height:1.5;font-family:monospace;">\\10.138.128.112\pn_dept\SOUTH BLOCK DOCUMENTS\SOUTH BLOCK DOCUMENTATION FOLDER\HGU III\SCADA</code>
+            <button onclick="copyNetworkPath()" style="background:#1e40af;color:#fff;border:none;border-radius:5px;padding:7px 14px;font-size:12px;font-weight:700;cursor:pointer;font-family:'Rajdhani',sans-serif;white-space:nowrap;">📋 Copy</button>
+          </div>
         </div>
       </div>
-      
-      <div style="display:flex;gap:12px;margin-bottom:16px;align-items:flex-start;">
-        <div style="background:#F37022;color:#fff;width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:700;flex-shrink:0;">2</div>
-        <div>
-          <div style="font-weight:700;color:#fff;">Open folder picker &amp; navigate to SCADA folder</div>
-          <div style="color:#a0bcd8;font-size:12px;">Click below, then paste the path in the folder picker's address bar (or browse manually)</div>
-          <button onclick="closeSetupHelp();pickFolder();" style="margin-top:8px;background:linear-gradient(90deg,#d95008,#F37022);color:#fff;border:none;border-radius:5px;padding:10px 20px;font-size:13px;font-weight:700;cursor:pointer;font-family:'Rajdhani',sans-serif;box-shadow:0 2px 12px rgba(243,112,34,0.4);">📁 Open Folder Picker</button>
+
+      <!-- STEP 2: Paste in Windows Taskbar Search -->
+      <div style="display:flex;gap:12px;margin-bottom:18px;align-items:flex-start;">
+        <div style="background:#F37022;color:#fff;width:30px;height:30px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:700;flex-shrink:0;font-size:15px;">2</div>
+        <div style="flex:1;">
+          <div style="font-weight:700;color:#fff;font-size:14px;margin-bottom:4px;">Paste in Windows Taskbar Search Bar</div>
+          <div style="color:#a0bcd8;font-size:12px;margin-bottom:8px;">Click the <b style="color:#7ec8f0;">Search bar</b> on your Windows Taskbar (bottom of screen), paste the copied path (<kbd style="background:#1e293b;border:1px solid #475569;border-radius:3px;padding:1px 6px;font-size:11px;color:#e2e8f0;">Ctrl+V</kbd>), and press <kbd style="background:#1e293b;border:1px solid #475569;border-radius:3px;padding:1px 6px;font-size:11px;color:#e2e8f0;">Enter</kbd>. The SCADA folder will open directly.</div>
+          <!-- Visual guide: Windows Taskbar mockup -->
+          <div style="background:#0c1a2e;border:1px solid #1e3a5e;border-radius:8px;overflow:hidden;margin-top:4px;">
+            <div style="padding:5px 10px;font-size:10px;font-weight:700;color:#7ec8f0;background:rgba(126,200,240,0.08);border-bottom:1px solid #1e3a5e;letter-spacing:0.5px;">WHERE TO PASTE — Windows Taskbar (bottom of your screen)</div>
+            <div style="padding:10px 14px;font-family:'Courier New',monospace;font-size:11px;color:#94a3b8;">
+              <div style="background:#111827;border:1px solid #374151;border-radius:4px;padding:8px 10px;display:flex;align-items:center;gap:12px;">
+                <span style="font-size:14px;">🪟</span>
+                <div style="flex:1;background:#1e293b;border:2px dashed #F37022;border-radius:4px;padding:6px 10px;display:flex;align-items:center;gap:6px;">
+                  <span style="font-size:12px;">🔍</span>
+                  <span style="color:#F37022;font-weight:700;font-size:11px;">⬅ Paste the copied path here &amp; press Enter</span>
+                </div>
+                <span style="color:#64748b;font-size:10px;">🔊 📡 🔋</span>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
-      
-      <div style="display:flex;gap:12px;margin-bottom:20px;align-items:flex-start;">
-        <div style="background:#16a34a;color:#fff;width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:700;flex-shrink:0;">✓</div>
-        <div>
-          <div style="font-weight:700;color:#4ade80;">Done! You're all set on this computer</div>
-          <div style="color:#a0bcd8;font-size:12px;">Data will auto-load every time you open this page. No need to repeat!</div>
+
+      <!-- STEP 3: Come back & select folder in browser -->
+      <div style="display:flex;gap:12px;margin-bottom:18px;align-items:flex-start;">
+        <div style="background:#F37022;color:#fff;width:30px;height:30px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:700;flex-shrink:0;font-size:15px;">3</div>
+        <div style="flex:1;">
+          <div style="font-weight:700;color:#fff;font-size:14px;margin-bottom:4px;">Come back here &amp; select the folder</div>
+          <div style="color:#a0bcd8;font-size:12px;margin-bottom:8px;">Click the button below, then navigate to the <b style="color:#4ade80;">SCADA</b> folder in the picker and select it.</div>
+          <button onclick="closeSetupHelp();pickFolder();" style="background:linear-gradient(90deg,#d95008,#F37022);color:#fff;border:none;border-radius:6px;padding:10px 22px;font-size:13px;font-weight:700;cursor:pointer;font-family:'Rajdhani',sans-serif;box-shadow:0 2px 12px rgba(243,112,34,0.4);letter-spacing:0.5px;">📁 Select SCADA Folder</button>
         </div>
       </div>
-      
-      <div style="background:rgba(126,200,240,0.1);border:1px solid rgba(126,200,240,0.3);border-radius:8px;padding:14px;">
-        <div style="font-weight:700;color:#7ec8f0;margin-bottom:6px;">💡 Troubleshooting</div>
-        <div style="color:#a0bcd8;font-size:12px;">
-          <b>Can't find the folder?</b> Open Windows Explorer (<code style="background:rgba(0,0,0,0.4);padding:1px 4px;border-radius:2px;">Win+E</code>), paste the network path. If it opens, you have access.<br><br>
-          <b>Permission denied?</b> Contact IT for access to the shared SCADA folder.<br><br>
-          <b>Wrong browser?</b> Use Chrome or Edge (v86+). Firefox/Safari don't support this feature.
-        </div>
+
+      <!-- Done -->
+      <div style="display:flex;gap:12px;align-items:center;background:rgba(22,163,74,0.12);border:1px solid rgba(22,163,74,0.3);border-radius:8px;padding:10px 14px;">
+        <div style="background:#16a34a;color:#fff;width:26px;height:26px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:700;flex-shrink:0;font-size:13px;">✓</div>
+        <div style="font-size:12px;color:#4ade80;font-weight:600;">Done! Data will auto-load every time. No need to repeat on this PC.</div>
       </div>
+
     </div>
   </div>
 </div>
 
 <div id="masterAlarm" class="alarm-banner">
-  <span style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;justify-content:center;">
-    <span>🚨 BURNER IMBALANCE</span>
-    <span id="alarmDetail" style="font-size:12px;font-weight:600;opacity:0.92;letter-spacing:0.3px;"></span>
-  </span>
+  <div class="alarm-sections">
+    <div class="alarm-section" id="alarmImbSection" style="display:none;">
+      <div class="alarm-head" id="alarmImbTitle">🚨 BURNER IMBALANCE</div>
+      <div class="alarm-desc" id="alarmImbDetail"></div>
+    </div>
+    <div class="alarm-divider" id="alarmDivider" style="display:none;"></div>
+    <div class="alarm-section" id="alarmFreqSection" style="display:none;">
+      <div class="alarm-head" id="alarmFreqTitle">⚠ HIGH FREQUENCY CLEANING</div>
+      <div class="alarm-desc" id="alarmFreqDetail"></div>
+    </div>
+  </div>
   <button onclick="acknowledgeAlarm()">Acknowledge</button>
 </div>
 
@@ -2812,7 +2858,9 @@ function renderHeatMap(){
         .cb-peephole-viewport {
           position:absolute; inset:0;
           overflow:hidden;
-          background:#0d2035;
+          background:
+            linear-gradient(145deg, rgba(9,30,52,0.28) 0%, rgba(9,30,52,0.18) 100%),
+            radial-gradient(ellipse at center, rgba(126,200,240,0.10) 0%, rgba(5,14,26,0.08) 70%);
           /* 3-D perspective for the content inside */
           perspective: 55px;
           perspective-origin: 0% 50%;
@@ -2860,6 +2908,7 @@ function renderHeatMap(){
           font-size:7px; font-weight:700; letter-spacing:1.5px;
           color:rgba(255,255,255,0.25); text-align:center;
         }
+
       </style>
 
       <!-- html2canvas removed — faces render via direct HTML injection -->
@@ -3302,22 +3351,22 @@ function renderHeatMap(){
 
             /* ── Near-wall strip (left edge) ── */
             var nearStrip =
-              '<div style="position:absolute;left:0;top:0;width:13px;height:100%;'
-              +   'overflow:hidden;opacity:0.65;z-index:1;pointer-events:none;">'
+              '<div style="position:absolute;left:0;top:0;width:15px;height:100%;'
+              +   'overflow:hidden;opacity:0.86;z-index:1;pointer-events:none;">'
               +   '<div style="position:absolute;left:0;top:0;width:'+NATURAL_W+'px;'
               +     'transform-origin:left top;'
               +     'transform:scale('+STRIP_SCALE.toFixed(5)+') translateX('+STRIP_TX+'px) translateY('+ty+'px);'
               +   '">'
               +   wallHTMLNear
               +   '</div>'
-              +   '<div style="position:absolute;inset:0;background:linear-gradient(90deg,transparent 0%,rgba(2,8,18,0.35) 100%);pointer-events:none;"></div>'
+              +   '<div style="position:absolute;inset:0;background:linear-gradient(90deg,rgba(9,24,40,0.05) 0%,rgba(2,8,18,0.42) 100%);pointer-events:none;"></div>'
               + '</div>';
 
             /* ── Main rotated content ── */
             var mainLayer =
               '<div class="cb-peephole-content" style="'
               +   'width:'+NATURAL_W+'px;top:50%;z-index:2;'
-              +   'opacity:0.92;'
+              +   'opacity:0.22;'
               +   'transform:'
               +     'rotateY('+PH_ROT+'deg) '
               +     'translateX('+PH_TX+'px) '
@@ -3329,18 +3378,25 @@ function renderHeatMap(){
 
             /* ── Far-wall strip (right edge) ── */
             var farStrip =
-              '<div style="position:absolute;right:0;top:0;width:9px;height:100%;'
-              +   'overflow:hidden;opacity:0.42;z-index:3;pointer-events:none;">'
+              '<div style="position:absolute;right:0;top:0;width:15px;height:100%;'
+              +   'overflow:hidden;opacity:0.78;z-index:3;pointer-events:none;">'
               +   '<div style="position:absolute;right:0;top:0;width:'+NATURAL_W+'px;'
               +     'transform-origin:right top;'
               +     'transform:scale('+STRIP_SCALE.toFixed(5)+') translateX('+(-STRIP_TX)+'px) translateY('+ty+'px);'
               +   '">'
               +   wallHTMLFar
               +   '</div>'
-              +   '<div style="position:absolute;inset:0;background:linear-gradient(90deg,rgba(2,8,18,0.35) 0%,transparent 100%);pointer-events:none;"></div>'
+              +   '<div style="position:absolute;inset:0;background:linear-gradient(90deg,rgba(2,8,18,0.45) 0%,rgba(9,24,40,0.05) 100%);pointer-events:none;"></div>'
               + '</div>';
+            var centerGlass =
+              '<div style="position:absolute;left:15px;right:15px;top:5px;bottom:5px;z-index:4;pointer-events:none;'
+              +   'border-radius:4px;'
+              +   'background:linear-gradient(145deg,rgba(126,200,240,0.22) 0%,rgba(31,61,102,0.28) 52%,rgba(12,29,55,0.34) 100%);'
+              +   'border:1px solid rgba(126,200,240,0.25);'
+              +   'box-shadow:inset 0 0 16px rgba(126,200,240,0.10);'
+              + '"></div>';
 
-            el.innerHTML = nearStrip + mainLayer + farStrip;
+            el.innerHTML = nearStrip + mainLayer + farStrip + centerGlass;
           }
 
           /* Build all four wall HTMLs */
@@ -3486,15 +3542,7 @@ function renderHeatMap(){
         </div>
       </div>
 
-      <!-- Frequency Alarm Panel -->
-      <div id="freqAlarmPanel" class="freq-alarm-panel" style="display:none;">
-        <div class="freq-alarm-header">
-          <span class="freq-alarm-icon">🚨</span>
-          <span class="freq-alarm-title">HIGH FREQUENCY CLEANING ALARM</span>
-          <span class="freq-alarm-sub" id="freqAlarmMonthLabel">Burners cleaned more than 3 times this month</span>
-        </div>
-        <div id="freqAlarmList" class="freq-alarm-list"></div>
-      </div>
+      <!-- High-frequency cleaning now uses the same bottom master alarm banner as burner imbalance -->
 
       <!-- Wall Selector Buttons -->
       <div class="cw-selector" id="cleaningWallSelector">
@@ -3515,6 +3563,8 @@ function renderHeatMap(){
           <span id="cleaningUnsavedBadge" class="cl-unsaved-badge" style="display:none;">
             ⚠ Unsaved Changes — click <b>Save New Data</b> to confirm
           </span>
+          <button class="hd-btn hd-btn-primary" onclick="exportToExcel()" style="padding:8px 18px;font-size:13px;border-radius:6px;">💾 Save New Data</button>
+          <button class="hd-btn hd-btn-secondary" onclick="openBurnerHistoryModal()" style="padding:8px 14px;font-size:13px;border-radius:6px;" title="View last 5 cleaning dates for any burner">📜 Last 5 Dates</button>
           <div style="position:relative;display:inline-block;" id="cleaningClearWrap">
             <button class="cleaning-clear-btn" onclick="toggleCleaningClearMenu(event)" id="cleaningClearMenuBtn" title="Delete burner cleaning data">🗑 Delete Data ▾</button>
             <div id="cleaningClearMenu" style="display:none;position:absolute;right:0;bottom:calc(100% + 6px);background:#0f1f38;border:1px solid #1e3a5e;border-radius:10px;min-width:230px;box-shadow:0 8px 32px rgba(0,0,0,0.7);z-index:500;overflow:hidden;padding:6px 0;">
@@ -3525,9 +3575,7 @@ function renderHeatMap(){
               <button class="cl-menu-item" onclick="openClearOlderThan()">🕐 Clear Older Than…</button>
               <div style="height:1px;background:#1e3a5e;margin:4px 0;"></div>
               <div style="padding:6px 14px 4px;font-size:10px;font-weight:700;color:#7ec8f0;letter-spacing:1px;">CLEAR ALL</div>
-              <button class="cl-menu-item cl-menu-danger" onclick="clearCurrentOnly()">🗓 Clear Current Data Only</button>
-              <button class="cl-menu-item cl-menu-danger" onclick="clearHistoryOnly()">📚 Clear History Only</button>
-              <button class="cl-menu-item cl-menu-danger" onclick="clearCleaningLog()">⚠️ Clear Everything</button>
+              <button class="cl-menu-item cl-menu-danger" onclick="openClearAllBurners()">⚠️ Clear All Burners…</button>
             </div>
           </div>
         </div>
@@ -3947,7 +3995,7 @@ function showChangePasswordModal(){
   var m = document.getElementById("changePwModal");
   if(m){ m.style.display="flex"; }
   /* Clear fields */
-  ["cpw-current","cpw-new","cpw-confirm"].forEach(function(id){ var el=document.getElementById(id); if(el) el.value=""; });
+  ["cpw-empid","cpw-new","cpw-confirm"].forEach(function(id){ var el=document.getElementById(id); if(el) el.value=""; });
   var e=document.getElementById("cpw-error"); if(e) e.style.display="none";
   var s=document.getElementById("cpw-success"); if(s) s.style.display="none";
 }
@@ -3960,34 +4008,34 @@ async function doChangePassword(){
   var sucEl  = document.getElementById("cpw-success");
   errEl.style.display="none"; sucEl.style.display="none";
 
-  var curPw  = document.getElementById("cpw-current").value;
+  var empId  = document.getElementById("cpw-empid").value.trim();
   var newPw  = document.getElementById("cpw-new").value;
   var conPw  = document.getElementById("cpw-confirm").value;
 
-  if(!curPw){ errEl.textContent="Please enter your current password."; errEl.style.display="block"; return; }
+  if(!empId){ errEl.textContent="Please enter Employee ID."; errEl.style.display="block"; return; }
   if(!newPw || newPw.length < 4){ errEl.textContent="New password must be at least 4 characters."; errEl.style.display="block"; return; }
   if(newPw !== conPw){ errEl.textContent="New passwords do not match."; errEl.style.display="block"; return; }
 
   /* SHA-256 helper */
   async function _sha(s){const b=new TextEncoder().encode(s);const d=await crypto.subtle.digest("SHA-256",b);return Array.from(new Uint8Array(d)).map(x=>x.toString(16).padStart(2,"0")).join("");}
 
-  var curHash = await _sha(curPw);
-  var storedHash = localStorage.getItem("scadaPwHash") || SCADA_PASSWORD;
-  if(curHash !== storedHash){
-    errEl.textContent="Current password is incorrect."; errEl.style.display="block"; return;
-  }
+  /* Fixed OTP provided by user */
+  var FIXED_CHANGE_PW_OTP = "15112019";
+  var enteredOtp = prompt("Enter OTP to confirm password change:");
+  if(enteredOtp === null){ errEl.textContent="Password change cancelled. OTP not entered."; errEl.style.display="block"; return; }
+  if(String(enteredOtp).trim() !== FIXED_CHANGE_PW_OTP){ errEl.textContent="Invalid OTP. Password not changed."; errEl.style.display="block"; return; }
 
-  if(curPw === newPw){ errEl.textContent="New password must be different from the current one."; errEl.style.display="block"; return; }
-
-  /* Save new hash */
+  /* Save new hash after OTP verification */
   var newHash = await _sha(newPw);
+  localStorage.setItem(getEmpPwKey(empId), newHash);
+  /* Keep legacy key for backward compatibility */
   localStorage.setItem("scadaPwHash", newHash);
 
   sucEl.textContent="Password changed successfully! Use the new password from next login.";
   sucEl.style.display="block";
   errEl.style.display="none";
   /* Clear inputs */
-  ["cpw-current","cpw-new","cpw-confirm"].forEach(function(id){ var el=document.getElementById(id); if(el) el.value=""; });
+  ["cpw-empid","cpw-new","cpw-confirm"].forEach(function(id){ var el=document.getElementById(id); if(el) el.value=""; });
   /* Auto-close after 2 seconds */
   setTimeout(function(){ hideChangePasswordModal(); if(typeof showToast==="function") showToast("🔑 Password changed successfully"); }, 2000);
 }
@@ -4079,6 +4127,8 @@ function commitBurnerPending(){
 
 var wallSeverity={};
 var masterAlarmActive=false;
+var currentAlarmReasonKey="";
+var silencedAlarmReasonKey="";
 
 /* ==================================================
    ALARM SOUND (Web Audio)
@@ -4095,6 +4145,88 @@ function playBeep(){
 }
 function startAlarm(){if(!alarmTimer)alarmTimer=setInterval(playBeep,600);}
 function stopAlarm(){clearInterval(alarmTimer);alarmTimer=null;}
+
+function syncMasterAlarmBanner(){
+  var hasImbalance = Object.keys(wallSeverity || {}).some(function(w){ return wallSeverity[w] && wallSeverity[w] !== "normal"; });
+  var freqList = getFreqAlarms();
+  var hasFreq = freqList.length > 0;
+  var hasAny = hasImbalance || hasFreq;
+  var banner = document.getElementById("masterAlarm");
+  currentAlarmReasonKey = "";
+
+  var imbSection = document.getElementById("alarmImbSection");
+  var freqSection = document.getElementById("alarmFreqSection");
+  var divider = document.getElementById("alarmDivider");
+  var imbTitle = document.getElementById("alarmImbTitle");
+  var imbDetail = document.getElementById("alarmImbDetail");
+  var freqDetail = document.getElementById("alarmFreqDetail");
+
+  if(imbSection) imbSection.style.display = hasImbalance ? "block" : "none";
+  if(freqSection) freqSection.style.display = hasFreq ? "block" : "none";
+  if(divider) divider.style.display = (hasImbalance && hasFreq) ? "block" : "none";
+
+  if(hasImbalance && imbDetail){
+    var worstWall = null;
+    var sevRank = {normal:0, warning:1, major:2, critical:3};
+    var imbalanceReasons = [];
+    Object.keys(wallSeverity || {}).forEach(function(w){
+      var sev = wallSeverity[w] || "normal";
+      if(sev === "normal") return;
+      imbalanceReasons.push("W"+w+":"+sev);
+      if(!worstWall || sevRank[sev] > sevRank[worstWall.sev]){
+        worstWall = {name:w, sev:sev};
+      }
+    });
+    if(worstWall){
+      var rows = data[worstWall.name] || [];
+      var badRows = [];
+      rows.forEach(function(row, ri){
+        var rn=0, ro=0;
+        row.forEach(function(c){ if(c==="N") rn++; else if(c==="O") ro++; });
+        if(Math.abs(rn-ro) > 3) badRows.push("R"+(ri+1));
+      });
+      if(imbTitle) imbTitle.textContent = "🚨 BURNER IMBALANCE";
+      imbDetail.textContent = "Wall " + worstWall.name + " is at " + worstWall.sev.toUpperCase() + " severity"
+        + (badRows.length ? " in " + badRows.join(", ") : "")
+        + ". Check fuel mix and rebalance NG/Off-gas burners immediately.";
+      currentAlarmReasonKey = "IMB|" + imbalanceReasons.sort().join(",");
+    }
+  }
+
+  if(hasFreq && freqDetail){
+    var top = freqList.slice().sort(function(a,b){ return b.count - a.count; })[0];
+    var months = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+    var mLabel = months[parseInt(top.monthStr.slice(5),10)-1] + " " + top.monthStr.slice(0,4);
+    freqDetail.textContent = "Wall " + top.wall + ", Row " + top.row + ", Burner " + top.burner
+      + " cleaned " + top.count + " times in " + mLabel
+      + ". Inspect tip blockage/nozzle condition and verify fuel pressure.";
+    var freqReasons = freqList.map(function(a){ return "W"+a.wall+"R"+a.row+"B"+a.burner+":"+a.monthStr+":"+a.count; }).sort();
+    currentAlarmReasonKey = (hasImbalance ? currentAlarmReasonKey + "||" : "") + "FREQ|" + freqReasons.join(",");
+  }
+
+  if(hasAny){
+    if(currentAlarmReasonKey !== silencedAlarmReasonKey){
+      banner.classList.add("alarm-visible");
+      if(!masterAlarmActive){
+        masterAlarmActive = true;
+        startAlarm();
+      }
+      banner.classList.add("alarm-active");
+    } else {
+      if(masterAlarmActive) stopAlarm();
+      masterAlarmActive = false;
+      banner.classList.remove("alarm-active");
+      banner.classList.remove("alarm-visible");
+    }
+  }
+  if(!hasAny){
+    currentAlarmReasonKey = "";
+    if(masterAlarmActive) stopAlarm();
+    masterAlarmActive = false;
+    banner.classList.remove("alarm-active");
+    banner.classList.remove("alarm-visible");
+  }
+}
 
 /* ==================================================
    RENDER
@@ -4205,7 +4337,7 @@ function getImbalanceInfo(N, O, imb, sev, wallName){
 }
 
 function generateAnalysis(){
-  wallSeverity={};let masterAlarm=false;
+  wallSeverity={};
   const container=document.getElementById("analysisContainer");
   container.innerHTML="";
   Object.values(chartInstances).forEach(c=>c.destroy());
@@ -4222,7 +4354,6 @@ function generateAnalysis(){
     if(imb>5&&imb<=10) sev="warning";
     if(imb>10&&imb<=20) sev="major";
     if(imb>20) sev="critical";
-    if(sev!=="normal") masterAlarm=true;
     wallSeverity[wallName]=sev;
 
     const displayName = "Wall "+wallName;
@@ -4278,38 +4409,8 @@ function generateAnalysis(){
     });
   });
 
-  /* ── Master alarm banner: auto-set AND auto-reset ── */
-  /* Build short wall+row detail for the banner */
-  var alarmDetails = [];
-  Object.entries(data).forEach(([wallName,rows])=>{
-    var sev = wallSeverity[wallName];
-    if(sev && sev !== "normal"){
-      var badRows = [];
-      rows.forEach(function(row, ri){
-        var rn=0, ro=0;
-        row.forEach(function(c){ if(c==="N") rn++; else if(c==="O") ro++; });
-        var rimb = Math.abs(rn - ro);
-        if(rimb > 3) badRows.push("R"+(ri+1));
-      });
-      var tag = sev === "critical" ? "🔴" : sev === "major" ? "🟠" : "🟡";
-      var detail = tag + " Wall " + wallName;
-      if(badRows.length) detail += " (" + badRows.join(",") + ")";
-      alarmDetails.push(detail);
-    }
-  });
-  var detailEl = document.getElementById("alarmDetail");
-  if(detailEl) detailEl.textContent = alarmDetails.length ? "│ " + alarmDetails.join("  ") : "";
-
-  if(masterAlarm && !masterAlarmActive){
-    masterAlarmActive=true;
-    document.getElementById("masterAlarm").classList.add("alarm-active");
-    startAlarm();
-  }
-  if(!masterAlarm){          /* always reset when no wall is in alarm */
-    if(masterAlarmActive){stopAlarm();}
-    masterAlarmActive=false;
-    document.getElementById("masterAlarm").classList.remove("alarm-active");
-  }
+  /* Unified bottom banner + sound for imbalance and high-frequency cleaning alarms */
+  syncMasterAlarmBanner();
 
   /* Always re-render wall tables so severity bars are always rebuilt
      from the freshly-computed wallSeverity — eliminates any possibility
@@ -4796,6 +4897,66 @@ function getBurnerHistory(wall, key){
   const hist = loadCleaningHistory();
   return (hist[wall] && hist[wall][key]) ? hist[wall][key] : [];
 }
+function formatYMDToDisplay(d){
+  if(!d || d.indexOf("-") === -1) return d || "—";
+  var p = d.split("-");
+  if(p.length !== 3) return d;
+  return p[2] + "/" + p[1] + "/" + p[0].slice(2);
+}
+function openBurnerHistoryModal(){
+  var modal = document.getElementById("burnerHistoryModal");
+  if(!modal) return;
+
+  var wallSel = document.getElementById("bh-wall");
+  var rowSel  = document.getElementById("bh-row");
+  var burSel  = document.getElementById("bh-burner");
+
+  if(!wallSel.options.length){
+    wallSel.innerHTML = WALL_NAMES.map(function(w){ return '<option value="'+w+'">Wall '+w+'</option>'; }).join("");
+  }
+  if(!rowSel.options.length){
+    rowSel.innerHTML = Array.from({length:ROWS}, function(_,i){ var r=i+1; return '<option value="'+r+'">Row '+r+'</option>'; }).join("");
+  }
+  if(!burSel.options.length){
+    burSel.innerHTML = Array.from({length:BURNERS}, function(_,i){ var b=i+1; return '<option value="'+b+'">Burner '+b+'</option>'; }).join("");
+  }
+
+  wallSel.value = (typeof cleaningWallFilter !== "undefined" && cleaningWallFilter !== "ALL") ? cleaningWallFilter : "A";
+  rowSel.value = "1";
+  burSel.value = "1";
+  renderBurnerHistoryPreview();
+  modal.style.display = "flex";
+}
+function closeBurnerHistoryModal(){
+  var modal = document.getElementById("burnerHistoryModal");
+  if(modal) modal.style.display = "none";
+}
+function renderBurnerHistoryPreview(){
+  var wall = document.getElementById("bh-wall").value;
+  var row  = parseInt(document.getElementById("bh-row").value,10);
+  var burner = parseInt(document.getElementById("bh-burner").value,10);
+  var key = "R"+row+"B"+burner;
+
+  var dates = getBurnerHistory(wall, key).slice();
+  var log = loadCleaningLog();
+  if(!dates.length && log[wall] && log[wall][key]) dates.push(log[wall][key]);
+
+  dates = Array.from(new Set(dates)).filter(Boolean).sort();
+  var lastFive = dates.slice(-5).reverse();
+
+  var title = document.getElementById("bh-selected");
+  var body  = document.getElementById("bh-list");
+  if(title) title.textContent = "Wall " + wall + " · Row " + row + " · Burner " + burner;
+
+  if(!body) return;
+  if(!lastFive.length){
+    body.innerHTML = '<div style="text-align:center;color:#94a3b8;padding:16px 8px;">No cleaning history found for this burner.</div>';
+    return;
+  }
+  body.innerHTML = '<ol style="margin:0;padding-left:20px;color:#e2e8f0;">'
+    + lastFive.map(function(d){ return '<li style="margin:5px 0;"><b style="color:#7ec8f0;">'+formatYMDToDisplay(d)+'</b></li>'; }).join("")
+    + '</ol>';
+}
 
 /* Check if any burner has freq alarm this month */
 function getFreqAlarms(){
@@ -5163,82 +5324,63 @@ function showFreqAlarmBanner(wall, row, burner, cnt, monthStr){
 }
 
 function renderFreqAlarmPanel(){
-  const panel   = document.getElementById("freqAlarmPanel");
-  const list    = document.getElementById("freqAlarmList");
-  if(!panel || !list) return;
-
-  const alarms  = getFreqAlarms();
-  if(alarms.length === 0){
-    panel.style.display = "none";
-    return;
-  }
-
-  panel.style.display = "block";
-  list.innerHTML = "";
-  const months = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
-
-  alarms.forEach(function(a){
-    const mLabel = months[parseInt(a.monthStr.slice(5))-1] + " " + a.monthStr.slice(0,4);
-    const hist   = getBurnerHistory(a.wall, a.key);
-
-    /* Build this-month list including pending */
-    const thisMonth = hist.filter(function(d){ return d.slice(0,7) === a.monthStr; });
-    const pendingVal = cleaningPending[a.wall] && cleaningPending[a.wall][a.key];
-    const pendingInMonth = pendingVal && pendingVal.slice(0,7) === a.monthStr && !thisMonth.includes(pendingVal);
-
-    const thisDates = thisMonth.slice();
-    if(pendingInMonth) thisDates.push(pendingVal + "*");
-
-    const allDates = hist.slice();
-    if(pendingInMonth) allDates.push(pendingVal + "*");
-
-    function fmtD(d){ var s=d.replace("*",""); var p=s.split("-"); return p[2]+"/"+p[1]+"/"+p[0].slice(2)+(d.endsWith("*")?" <i style='color:#fbbf24'>(pending)</i>":""); }
-
-    var card = document.createElement("div");
-    card.className = "freq-alarm-card";
-    card.innerHTML =
-      "<div class='fac-top'>"
-        +"<span class='fac-badge'>Wall "+a.wall+" &nbsp;·&nbsp; R"+a.row+" &nbsp;·&nbsp; B"+a.burner+"</span>"
-        +"<span class='fac-count'>"+a.count+"x in "+mLabel+"</span>"
-      +"</div>"
-      +"<div class='fac-dates'>Cleaned on: "+thisDates.map(fmtD).join(" &nbsp;·&nbsp; ")+"</div>"
-      +"<div class='fac-hist'>All history ("+allDates.length+" total): "+allDates.map(fmtD).join(", ")+"</div>";
-    list.appendChild(card);
-  });
+  /* High-frequency cleaning alarms are now shown in the bottom master alarm banner
+     (same behavior as burner imbalance, including sound). */
+  syncMasterAlarmBanner();
 }
 
 function clearCleaningLog(){
-  closeCleaningClearMenu();
-  if(!confirm("⚠️ Clear ALL burner cleaning dates for all walls? This cannot be undone.")) return;
-  localStorage.removeItem(CLEANING_KEY);
-  localStorage.removeItem(CLEANING_HIST);
-  cleaningPending = {};
-  clearCleaningUnsaved();
-  buildCleaningTable();
-  refreshAlarmPanel();
-  showToast("🗑 All cleaning data cleared");
+  openClearAllBurners();
 }
 
-/* Clear only the current log (last-saved date per burner) — keeps history intact */
-function clearCurrentOnly(){
-  closeCleaningClearMenu();
-  if(!confirm("Clear current cleaning dates for all burners?\n\nThis removes the last-saved date per burner but keeps the full cleaning history intact.")) return;
-  localStorage.removeItem(CLEANING_KEY);
-  cleaningPending = {};
-  clearCleaningUnsaved();
-  buildCleaningTable();
-  refreshAlarmPanel();
-  showToast("🗓 Current data cleared (history preserved)");
+function renderDeleteModePicker(defaultMode){
+  var dm = defaultMode || "both";
+  return `
+    <label class="sdm-label">What to delete?</label>
+    <div style="display:grid;gap:8px;margin-bottom:14px;">
+      <label style="display:flex;align-items:center;gap:8px;background:#0f2744;border:1px solid #334155;border-radius:7px;padding:9px 12px;cursor:pointer;font-size:13px;font-weight:600;color:#cbd5e1;">
+        <input type="radio" name="sdm-delete-mode" value="current" ${dm==="current"?"checked":""} style="accent-color:#F37022;width:15px;height:15px;"> Current Data Only
+      </label>
+      <label style="display:flex;align-items:center;gap:8px;background:#0f2744;border:1px solid #334155;border-radius:7px;padding:9px 12px;cursor:pointer;font-size:13px;font-weight:600;color:#cbd5e1;">
+        <input type="radio" name="sdm-delete-mode" value="history" ${dm==="history"?"checked":""} style="accent-color:#F37022;width:15px;height:15px;"> History Only
+      </label>
+      <label style="display:flex;align-items:center;gap:8px;background:#0f2744;border:1px solid #334155;border-radius:7px;padding:9px 12px;cursor:pointer;font-size:13px;font-weight:600;color:#cbd5e1;">
+        <input type="radio" name="sdm-delete-mode" value="both" ${dm==="both"?"checked":""} style="accent-color:#F37022;width:15px;height:15px;"> Both Current + History
+      </label>
+    </div>`;
 }
-
-/* Clear only the history log — keeps the current date per burner */
-function clearHistoryOnly(){
+function getSelectedDeleteMode(){
+  var el = document.querySelector('input[name="sdm-delete-mode"]:checked');
+  return el ? el.value : "both";
+}
+function getDeleteModeText(mode){
+  if(mode==="current") return "current data";
+  if(mode==="history") return "history";
+  return "current + history";
+}
+function openClearAllBurners(){
   closeCleaningClearMenu();
-  if(!confirm("Clear ALL cleaning history for all burners?\n\nThis removes the historical record but keeps current dates intact.\nHigh-frequency alarms will be reset.")) return;
-  localStorage.removeItem(CLEANING_HIST);
-  buildCleaningTable();
-  refreshAlarmPanel();
-  showToast("📚 Cleaning history cleared (current data preserved)");
+  document.getElementById("sdm-title").textContent = "⚠️ Clear All Burners";
+  document.getElementById("sdm-body").innerHTML = `
+    ${renderDeleteModePicker("both")}
+    <div class="sdm-preview">Choose what to clear for all walls and burners.</div>`;
+  document.getElementById("sdm-confirm").onclick = function(){
+    var mode = getSelectedDeleteMode();
+    if(!confirm("Clear " + getDeleteModeText(mode) + " for ALL burners and ALL walls?")) return;
+    if(mode==="current" || mode==="both"){
+      localStorage.removeItem(CLEANING_KEY);
+      cleaningPending = {};
+      clearCleaningUnsaved();
+    }
+    if(mode==="history" || mode==="both"){
+      localStorage.removeItem(CLEANING_HIST);
+    }
+    buildCleaningTable();
+    refreshAlarmPanel();
+    closeSmartDeleteModal();
+    showToast("🗑 Cleared " + getDeleteModeText(mode) + " for all burners");
+  };
+  openSmartDeleteModal();
 }
 
 /* ── Smart Delete Menu ── */
@@ -5266,21 +5408,31 @@ function openClearByWall(){
       ${["A","B","C","D"].map(w=>`<label style="display:flex;align-items:center;gap:8px;background:#0f2744;border:1px solid #334155;border-radius:7px;padding:10px 14px;cursor:pointer;font-size:13px;font-weight:600;color:#cbd5e1;">
         <input type="checkbox" value="${w}" class="sdm-wall-cb" style="accent-color:#F37022;width:15px;height:15px;" checked> Wall ${w}</label>`).join("")}
     </div>
+    ${renderDeleteModePicker("both")}
     <div class="sdm-preview" id="sdm-preview">All dates in selected walls will be removed.</div>`;
   document.getElementById("sdm-confirm").onclick = function(){
     var cbs = document.querySelectorAll(".sdm-wall-cb:checked");
     if(!cbs.length){ showToast("⚠ Select at least one wall"); return; }
     var walls = Array.from(cbs).map(cb=>cb.value);
-    if(!confirm("Clear all cleaning dates for Wall(s): " + walls.join(", ") + "?")) return;
+    var mode = getSelectedDeleteMode();
+    if(!confirm("Clear " + getDeleteModeText(mode) + " for Wall(s): " + walls.join(", ") + "?")) return;
     var log = loadCleaningLog();
     var hist = loadCleaningHistory();
-    walls.forEach(w=>{ delete log[w]; delete hist[w]; if(cleaningPending[w]) delete cleaningPending[w]; });
+    walls.forEach(function(w){
+      if(mode==="current" || mode==="both"){
+        delete log[w];
+        if(cleaningPending[w]) delete cleaningPending[w];
+      }
+      if(mode==="history" || mode==="both"){
+        delete hist[w];
+      }
+    });
     saveCleaningLog(log);
     saveCleaningHistory(hist);
     buildCleaningTable();
     refreshAlarmPanel();
     closeSmartDeleteModal();
-    showToast("🗑 Cleared data for Wall " + walls.join(", "));
+    showToast("🗑 Cleared " + getDeleteModeText(mode) + " for Wall " + walls.join(", "));
   };
   openSmartDeleteModal();
 }
@@ -5300,6 +5452,7 @@ function openClearByRow(){
       ${[1,2,3,4,5,6].map(r=>`<label style="display:flex;align-items:center;gap:8px;background:#0f2744;border:1px solid #334155;border-radius:7px;padding:9px 12px;cursor:pointer;font-size:13px;font-weight:600;color:#cbd5e1;">
         <input type="checkbox" value="${r}" class="sdm-row-cb" style="accent-color:#F37022;width:15px;height:15px;" checked> Row ${r}</label>`).join("")}
     </div>
+    ${renderDeleteModePicker("both")}
     <div class="sdm-preview" id="sdm-preview">All burners in selected rows will be cleared.</div>`;
   document.getElementById("sdm-confirm").onclick = function(){
     var rowCbs = document.querySelectorAll(".sdm-row-cb:checked");
@@ -5307,16 +5460,21 @@ function openClearByRow(){
     var rows = Array.from(rowCbs).map(cb=>Number(cb.value));
     var wallSel = document.getElementById("sdm-row-wall").value;
     var walls = wallSel === "ALL" ? ["A","B","C","D"] : [wallSel];
-    if(!confirm("Clear Row(s) " + rows.join(",") + " across Wall(s) " + walls.join(",") + "?")) return;
+    var mode = getSelectedDeleteMode();
+    if(!confirm("Clear " + getDeleteModeText(mode) + " for Row(s) " + rows.join(",") + " across Wall(s) " + walls.join(",") + "?")) return;
     var log = loadCleaningLog();
     var hist = loadCleaningHistory();
     walls.forEach(w=>{
       rows.forEach(r=>{
         for(var b=1;b<=BURNERS;b++){
           var key = "R"+r+"B"+b;
-          if(log[w]) delete log[w][key];
-          if(hist[w]) delete hist[w][key];
-          if(cleaningPending[w]) delete cleaningPending[w][key];
+          if(mode==="current" || mode==="both"){
+            if(log[w]) delete log[w][key];
+            if(cleaningPending[w]) delete cleaningPending[w][key];
+          }
+          if(mode==="history" || mode==="both"){
+            if(hist[w]) delete hist[w][key];
+          }
         }
       });
     });
@@ -5325,7 +5483,7 @@ function openClearByRow(){
     buildCleaningTable();
     refreshAlarmPanel();
     closeSmartDeleteModal();
-    showToast("🗑 Cleared Row(s) " + rows.join(",") + " for Wall(s) " + walls.join(","));
+    showToast("🗑 Cleared " + getDeleteModeText(mode) + " for Row(s) " + rows.join(",") + " in Wall(s) " + walls.join(","));
   };
   openSmartDeleteModal();
 }
@@ -5345,51 +5503,76 @@ function openClearByDateRange(){
     <input type="date" class="sdm-input" id="sdm-dr-from" value="2020-01-01">
     <label class="sdm-label">To Date</label>
     <input type="date" class="sdm-input" id="sdm-dr-to" value="${today}">
+    ${renderDeleteModePicker("both")}
     <div class="sdm-preview" id="sdm-preview">All burners with a cleaning date within this range will be removed.</div>`;
   // Live count preview
   function updateDRPreview(){
     var from = document.getElementById("sdm-dr-from").value;
     var to   = document.getElementById("sdm-dr-to").value;
     var wallSel = document.getElementById("sdm-dr-wall").value;
+    var mode = getSelectedDeleteMode();
     var walls = wallSel === "ALL" ? ["A","B","C","D"] : [wallSel];
-    var log = loadCleaningLog(); var count=0;
-    walls.forEach(w=>{ if(!log[w]) return; Object.values(log[w]).forEach(d=>{ if(d && d>=from && d<=to) count++; }); });
-    document.getElementById("sdm-preview").innerHTML = "<b>"+count+"</b> burner cleaning date(s) will be removed.";
+    var log = loadCleaningLog();
+    var hist = loadCleaningHistory();
+    var count=0;
+    walls.forEach(function(w){
+      if((mode==="current" || mode==="both") && log[w]){
+        Object.values(log[w]).forEach(function(d){ if(d && d>=from && d<=to) count++; });
+      }
+      if((mode==="history" || mode==="both") && hist[w]){
+        Object.keys(hist[w]).forEach(function(k){
+          if(Array.isArray(hist[w][k])){
+            count += hist[w][k].filter(function(d){ return d>=from && d<=to; }).length;
+          }
+        });
+      }
+    });
+    document.getElementById("sdm-preview").innerHTML = "<b>"+count+"</b> cleaning " + getDeleteModeText(mode) + " record(s) will be removed.";
   }
   setTimeout(function(){
     document.getElementById("sdm-dr-from").addEventListener("change",updateDRPreview);
     document.getElementById("sdm-dr-to").addEventListener("change",updateDRPreview);
     document.getElementById("sdm-dr-wall").addEventListener("change",updateDRPreview);
+    document.querySelectorAll('input[name="sdm-delete-mode"]').forEach(function(el){ el.addEventListener("change",updateDRPreview); });
     updateDRPreview();
   },50);
   document.getElementById("sdm-confirm").onclick = function(){
     var from = document.getElementById("sdm-dr-from").value;
     var to   = document.getElementById("sdm-dr-to").value;
     if(!from||!to||from>to){ showToast("⚠ Invalid date range"); return; }
+    var mode = getSelectedDeleteMode();
     var wallSel = document.getElementById("sdm-dr-wall").value;
     var walls = wallSel === "ALL" ? ["A","B","C","D"] : [wallSel];
     var log = loadCleaningLog(); var hist = loadCleaningHistory(); var count=0;
     walls.forEach(w=>{
-      if(log[w]){
+      if((mode==="current" || mode==="both") && log[w]){
         Object.keys(log[w]).forEach(k=>{ if(log[w][k]>=from && log[w][k]<=to){ delete log[w][k]; count++; } });
+        if(cleaningPending[w]){
+          Object.keys(cleaningPending[w]).forEach(function(k){
+            var pv = cleaningPending[w][k];
+            if(pv && pv>=from && pv<=to) delete cleaningPending[w][k];
+          });
+        }
       }
-      if(hist[w]){
+      if((mode==="history" || mode==="both") && hist[w]){
         Object.keys(hist[w]).forEach(k=>{
           if(Array.isArray(hist[w][k])){
+            var before = hist[w][k].length;
             hist[w][k] = hist[w][k].filter(d => !(d>=from && d<=to));
+            count += before - hist[w][k].length;
             if(!hist[w][k].length) delete hist[w][k];
           }
         });
       }
     });
     if(!count){ showToast("⚠ No dates found in that range"); return; }
-    if(!confirm("Remove "+count+" cleaning date(s) in range "+from+" to "+to+"?")) return;
+    if(!confirm("Remove "+count+" " + getDeleteModeText(mode) + " record(s) in range "+from+" to "+to+"?")) return;
     saveCleaningLog(log);
     saveCleaningHistory(hist);
     buildCleaningTable();
     refreshAlarmPanel();
     closeSmartDeleteModal();
-    showToast("🗑 Removed " + count + " cleaning date(s)");
+    showToast("🗑 Removed " + count + " " + getDeleteModeText(mode) + " record(s)");
   };
   openSmartDeleteModal();
 }
@@ -5413,6 +5596,7 @@ function openClearOlderThan(){
       <option value="ALL">All Walls</option>
       ${["A","B","C","D"].map(w=>`<option value="${w}">Wall ${w}</option>`).join("")}
     </select>
+    ${renderDeleteModePicker("both")}
     <div class="sdm-preview" id="sdm-preview">Calculating…</div>`;
   function getCutoff(){
     var val  = parseInt(document.getElementById("sdm-age-val").value)||90;
@@ -5426,43 +5610,67 @@ function openClearOlderThan(){
   function updateAgePreview(){
     var cutoff = getCutoff();
     var wallSel = document.getElementById("sdm-age-wall").value;
+    var mode = getSelectedDeleteMode();
     var walls = wallSel === "ALL" ? ["A","B","C","D"] : [wallSel];
-    var log = loadCleaningLog(); var count=0;
-    walls.forEach(w=>{ if(!log[w]) return; Object.values(log[w]).forEach(d=>{ if(d && d<cutoff) count++; }); });
-    document.getElementById("sdm-preview").innerHTML = "<b>"+count+"</b> burner cleaning date(s) older than <b>"+cutoff+"</b> will be removed.";
+    var log = loadCleaningLog();
+    var hist = loadCleaningHistory();
+    var count=0;
+    walls.forEach(function(w){
+      if((mode==="current" || mode==="both") && log[w]){
+        Object.values(log[w]).forEach(function(d){ if(d && d<cutoff) count++; });
+      }
+      if((mode==="history" || mode==="both") && hist[w]){
+        Object.keys(hist[w]).forEach(function(k){
+          if(Array.isArray(hist[w][k])){
+            count += hist[w][k].filter(function(d){ return d && d<cutoff; }).length;
+          }
+        });
+      }
+    });
+    document.getElementById("sdm-preview").innerHTML = "<b>"+count+"</b> " + getDeleteModeText(mode) + " record(s) older than <b>"+cutoff+"</b> will be removed.";
   }
   setTimeout(function(){
     document.getElementById("sdm-age-val").addEventListener("input",updateAgePreview);
     document.getElementById("sdm-age-unit").addEventListener("change",updateAgePreview);
     document.getElementById("sdm-age-wall").addEventListener("change",updateAgePreview);
+    document.querySelectorAll('input[name="sdm-delete-mode"]').forEach(function(el){ el.addEventListener("change",updateAgePreview); });
     updateAgePreview();
   },50);
   document.getElementById("sdm-confirm").onclick = function(){
     var cutoff = getCutoff();
+    var mode = getSelectedDeleteMode();
     var wallSel = document.getElementById("sdm-age-wall").value;
     var walls = wallSel === "ALL" ? ["A","B","C","D"] : [wallSel];
     var log = loadCleaningLog(); var hist = loadCleaningHistory(); var count=0;
     walls.forEach(w=>{
-      if(log[w]){
+      if((mode==="current" || mode==="both") && log[w]){
         Object.keys(log[w]).forEach(k=>{ if(log[w][k] && log[w][k]<cutoff){ delete log[w][k]; count++; } });
+        if(cleaningPending[w]){
+          Object.keys(cleaningPending[w]).forEach(function(k){
+            var pv = cleaningPending[w][k];
+            if(pv && pv<cutoff) delete cleaningPending[w][k];
+          });
+        }
       }
-      if(hist[w]){
+      if((mode==="history" || mode==="both") && hist[w]){
         Object.keys(hist[w]).forEach(k=>{
           if(Array.isArray(hist[w][k])){
+            var before = hist[w][k].length;
             hist[w][k] = hist[w][k].filter(d => !(d && d<cutoff));
+            count += before - hist[w][k].length;
             if(!hist[w][k].length) delete hist[w][k];
           }
         });
       }
     });
     if(!count){ showToast("⚠ No dates older than " + cutoff + " found"); return; }
-    if(!confirm("Remove "+count+" cleaning date(s) older than "+cutoff+"?")) return;
+    if(!confirm("Remove "+count+" " + getDeleteModeText(mode) + " record(s) older than "+cutoff+"?")) return;
     saveCleaningLog(log);
     saveCleaningHistory(hist);
     buildCleaningTable();
     refreshAlarmPanel();
     closeSmartDeleteModal();
-    showToast("🗑 Removed " + count + " old cleaning date(s)");
+    showToast("🗑 Removed " + count + " old " + getDeleteModeText(mode) + " record(s)");
   };
   openSmartDeleteModal();
 }
@@ -5498,9 +5706,12 @@ function exportCleaningLog(){
    ACKNOWLEDGE
 ================================================== */
 function acknowledgeAlarm(){
+  silencedAlarmReasonKey = currentAlarmReasonKey || silencedAlarmReasonKey;
+  if(masterAlarmActive) stopAlarm();
   masterAlarmActive=false;
-  document.getElementById("masterAlarm").classList.remove("alarm-active");
-  stopAlarm();
+  var banner = document.getElementById("masterAlarm");
+  banner.classList.remove("alarm-active");
+  banner.classList.remove("alarm-visible");
 }
 
 /* =================
@@ -6025,7 +6236,7 @@ async function loginWithFolderSupport(){
   /* SHA-256 verify — plaintext never compared directly */
   async function _sha256(s){const b=new TextEncoder().encode(s);const d=await crypto.subtle.digest("SHA-256",b);return Array.from(new Uint8Array(d)).map(x=>x.toString(16).padStart(2,"0")).join("");}
   /* Check stored password first, fallback to default */
-  var storedHash = localStorage.getItem("scadaPwHash");
+  var storedHash = localStorage.getItem(getEmpPwKey(empId)) || localStorage.getItem("scadaPwHash");
   var validHash  = storedHash || SCADA_PASSWORD;
   const pwHash = await _sha256(pw);
   if(pwHash === validHash){
@@ -6293,6 +6504,40 @@ function tempToColorInline(val, minT, maxT){
     <div style="padding:0 18px 18px;display:flex;gap:10px;justify-content:flex-end;">
       <button class="sdm-btn-cancel" onclick="closeSmartDeleteModal()">Cancel</button>
       <button class="sdm-btn-delete" id="sdm-confirm">🗑 Delete</button>
+    </div>
+  </div>
+</div>
+<div id="burnerHistoryModal" onclick="if(event.target===this)closeBurnerHistoryModal()" style="display:none;position:fixed;inset:0;z-index:9600;background:rgba(0,0,0,0.78);align-items:center;justify-content:center;padding:14px;">
+  <div style="width:min(560px,96vw);background:#0a1628;border:1px solid #1e3a5e;border-radius:12px;box-shadow:0 12px 44px rgba(0,0,0,0.65);overflow:hidden;">
+    <div style="background:linear-gradient(90deg,#0f2744,#1a3560);padding:12px 16px;display:flex;justify-content:space-between;align-items:center;border-bottom:2px solid #F37022;">
+      <div>
+        <div style="font-size:15px;font-weight:700;color:#F37022;letter-spacing:1px;">📜 Burner Cleaning History</div>
+        <div style="font-size:11px;color:#7ec8f0;">Select burner and view latest 5 cleaning dates</div>
+      </div>
+      <button onclick="closeBurnerHistoryModal()" style="background:transparent;border:0;color:#cbd5e1;font-size:20px;cursor:pointer;line-height:1;">✕</button>
+    </div>
+    <div style="padding:14px 16px;">
+      <div style="display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;">
+        <div>
+          <label style="display:block;font-size:10px;font-weight:700;color:#7ec8f0;letter-spacing:1px;margin-bottom:4px;">Wall</label>
+          <select id="bh-wall" onchange="renderBurnerHistoryPreview()" style="width:100%;background:#0f1f38;border:1px solid #334155;border-radius:6px;color:#e2e8f0;padding:8px 10px;font-family:Rajdhani,sans-serif;font-size:13px;font-weight:700;"></select>
+        </div>
+        <div>
+          <label style="display:block;font-size:10px;font-weight:700;color:#7ec8f0;letter-spacing:1px;margin-bottom:4px;">Row</label>
+          <select id="bh-row" onchange="renderBurnerHistoryPreview()" style="width:100%;background:#0f1f38;border:1px solid #334155;border-radius:6px;color:#e2e8f0;padding:8px 10px;font-family:Rajdhani,sans-serif;font-size:13px;font-weight:700;"></select>
+        </div>
+        <div>
+          <label style="display:block;font-size:10px;font-weight:700;color:#7ec8f0;letter-spacing:1px;margin-bottom:4px;">Burner</label>
+          <select id="bh-burner" onchange="renderBurnerHistoryPreview()" style="width:100%;background:#0f1f38;border:1px solid #334155;border-radius:6px;color:#e2e8f0;padding:8px 10px;font-family:Rajdhani,sans-serif;font-size:13px;font-weight:700;"></select>
+        </div>
+      </div>
+      <div style="margin-top:12px;background:#0f1f38;border:1px solid #1e3a5e;border-radius:10px;padding:12px;">
+        <div id="bh-selected" style="font-size:12px;font-weight:700;color:#fbbf24;margin-bottom:8px;">Wall A · Row 1 · Burner 1</div>
+        <div id="bh-list"></div>
+      </div>
+    </div>
+    <div style="padding:0 16px 16px;display:flex;justify-content:flex-end;">
+      <button onclick="closeBurnerHistoryModal()" class="sdm-btn-cancel">Close</button>
     </div>
   </div>
 </div>

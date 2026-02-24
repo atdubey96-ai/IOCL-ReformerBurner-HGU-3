@@ -2614,7 +2614,7 @@ function requestHeatMapRender(delayMs){
 
         /* Scene container */
         .cb-scene{
-          width:100%; height:680px;
+          width:100%; height:clamp(560px,68vh,760px);
           perspective:4500px; perspective-origin:50% 50%;
           position:relative; cursor:grab;
           overflow:visible;      /* 3D children must not be clipped by the scene */
@@ -2672,7 +2672,7 @@ function requestHeatMapRender(delayMs){
         }
 
         /* Wrap & titles */
-        .cb-wrap{display:flex;flex-direction:column;align-items:center;flex:1;min-width:0;}
+        .cb-wrap{display:flex;flex-direction:column;align-items:center;flex:1 1 0;min-width:0;}
         .cb-title{font-size:13px;font-weight:700;letter-spacing:3px;text-transform:uppercase;padding:5px 24px;border-radius:20px;margin-bottom:3px;}
         .cb-subtitle{font-size:9px;color:#94a3b8;margin-bottom:6px;letter-spacing:0.4px;}
         .cb-hint{font-size:9px;color:#475569;margin-top:10px;letter-spacing:1px;}
@@ -2680,6 +2680,18 @@ function requestHeatMapRender(delayMs){
         @keyframes blink{0%,100%{opacity:1;}50%{opacity:0.4;}}
 
         .cb-divider{width:1px;background:linear-gradient(to bottom,transparent,rgba(243,112,34,0.45),rgba(126,200,240,0.45),transparent);margin:0 12px;align-self:stretch;margin-top:56px;}
+        .cb-dual-row{
+          display:flex;align-items:flex-start;gap:8px;flex-wrap:nowrap;
+          margin-bottom:22px;user-select:none;
+          background:linear-gradient(135deg,rgba(15,31,56,0.75),rgba(10,22,40,0.95));
+          border:1px solid #1e3a5e;border-radius:14px;
+          padding:12px 10px 10px;box-shadow:0 4px 40px rgba(0,0,0,0.6);
+          min-height:0;overflow:hidden;
+        }
+        .cb-divider{flex:0 0 1px;}
+        @media (max-width:900px){
+          .cb-scene{height:520px;}
+        }
 
         /* ════════════════════════════════════════════════════════
            FACE-ONLY OVERRIDES
@@ -2854,7 +2866,7 @@ function requestHeatMapRender(delayMs){
 
       <!-- html2canvas removed — faces render via direct HTML injection -->
 
-      <div style="display:flex;align-items:flex-start;gap:0;margin-bottom:22px;user-select:none;background:linear-gradient(135deg,rgba(15,31,56,0.75),rgba(10,22,40,0.95));border:1px solid #1e3a5e;border-radius:14px;padding:18px 10px 14px;box-shadow:0 4px 40px rgba(0,0,0,0.6);min-height:780px;overflow:hidden;">
+      <div class="cb-dual-row">
 
         <!-- ══ AB SIDE CUBOID ══ -->
         <div class="cb-wrap">
@@ -3034,6 +3046,7 @@ function requestHeatMapRender(delayMs){
         function makeDraggable(sceneId, cubeId, initY, initX, minY, maxY){
           var scene    = document.getElementById(sceneId);
           var cube     = document.getElementById(cubeId);
+          if(!scene || !cube) return null;
           var rY       = initY;
           var rX       = initX;
           var velY     = 0;
@@ -3049,7 +3062,9 @@ function requestHeatMapRender(delayMs){
           function clamp(v,lo,hi){ return v<lo?lo:v>hi?hi:v; }
 
           function applyTransform(){
-            cube.style.transform = 'rotateX('+rX+'deg) rotateY('+rY+'deg)';
+            var scale = parseFloat(scene.getAttribute('data-cb-scale') || '1');
+            if(!isFinite(scale) || scale <= 0) scale = 1;
+            cube.style.transform = 'scale('+scale.toFixed(4)+') rotateX('+rX+'deg) rotateY('+rY+'deg)';
           }
 
           function stopRAF(){ if(rafId){ cancelAnimationFrame(rafId); rafId=null; } }
@@ -3112,10 +3127,35 @@ function requestHeatMapRender(delayMs){
           window.addEventListener('touchend',  onUp);
 
           applyTransform();
+          return { scene:scene, applyTransform:applyTransform };
         }
 
-        makeDraggable('ab-scene','ab-cube', -90, -8, -180,   0);
-        makeDraggable('cd-scene','cd-cube',  90, -8,    0, 180);
+        var _abDragCtrl = makeDraggable('ab-scene','ab-cube', -90, -8, -180,   0);
+        var _cdDragCtrl = makeDraggable('cd-scene','cd-cube',  90, -8,    0, 180);
+
+        function updateCuboidResponsiveScale(){
+          var ctrls = [_abDragCtrl, _cdDragCtrl];
+          for(var i=0; i<ctrls.length; i++){
+            var ctrl = ctrls[i];
+            if(!ctrl || !ctrl.scene) continue;
+            var w = ctrl.scene.clientWidth || 0;
+            if(w < 140) continue; /* hidden tab or not laid out yet */
+            var scaleW = (w - 6) / 760;              /* allow growth on wider halves */
+            var sceneH = ctrl.scene.clientHeight || 680;
+            var scaleH = (sceneH * 1.02) / 680;      /* use more vertical room */
+            var scale = Math.min(1.24, scaleW, scaleH);
+            if(!isFinite(scale)) scale = 1;
+            scale = Math.max(0.84, scale);
+            ctrl.scene.setAttribute('data-cb-scale', scale.toFixed(4));
+            ctrl.applyTransform();
+          }
+        }
+        var _cbResizeTimer = null;
+        window.addEventListener('resize', function(){
+          if(_cbResizeTimer) clearTimeout(_cbResizeTimer);
+          _cbResizeTimer = setTimeout(updateCuboidResponsiveScale, 120);
+        });
+        setTimeout(updateCuboidResponsiveScale, 0);
 
         /* ── 2. Wall face renderer — direct HTML injection (no html2canvas) ──
            The wall card is built at NATURAL_W=900px (same as before) and
@@ -3383,7 +3423,10 @@ function requestHeatMapRender(delayMs){
         var _origSwitchTab = window.switchTab;
         window.switchTab = function(tab){
           if(_origSwitchTab) _origSwitchTab.apply(this,arguments);
-          if(tab === 'heatmap') setTimeout(scheduleCuboidTextures, 400);
+          if(tab === 'heatmap'){
+            setTimeout(updateCuboidResponsiveScale, 80);
+            setTimeout(scheduleCuboidTextures, 400);
+          }
         };
 
       })();

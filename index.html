@@ -6389,4 +6389,28 @@ function tempToColorInline(val, minT, maxT){
             <option value="Night" style="color:#818cf8;">🌙 Night</option>
           </select>
         </div>
-        <button onclick="closeAllPHModal()" style="background:rgba(239,68,68,0.15);border:1px solid rgba(239,68,68,0.4);c
+        <button onclick="closeAllPHModal()" style="background:rgba(239,68,68,0.15);border:1px solid rgba(239,68,68,0.4);color:#fecaca;font-size:12px;font-weight:700;padding:7px 14px;border-radius:7px;cursor:pointer;font-family:'Rajdhani',sans-serif;">✕ Close</button>
+      </div>
+    </div>
+    <div id="all-ph-modal-body" style="padding:18px;max-height:74vh;overflow:auto;"></div>
+  </div>
+</div>
+
+<script>
+(function(){
+  var allPhModal = document.getElementById("all-ph-modal");
+  if(!allPhModal) return;
+
+  allPhModal.addEventListener("click", function(e){
+    if(e.target === allPhModal) closeAllPHModal();
+  });
+
+  document.addEventListener("keydown", function(e){
+    if(e.key === "Escape" && allPhModal.style.display === "block"){
+      closeAllPHModal();
+    }
+  });
+})();
+</script>
+</body>
+</html>
